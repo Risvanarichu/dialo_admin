@@ -13,7 +13,7 @@ class UsersPage extends StatelessWidget {
     child: Column(
       children: [
 
-        /// TOP BAR
+        
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -26,7 +26,7 @@ class UsersPage extends StatelessWidget {
               ),
             ),
 
-            /// SEARCH BAR
+            
             Container(
               width: 350,
               height: 40,
