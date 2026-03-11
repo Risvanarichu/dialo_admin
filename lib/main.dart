@@ -2,6 +2,9 @@ import 'package:dialo_admin/views/addUser.dart';
 import 'package:dialo_admin/views/followUpPage.dart';
 import 'package:dialo_admin/views/leadweb.dart';
 import 'package:dialo_admin/views/reportpage.dart';
+import 'package:dialo_admin/views/addlead.dart';
+import 'package:dialo_admin/views/web_users.dart';
+
 import 'package:flutter/material.dart';
 
 void main() {
