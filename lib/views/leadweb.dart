@@ -16,8 +16,7 @@ class Leadsweb extends StatelessWidget {
                 const SizedBox(height: 30),
                 Column(
                   children: const [
-                    Image(image: AssetImage('assets/logo.png.png'), width: 50, height: 50),
-                    SizedBox(height: 5),
+
                     Text("DIALO", style: TextStyle(fontWeight: FontWeight.bold)),
                     Text("CALL CENTER", style: TextStyle(fontSize: 10)),
                   ],
