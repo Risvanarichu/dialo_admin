@@ -53,15 +53,13 @@ class _SideMenuState extends State<SideMenu> {
 
                 Column(
                   children: [
-
-                    Image.asset(
-                      "assets/images/dialo_logo.png", // your image path
-                      height: 70,
+                    CircleAvatar(
+                      radius:35,
+                    backgroundImage: AssetImage(
+                      "android/assets/dialo-logo1.png"),
                     ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
+            SizedBox(height: 8),
+    Text(
                       "DIALO",
                       style: TextStyle(
                         fontSize: 20,
