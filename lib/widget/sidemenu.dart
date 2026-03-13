@@ -11,7 +11,6 @@ import '../views/reportpage.dart';
 import '../views/settscreen.dart';
 import '../views/web_users.dart';
 
-
 class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
 
@@ -24,24 +23,15 @@ class _SideMenuState extends State<SideMenu> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-    // const Center(child: Text("Dashboard Page")),
-    // const Center(child: Text("Calls Page")),
-    // const Center(child: Text("Leads Page")),
-    // const Center(child: Text("Add Lead Page")),
-    // const Center(child: Text("Follow Up Page")),
-    // const Center(child: Text("Reports Page")),
-    // const Center(child: Text("Users Page")),
-    // const Center(child: Text("Settings Page")),
     Dashboard(),
-    Calls (),
-    Leads  (),
+    Calls(),
+    Leads(),
     AddLead(),
-    FollowUpsPage (),
+    FollowUpsPage(),
     ReportsPage(),
-    UsersPage (),
+    UsersPage(),
     SettingsPage(),
     LogoutPage(),
-
   ];
 
   @override
@@ -56,8 +46,34 @@ class _SideMenuState extends State<SideMenu> {
             color: AppColors.whitetext,
             child: Column(
               children: [
-                const SizedBox(height: 40),
 
+                /// LOGO + NAME
+                const SizedBox(height: 30),
+
+                Column(
+                  children: [
+
+                    Image.asset(
+                      "assets/images/dialo_logo.png", // your image path
+                      height: 70,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      "DIALO",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                /// MENU ITEMS
                 _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
                 _menuItem(Icons.phone_outlined, "Calls", 1),
                 _menuItem(Icons.people_outline, "Leads", 2),
@@ -69,8 +85,9 @@ class _SideMenuState extends State<SideMenu> {
 
                 const Spacer(),
 
+                /// LOGOUT
                 ListTile(
-                  leading: const Icon(Icons.logout, color:AppColors.redColor),
+                  leading: const Icon(Icons.logout, color: AppColors.redColor),
                   title: const Text(
                     "Logout",
                     style: TextStyle(color: AppColors.redColor),
@@ -86,7 +103,7 @@ class _SideMenuState extends State<SideMenu> {
           /// PAGE AREA
           Expanded(
             child: Container(
-              color:AppColors.whitetext,
+              color: AppColors.whitetext,
               child: pages[selectedIndex],
             ),
           )
@@ -97,7 +114,7 @@ class _SideMenuState extends State<SideMenu> {
 
   Widget _menuItem(IconData icon, String title, int index) {
     return ListTile(
-      leading: Icon(icon,color: AppColors.themeColor,),
+      leading: Icon(icon, color: AppColors.themeColor),
       title: Text(title),
       selected: selectedIndex == index,
       onTap: () {
