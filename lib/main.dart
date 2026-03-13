@@ -1,9 +1,13 @@
-import 'package:dialo_admin/views/reportpage.dart';
+import 'package:dialo_admin/views/report/reportpage.dart';
 import 'package:flutter/material.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'views/calls.dart';
 
-void main() {
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -15,7 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      home: ReportsPage(),
+      home: Calls(),
       debugShowCheckedModeBanner: false,
     );
   }
