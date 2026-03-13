@@ -1,46 +1,105 @@
+import 'package:dialo_admin/constants/appcolors.dart';
+import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 
-class SideMenu extends StatelessWidget {
+import '../views/addlead.dart';
+import '../views/leadweb.dart';
+import '../views/reportpage.dart';
+
+
+class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
 
   @override
+  State<SideMenu> createState() => _SideMenuState();
+}
+
+class _SideMenuState extends State<SideMenu> {
+
+  int selectedIndex = 0;
+
+  final List<Widget> pages = [
+    // const Center(child: Text("Dashboard Page")),
+    // const Center(child: Text("Calls Page")),
+    // const Center(child: Text("Leads Page")),
+    // const Center(child: Text("Add Lead Page")),
+    // const Center(child: Text("Follow Up Page")),
+    // const Center(child: Text("Reports Page")),
+    // const Center(child: Text("Users Page")),
+    // const Center(child: Text("Settings Page")),
+    Dashboard(),
+    Leadsweb(),
+    WebAddlead(),
+    ReportsPage(),
+    Dashboard(),
+    Leadsweb(),
+    Dashboard(),
+    Leadsweb(),
+    WebAddlead(),
+
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      color: Colors.white,
-      child: Column(
+    return Scaffold(
+      body: Row(
         children: [
-          const SizedBox(height: 40),
 
-          _menuItem(Icons.dashboard_outlined, "Dashboard", false),
-          _menuItem(Icons.phone_outlined, "Calls", false),
-          _menuItem(Icons.people_outline, "Leads", false),
-          _menuItem(Icons.person_add_alt_outlined, "Add lead", false),
-          _menuItem(Icons.event_outlined, "Follow-Up", false),
-          _menuItem(Icons.bar_chart_outlined, "Reports", false),
-          _menuItem(Icons.group_outlined, "Users", false),
-          _menuItem(Icons.settings_outlined, "Settings", false),
+          /// SIDE MENU
+          Container(
+            width: 220,
+            color: AppColors.whitetext,
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
 
-          const Spacer(),
+                _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
+                _menuItem(Icons.phone_outlined, "Calls", 1),
+                _menuItem(Icons.people_outline, "Leads", 2),
+                _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
+                _menuItem(Icons.event_outlined, "Follow-Up", 4),
+                _menuItem(Icons.bar_chart_outlined, "Reports", 5),
+                _menuItem(Icons.group_outlined, "Users", 6),
+                _menuItem(Icons.settings_outlined, "Settings", 7),
 
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              "Logout",
-              style: TextStyle(color: Colors.red),
+                const Spacer(),
+
+                ListTile(
+                  leading: const Icon(Icons.logout, color:AppColors.redColor),
+                  title: const Text(
+                    "Logout",
+                    style: TextStyle(color: AppColors.redColor),
+                  ),
+                  onTap: () {},
+                ),
+
+                const SizedBox(height: 20),
+              ],
             ),
-            onTap: () {},
           ),
+
+          /// PAGE AREA
+          Expanded(
+            child: Container(
+              color:AppColors.whitetext,
+              child: pages[selectedIndex],
+            ),
+          )
         ],
       ),
     );
   }
 
-  Widget _menuItem(IconData icon, String title, bool active) {
+  Widget _menuItem(IconData icon, String title, int index) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xff3570CE)),
+      leading: Icon(icon,color: AppColors.themeColor,),
       title: Text(title),
-      onTap: () {},
+      selected: selectedIndex == index,
+      onTap: () {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
     );
   }
 }
