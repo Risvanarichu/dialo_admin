@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class WebAddlead extends StatefulWidget {
-  const WebAddlead({super.key});
+class AddLead extends StatefulWidget {
+  const AddLead({super.key});
 
   @override
-  State<WebAddlead> createState() => _WebAddleadState();
+  State<AddLead> createState() => _AddLeadState();
 }
 
-class _WebAddleadState extends State<WebAddlead> {
+class _AddLeadState extends State<AddLead> {
   final _formKey = GlobalKey<FormState>();
 
   final fullNameCtrl = TextEditingController();
@@ -26,7 +26,7 @@ class _WebAddleadState extends State<WebAddlead> {
       backgroundColor: const Color(0xFFF2F2F2),
       body: Row(
         children: [
-          if (!isMobile) _sideBar(),
+          //if (!isMobile) _sideBar(),
           Expanded(
             child: Column(
               children: [
@@ -56,35 +56,35 @@ class _WebAddleadState extends State<WebAddlead> {
     );
   }
 
-  Widget _sideBar() {
-    return Container(
-      width: 240,
-      color: Colors.white,
-      child: Column(
-        children: [
-          const SizedBox(height: 30),
-          _menu(Icons.dashboard, "Dashboard"),
-          _menu(Icons.call, "Calls"),
-          _menu(Icons.people, "Leads"),
-          _menu(Icons.person_add_alt_1, "Add lead", active: true),
-          _menu(Icons.calendar_month, "Follow-Up"),
-          _menu(Icons.bar_chart, "Reports"),
-          _menu(Icons.people_outline, "Users"),
-          _menu(Icons.settings, "Settings"),
-          const Spacer(),
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFFFEEEE),
-            child: TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text("Logout", style: TextStyle(color: Colors.red)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _sideBar() {
+  //   return Container(
+  //     width: 240,
+  //     color: Colors.white,
+  //     child: Column(
+  //       children: [
+  //         const SizedBox(height: 30),
+  //         _menu(Icons.dashboard, "Dashboard"),
+  //         _menu(Icons.call, "Calls"),
+  //         _menu(Icons.people, "Leads"),
+  //         _menu(Icons.person_add_alt_1, "Add lead", active: true),
+  //         _menu(Icons.calendar_month, "Follow-Up"),
+  //         _menu(Icons.bar_chart, "Reports"),
+  //         _menu(Icons.people_outline, "Users"),
+  //         _menu(Icons.settings, "Settings"),
+  //         const Spacer(),
+  //         Container(
+  //           width: double.infinity,
+  //           color: const Color(0xFFFFEEEE),
+  //           child: TextButton.icon(
+  //             onPressed: () {},
+  //             icon: const Icon(Icons.logout, color: Colors.red),
+  //             label: const Text("Logout", style: TextStyle(color: Colors.red)),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _menu(IconData icon, String text, {bool active = false}) {
     return ListTile(

@@ -4,8 +4,8 @@ import 'callsettingsscreen.dart';
 import 'leadsettingsscreen.dart';
 
 
-class SettingsScreen extends StatelessWidget{
-  SettingsScreen({super.key});
+class SettingsPage extends StatelessWidget{
+  SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context){
