@@ -1,47 +1,47 @@
 import 'package:flutter/material.dart';
 
-class Leadsweb extends StatelessWidget {
-  const Leadsweb({super.key});
+class Leads extends StatelessWidget {
+  const Leads  ({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
         children: [
-          Container(
-            width: 230,
-            color: Colors.white,
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                Column(
-                  children: const [
-
-                    Text("DIALO", style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("CALL CENTER", style: TextStyle(fontSize: 10)),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                sideItem(Icons.dashboard_outlined, "Dashboard"),
-                sideItem(Icons.call_outlined, "Calls"),
-                sideItem(Icons.people_alt_outlined, "Leads"),
-                sideItem(Icons.person_add_alt_1_outlined, "Add lead"),
-                sideItem(Icons.calendar_month_outlined, "Follow-Up"),
-                sideItem(Icons.bar_chart_outlined, "Reports"),
-                sideItem(Icons.group_outlined, "Users"),
-                const Spacer(),
-                Container(
-                  color: Colors.red.shade50,
-                  child: ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text("Logout",
-                        style: TextStyle(color: Colors.red)),
-                    onTap: () {},
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Container(
+          //   width: 230,
+          //   color: Colors.white,
+          //   child: Column(
+          //     children: [
+          //       const SizedBox(height: 30),
+          //       Column(
+          //         children: const [
+          //
+          //           Text("DIALO", style: TextStyle(fontWeight: FontWeight.bold)),
+          //           Text("CALL CENTER", style: TextStyle(fontSize: 10)),
+          //         ],
+          //       ),
+          //       const SizedBox(height: 30),
+          //       sideItem(Icons.dashboard_outlined, "Dashboard"),
+          //       sideItem(Icons.call_outlined, "Calls"),
+          //       sideItem(Icons.people_alt_outlined, "Leads"),
+          //       sideItem(Icons.person_add_alt_1_outlined, "Add lead"),
+          //       sideItem(Icons.calendar_month_outlined, "Follow-Up"),
+          //       sideItem(Icons.bar_chart_outlined, "Reports"),
+          //       sideItem(Icons.group_outlined, "Users"),
+          //       const Spacer(),
+          //       Container(
+          //         color: Colors.red.shade50,
+          //         child: ListTile(
+          //           leading: const Icon(Icons.logout, color: Colors.red),
+          //           title: const Text("Logout",
+          //               style: TextStyle(color: Colors.red)),
+          //           onTap: () {},
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
 
         
           Expanded(

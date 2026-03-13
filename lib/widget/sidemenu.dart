@@ -3,8 +3,13 @@ import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 
 import '../views/addlead.dart';
+import '../views/calls.dart';
+import '../views/followUpPage.dart';
 import '../views/leadweb.dart';
+import '../views/logoutscreen.dart';
 import '../views/reportpage.dart';
+import '../views/settscreen.dart';
+import '../views/web_users.dart';
 
 
 class SideMenu extends StatefulWidget {
@@ -28,14 +33,14 @@ class _SideMenuState extends State<SideMenu> {
     // const Center(child: Text("Users Page")),
     // const Center(child: Text("Settings Page")),
     Dashboard(),
-    Leadsweb(),
-    WebAddlead(),
+    Calls (),
+    Leads  (),
+    AddLead(),
+    FollowUpsPage (),
     ReportsPage(),
-    Dashboard(),
-    Leadsweb(),
-    Dashboard(),
-    Leadsweb(),
-    WebAddlead(),
+    UsersPage (),
+    SettingsPage(),
+    LogoutPage(),
 
   ];
 
