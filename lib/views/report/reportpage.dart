@@ -20,6 +20,7 @@ class ReportsPage extends StatelessWidget {
               ),
 
               SizedBox(height: 20),
+              Divider(),
 
               DateFilterSection(),
 
