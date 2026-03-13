@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'callsettingsscreen.dart';
-import 'leadsettingsscreen.dart';
+import '../leads/leadsettingsscreen.dart';
 
 
 class SettingsPage extends StatelessWidget{

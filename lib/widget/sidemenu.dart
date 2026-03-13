@@ -2,14 +2,15 @@ import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 
-import '../views/addlead.dart';
+import '../views/agents/web_users.dart';
 import '../views/calls.dart';
 import '../views/followUpPage.dart';
-import '../views/leadweb.dart';
+import '../views/leads/addlead.dart';
+import '../views/leads/leads_list.dart';
 import '../views/logoutscreen.dart';
-import '../views/reportpage.dart';
-import '../views/settscreen.dart';
-import '../views/web_users.dart';
+import '../views/report/reportpage.dart';
+import '../views/settings/settscreen.dart';
+
 
 class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
