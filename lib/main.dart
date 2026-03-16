@@ -1,3 +1,5 @@
+import 'package:dialo_admin/views/addUser.dart';
+import 'package:dialo_admin/views/addlead.dart';
 import 'package:dialo_admin/views/reportpage.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      home: ReportsPage(),
+      home: WebAddlead(),
       debugShowCheckedModeBanner: false,
     );
   }
