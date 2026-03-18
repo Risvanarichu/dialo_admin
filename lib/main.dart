@@ -1,11 +1,23 @@
-import 'package:dialo_admin/views/addUser.dart';
-import 'package:dialo_admin/views/addlead.dart';
+
+
+
 import 'package:dialo_admin/views/reportpage.dart';
 import 'package:flutter/material.dart';
-
+import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/views/agents/addUser.dart';
+import 'package:dialo_admin/views/dashboard.dart';
+import 'package:dialo_admin/views/report/reportpage.dart';
+import 'package:dialo_admin/widget/sidemenu.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'views/calls.dart';
 
-void main() {
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -15,10 +27,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      home: WebAddlead(),
-      debugShowCheckedModeBanner: false,
+
+    // return MaterialApp(
+    //   title: 'Flutter Demo',
+    //   home: WebAddlead(),
+    //   debugShowCheckedModeBanner: false,
+    
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_)=>MainProvider())
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        home:Adduser(),
+        debugShowCheckedModeBanner: false,
+      ),
+
     );
   }
 }

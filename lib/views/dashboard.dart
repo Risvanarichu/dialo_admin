@@ -12,10 +12,10 @@ class Dashboard extends StatelessWidget {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
     return Scaffold(
       backgroundColor: const Color(0xffFFFFFF),
-      drawer: isDesktop ? null : const SideMenu(),
+     // drawer: isDesktop ? null : const SideMenu(),
       body: Row(
         children: [
-          if (isDesktop) SizedBox(width: 220, child: SideMenu()),
+         // if (isDesktop) SizedBox(width: 220, child: SideMenu()),
           const VerticalDivider(
             width: 1,
             thickness: 1,
