@@ -1,6 +1,7 @@
 
 import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/views/agents/addUser.dart';
+import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/views/report/reportpage.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:Adduser(),
+        home:UsersPage(),
         debugShowCheckedModeBanner: false,
       ),
     );
