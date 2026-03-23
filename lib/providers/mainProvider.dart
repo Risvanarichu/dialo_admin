@@ -8,6 +8,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MainProvider extends ChangeNotifier {
+  MainProvider(){
+    fetchUser();
+  }
+  String? editingId;
+  bool isEdit = false;
+  bool isActive = true;
   FirebaseFirestore fbd = FirebaseFirestore.instance;
 
   final nameController = TextEditingController();
@@ -15,6 +21,9 @@ class MainProvider extends ChangeNotifier {
   final emailController = TextEditingController();
   final roleController = TextEditingController();
   final employeeController = TextEditingController();
+
+
+  ///----------------PICK IMAGE---------------------
 
   Uint8List? imageBytes;
   String? imageName;
@@ -27,6 +36,8 @@ class MainProvider extends ChangeNotifier {
       notifyListeners();
     }
     }
+
+    ///------------------UPLOAD IMAGE---------------------
     
     
     Future<String?> uploadImage() async{
@@ -52,6 +63,9 @@ class MainProvider extends ChangeNotifier {
     }
 
 
+    ///-----------------ADD USER-----------------
+
+
   Future<void> addUser() async {
     try {
       String now = DateTime
@@ -71,11 +85,92 @@ class MainProvider extends ChangeNotifier {
         "IMAGE":imageUrl,
       };
       await fbd.collection('AGENT').doc(now).set(user);
+      await fetchUser();
       clearFields();
       imageBytes = null;
       notifyListeners();
     }catch(e){
       print("Error:$e");
+    }
+  }
+
+
+  ///-----------------EDIT DATA---------------------
+
+
+  void editData(Map<String,dynamic>user){
+    nameController.text = user["NAME"]??"";
+    phoneController.text = user["PHONE"]??"";
+    emailController.text = user["EMAIL"]??"";
+    employeeController.text = user["EMPLOYEEID"]??"";
+    roleController.text = user["ROLE"]??"";
+    
+    editingId = user["ID"];
+    isEdit = true;
+    isActive = user["STATUS"]?? true;
+    notifyListeners();
+  }
+  
+  
+  ///-------------UPDATE USER------------------
+
+  Future<void>updateUser() async{
+    try{
+      String? imageUrl;
+      
+      if(imageBytes != null){
+        imageUrl = await uploadImage();
+      }
+      final updateUser = {
+        "NAME" : nameController.text.trim(),
+        "PHONE":phoneController.text.trim(),
+        "EMAIL":emailController.text.trim(),
+        "EMPLOYEEID":employeeController.text.trim(),
+        "ROLE":roleController.text.trim(),
+        "STATUS":isActive,
+      };
+      
+      if(imageUrl != null){
+        updateUser["IMAGE"] = imageUrl;
+      }
+      
+      await fbd.collection('AGENT').doc(editingId).update(updateUser);
+      await fetchUser();
+      clearFields();
+      imageBytes = null;
+      isEdit = false;
+    }catch(e){
+      print("Update Error: $e");
+    }
+  }
+  
+  /// -------------FETCH DATA------------------
+
+
+  List<Map<String,dynamic>> userList = [];
+  Future<void>fetchUser() async{
+    try{
+      final snapshot = await fbd.collection('AGENT').get();
+      userList = snapshot.docs.map((doc){
+        return{
+          "ID":doc.id,
+          ...doc.data(),
+        };
+      }).toList();
+      notifyListeners();
+    }catch(e){
+      print("Fetch Error : $e");
+    }
+  }
+
+  ///---------------DELETE USER---------------
+
+  Future<void> deleteUser(String id) async{
+    try{
+      await fbd.collection('AGENT').doc(id).delete();
+      await fetchUser();
+    }catch(e){
+      print("Delete Error:$e");
     }
   }
 
@@ -85,5 +180,10 @@ class MainProvider extends ChangeNotifier {
     emailController.clear();
     employeeController.clear();
     roleController.clear();
+
+    editingId = null;
+    isEdit = false;
+    isActive = true;
+    imageBytes = null;
   }
 }

@@ -24,7 +24,9 @@ class _AddUserPageState extends State<AddUserPage> {
       backgroundColor: const Color(0xffF5F6FA),
 
       appBar: AppBar(
-        title: const Text("Add User"),
+        title:  Text(context.watch<MainProvider>().isEdit
+            ?"Edit User"
+            :"Add User"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -412,7 +414,15 @@ class _AddUserPageState extends State<AddUserPage> {
                           return null;
                         },
                       ),
-        
+
+
+
+
+
+                      ///----------------PROFILE IMAGE--------------------
+
+
+
                       const SizedBox(height: 25),
         
                       const Text(
@@ -422,47 +432,100 @@ class _AddUserPageState extends State<AddUserPage> {
         
                       const SizedBox(height: 10),
         
-                      Consumer<MainProvider>(
-                        builder: (context,provider,child) {
-                          return GestureDetector(
-                            onTap: (){
-                              provider.pickImage();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xffE9E9ED),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                      Row(
+                        children: [
+                          Consumer<MainProvider>(
+                            builder: (context,provider,child) {
+                              return GestureDetector(
+                                onTap: (){
+                                  provider.pickImage();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xffE9E9ED),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
 
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children:  [
-                                  CircleAvatar(
-                                    radius: 25,
-                                    backgroundImage: provider.imageBytes != null
-                                    ?MemoryImage(provider.imageBytes!)
-                                    :null,
-                                    backgroundColor: Colors.blue,
-                                    child:provider.imageBytes == null
-                                ?const Icon(
-                                      Icons.person,
-                                      size: 18,
-                                      color: Colors.white)
-                                      :null,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children:  [
+                                      CircleAvatar(
+                                        radius: 25,
+                                        backgroundImage: provider.imageBytes != null
+                                        ?MemoryImage(provider.imageBytes!)
+                                        :null,
+                                        backgroundColor: Colors.blue,
+                                        child:provider.imageBytes == null
+                                    ?const Icon(
+                                          Icons.person,
+                                          size: 18,
+                                          color: Colors.white)
+                                          :null,
+                                        ),
 
-                                  SizedBox(width: 10),
+                                      SizedBox(width: 10),
 
-                                  Text("Upload Photo"),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
+                                      Text("Upload Photo"),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                          ),
+
+                          SizedBox(width: 60),
+
+                          ///-------------------STATUS BUTTON--------------------
+
+                          Consumer<MainProvider>(
+                              builder: (context,provider,child){
+                                if(!provider.isEdit) return const SizedBox();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 5,),
+                                    // const Text("Status",
+                                    //   style: TextStyle(fontWeight: FontWeight.bold),
+                                    // ),
+                                    SizedBox(height: 15,),
+                                    Row(
+                                      children: [
+
+                                        Text("Inactive",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),),
+                                        Switch(value: provider.isActive,
+                                          onChanged: (value){
+                                            provider.isActive = value;
+                                            provider.notifyListeners();
+                                          },
+                                          overlayColor:  MaterialStateProperty.all(Colors.transparent),
+                                          thumbColor: MaterialStateProperty.all(Colors.white),
+                                          trackColor: MaterialStateProperty.resolveWith((states){
+                                            return Colors.green;
+                                          }),
+                                          activeColor: Colors.white,
+                                          activeTrackColor: Colors.green,
+
+                                          inactiveThumbColor: Colors.white,
+                                          inactiveTrackColor: Colors.green.shade200,
+                                        ),
+                                        Text("Active",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                          ),),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              }),
+                        ],
                       ),
                     ],
                   ),
@@ -476,7 +539,29 @@ class _AddUserPageState extends State<AddUserPage> {
                 children: [
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:AppColors.themeColor,
+                      backgroundColor: AppColors.themeColor,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 15,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+
+                    onPressed: () {},
+
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+
+                  const SizedBox(width: 20),
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:AppColors.greenColor,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 40,
                         vertical: 15,
@@ -488,53 +573,47 @@ class _AddUserPageState extends State<AddUserPage> {
         
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
+                        final provider = context.read<MainProvider>();
 
-                        if(context.read<MainProvider>().imageBytes == null){
+                        if(!provider.isEdit && provider.imageBytes == null){
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Please select image"),
                             )
                           );
                           return;
                         }
-                        await context.read<MainProvider>().addUser();
+
+                        if(provider.isEdit){
+                          await provider.updateUser();
+                        }else{
+                          await provider.addUser();
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("User Saved Successfully",
+                          SnackBar(
+                            content: Text(
+                              provider.isEdit
+                              ?"User Updated Successfully"
+                                  :"User Saved Successfully",
 
                             ),
                           ),
                         );
+                        Navigator.pop(context);
                       }
                     },
         
                     // child:context.watch<MainProvider>().isLoading
                     // ?const CircularProgressIndicator(color: Colors.white,)
                     // :const
-                    child: Text("Save & Invite",
+                    child: Text(
+                      context.watch<MainProvider>().isEdit
+                          ?"Update User":"Save & Invite",
                       style: TextStyle(color: AppColors.whitetext),),
                   ),
         
-                  const SizedBox(width: 20),
+
         
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.greenColor,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 15,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-        
-                    onPressed: () {},
-        
-                    child: const Text(
-                      "Save As Draft",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+
                 ],
               ),
             ],

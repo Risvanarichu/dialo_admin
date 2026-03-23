@@ -1,4 +1,7 @@
+import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/views/agents/addUser.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
 class UsersPage extends StatelessWidget {
@@ -70,7 +73,10 @@ class UsersPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.read<MainProvider>().clearFields();
+                  Navigator.push(context, MaterialPageRoute(builder: (_)=>const AddUserPage()));
+                },
                 child: const Text(
                   "Add User",
                   style: TextStyle(color: Colors.white),
@@ -81,43 +87,87 @@ class UsersPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             /// TABLE CONTAINER
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Column(
-                children: [
-
-                  /// HEADER
-                  Container(
-                    height: 50,
+            Expanded(
+              child: Consumer<MainProvider>(
+                 builder: (context,provider,child) {
+                   if(provider.userList.isEmpty){
+                     return const Center(child: Text("No Users Found"),);
+                   }
+                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
-                    child: const Row(
+                    child: Column(
                       children: [
-                        TableHeader("NAME", flex: 2),
-                        TableHeader("Role", flex: 2),
-                        TableHeader("Email", flex: 3),
-                        TableHeader("Status", flex: 2),
-                        TableHeader("ACTIONS", flex: 2),
+
+                        /// HEADER
+                        Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12)),
+                          ),
+                          child: const Row(
+                            children: [
+                              TableHeader("NAME", flex: 2),
+                              TableHeader("Role", flex: 2),
+                              TableHeader("Email", flex: 3),
+                              TableHeader("Status", flex: 2),
+                              TableHeader("ACTIONS", flex: 2),
+                            ],
+                          ),
+                        ),
+
+                        /// ROWS
+                        // buildRow("Shibina", "Manager", "ygyhyu@gmail.com", true),
+                        // buildRow("Shahid", "Agent", "gygtgy@gmail.com", false),
+                        // buildRow("Shruthy", "Admin", "s23@gmail.com", true),
+                        // buildRow("Anas", "Agent", "undujiimik@gmail.com", true),
+                        // buildRow("Jasim", "Manager", "abcdkoko@gmail.com", false),
+                        // buildRow("Rahul", "Agent", "rahul@gmail.com", true),
+                        Expanded(child: ListView(
+                          children: provider.userList.map((user){
+                            return buildRow(
+                              user["NAME"]?? "",
+                              user["ROLE"]?? "",
+                              user["EMAIL"]?? "",
+                              user["STATUS"]?? true,
+                              onEdit: (){
+                                provider.editData(user);
+                                Navigator.push(context, MaterialPageRoute(builder: (_)=> const AddUserPage()),
+                                );
+                              },
+                              onDelete:(){
+                                showDialog(context: context,
+                                    builder: (_)=> AlertDialog(
+                                      title: const Text("Delete User?"),
+                                      content: const Text("Are you sure?"),
+                                      actions: [
+                                        TextButton(onPressed: ()=> Navigator.pop(context),
+                                            child: const Text("Cancel"),
+                                        ),
+                                        TextButton(onPressed: ()async{
+                                          await provider.deleteUser(user["ID"]);
+                                          Navigator.pop(context);
+                                        },
+
+                                            child:const Text("Delete") )
+                                      ],
+                                    )
+                                );
+
+                              },
+                            );
+                          }).toList(),
+                        ))
                       ],
                     ),
-                  ),
-
-                  /// ROWS
-                  buildRow("Shibina", "Manager", "ygyhyu@gmail.com", true),
-                  buildRow("Shahid", "Agent", "gygtgy@gmail.com", false),
-                  buildRow("Shruthy", "Admin", "s23@gmail.com", true),
-                  buildRow("Anas", "Agent", "undujiimik@gmail.com", true),
-                  buildRow("Jasim", "Manager", "abcdkoko@gmail.com", false),
-                  buildRow("Rahul", "Agent", "rahul@gmail.com", true),
-                ],
-              ),
+                                 );
+                 }
+               ),
             ),
           ],
         ),
@@ -152,12 +202,18 @@ class TableHeader extends StatelessWidget {
 
 /// ROW
 Widget buildRow(
-    String name, String role, String email, bool isActive) {
+    String name,
+String role,
+String email,
+bool isActive,{
+      VoidCallback? onDelete,
+      VoidCallback? onEdit,
+}) {
   return Container(
-    height: 60, // ✅ SAME HEIGHT FOR ALL ROWS
+    height: 60,
     decoration: BoxDecoration(
       border: Border(
-        bottom: BorderSide(color: Colors.grey.shade300), // ✅ DIVIDER
+        bottom: BorderSide(color: Colors.grey.shade300),
       ),
     ),
     child: Row(
@@ -186,7 +242,7 @@ Widget buildRow(
           flex: 2,
           child: Center(
             child: Container(
-              height: 28, // ✅ SAME SIZE
+              height: 28,
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -209,7 +265,7 @@ Widget buildRow(
           flex: 2,
           child: Center(
             child: Container(
-              height: 28, // ✅ SAME SIZE
+              height: 28,
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -229,10 +285,16 @@ Widget buildRow(
           child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.edit, color: Colors.blue),
-                SizedBox(width: 10),
-                Icon(Icons.block, color: Colors.red),
+              children: [
+               GestureDetector(
+                 onTap: onEdit,
+                 child: const Icon(Icons.edit,color: Colors.blue,),
+               ),
+                const SizedBox(width: 10),
+               GestureDetector(
+                 onTap: onDelete,
+                 child: const Icon(Icons.delete,color: Colors.red,),
+               )
               ],
             ),
           ),
