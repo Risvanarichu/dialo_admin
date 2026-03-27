@@ -91,11 +91,11 @@ class UsersPage extends StatelessWidget {
 
                       provider.clearFields();
 
-                      provider.setLoading(true); // show loader
+                      provider.setLoading(true);
 
                       await Future.delayed(const Duration(milliseconds: 400));
 
-                      provider.setLoading(false); // ✅ STOP BEFORE navigation
+                      provider.setLoading(false);
 
                       Navigator.push(
                         context,
