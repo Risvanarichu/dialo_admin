@@ -743,16 +743,13 @@ class _AddUserPageState extends State<AddUserPage> {
                                   );
                                   return;
                                 }
-                                provider.setLoading(true);
 
                                 if (isUpdating) {
                                   await provider.updateUser();
                                 } else {
                                   await provider.addUser();
                                 }
-                                await Future.delayed(const Duration(milliseconds: 500));
 
-                                provider.setLoading(false);
                                 Navigator.pop(context);
 
                                 ScaffoldMessenger.of(context).showSnackBar(

@@ -11,9 +11,9 @@ class MainProvider extends ChangeNotifier {
   MainProvider(){
     fetchUser();
   }
-  bool isPageLoading = false;
   bool isButtonLoading = false;
   bool isLoading = false;
+  bool isPageLoading = false;
   String? editingId;
   bool isEdit = false;
   bool isActive = true;
@@ -218,7 +218,7 @@ class MainProvider extends ChangeNotifier {
 
   Future<void>fetchUser() async{
     try{
-      setLoading(true);
+      setPageLoading(true);
       final snapshot = await fbd.collection('AGENT').get();
       // print("Total docs: ${snapshot.docs.length}");
       userList = snapshot.docs.map((doc){
@@ -286,7 +286,7 @@ class MainProvider extends ChangeNotifier {
   }
 
   void setPageLoading(bool value){
-    isPageLoading = value;
+     isPageLoading = value;
     notifyListeners();
   }
 

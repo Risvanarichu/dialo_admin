@@ -88,20 +88,20 @@ class UsersPage extends StatelessWidget {
                     ),
                     onPressed: () async {
                       final provider = context.read<MainProvider>();
-                      provider.setPageLoading(true);
-
-                      await Future.delayed(
-                          const Duration(milliseconds: 300));
 
                       provider.clearFields();
 
-                      provider.setPageLoading(false);
+                      provider.setLoading(true); // show loader
+
+                      await Future.delayed(const Duration(milliseconds: 400));
+
+                      provider.setLoading(false); // ✅ STOP BEFORE navigation
 
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const AddUserPage()),
+                        MaterialPageRoute(builder: (_) => const AddUserPage()),
                       );
+                      provider.fetchUser();
                     },
                     child: const Text(
                       "Add User",
@@ -121,6 +121,10 @@ class UsersPage extends StatelessWidget {
                        //     child: CircularProgressIndicator(),
                        //   );
                        // }
+
+                       if(provider.isPageLoading){
+                         return const Center(child: CircularProgressIndicator());
+                       }
                        if(provider.filteredUserList.isEmpty)  {
                          return const Center(child: Text("No Users Found"),);
                        }
@@ -161,12 +165,23 @@ class UsersPage extends StatelessWidget {
                                   user["EMAIL"]?? "",
                                   user["STATUS"]?? true,
                                   imageUrl:user["IMAGE"]??"",
-                                  onEdit: (){
-                                    provider.editData(user);
-                                    Navigator.push(context, MaterialPageRoute(builder: (_)=> const AddUserPage()),
-                                    );
-                                  },
-                                  onDelete:(){
+                                    onEdit: () async {
+                                      final provider = context.read<MainProvider>();
+
+                                      provider.setPageLoading(true);
+
+                                      provider.editData(user);
+
+                                      await Future.delayed(const Duration(milliseconds: 300));
+
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const AddUserPage()),
+                                      );
+
+                                      provider.setPageLoading(false);
+                                    },
+                                    onDelete:(){
                                     showDialog(context: context,
                                         builder: (_)=> AlertDialog(
                                           backgroundColor: Colors.white,
@@ -211,8 +226,9 @@ class UsersPage extends StatelessWidget {
           ),
           Consumer<MainProvider>(
               builder: (context,provider,child){
-                if(!provider.isLoading)return const SizedBox();
-                return fullScreenLoader();
+                if(!provider.isLoading) return const SizedBox();
+                  return fullScreenLoader();
+
               }
               )
         ],
