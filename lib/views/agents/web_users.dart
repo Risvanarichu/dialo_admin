@@ -1,4 +1,4 @@
-import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/views/agents/addUser.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -148,9 +148,9 @@ class UsersPage extends StatelessWidget {
                               child: const Row(
                                 children: [
                                   TableHeader("NAME", flex: 2),
-                                  TableHeader("Role", flex: 2),
-                                  TableHeader("Email", flex: 3),
-                                  TableHeader("Status", flex: 2),
+                                  TableHeader("ROLE", flex: 2),
+                                  TableHeader("EMAIL", flex: 3),
+                                  TableHeader("STATUS", flex: 2),
                                   TableHeader("ACTIONS", flex: 2),
                                 ],
                               ),

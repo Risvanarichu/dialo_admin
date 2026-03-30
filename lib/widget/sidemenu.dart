@@ -2,13 +2,16 @@ import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 
+import '../views/agents/addUser.dart';
 import '../views/agents/web_users.dart';
 import '../views/calls.dart';
 import '../views/followUpPage.dart';
 import '../views/leads/addlead.dart';
 import '../views/leads/leads_list.dart';
+import '../views/leads/leadsettingsscreen.dart';
 import '../views/logoutscreen.dart';
 import '../views/report/reportpage.dart';
+import '../views/settings/callsettingsscreen.dart';
 import '../views/settings/settscreen.dart';
 
 
@@ -37,11 +40,18 @@ class _SideMenuState extends State<SideMenu> {
     Calls (),
     Leads  (),
     AddLead(),
-    FollowUpsPage (),
+    FollowupPage (),
     ReportsPage(),
     UsersPage (),
     SettingsPage(),
     LogoutPage(),
+    UsersPage(),
+    AddUserPage(),
+    SettingsPage(),
+    CallSettingsScreen(),
+    LeadSettingsScreen(),
+
+
 
   ];
 

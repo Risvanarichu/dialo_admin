@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
