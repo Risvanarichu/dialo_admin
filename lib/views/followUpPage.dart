@@ -1,176 +1,246 @@
 import 'package:flutter/material.dart';
 
-class FollowUpsPage extends StatelessWidget {
-  const FollowUpsPage({super.key});
+import 'package:flutter/material.dart';
+
+
+
+
+class FollowupPage extends StatelessWidget {
+  const FollowupPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6fb),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-
-            const Text(
-              "Follow-ups",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              "Manage scheduled follow-ups with leads",
-              style: TextStyle(color: Colors.grey),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// STATS CARDS
-            Row(
+      body: Row(
+        children: [
+          /// SIDEBAR
+          Container(
+            width: 220,
+            color: Colors.grey.shade100,
+            child: Column(
               children: [
-                statCard("Due Today", "23", Icons.error_outline, Colors.red),
-                const SizedBox(width: 20),
-                statCard("This Week", "67", Icons.access_time, Colors.blue),
-                const SizedBox(width: 20),
-                statCard("Completed", "142", Icons.check_circle_outline,
-                    Colors.green),
+                const SizedBox(height: 20),
+                const Text("DIALO",
+                    style:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Divider(),
+
+                sidebarItem(Icons.dashboard, "Dashboard"),
+                sidebarItem(Icons.call, "Calls"),
+                sidebarItem(Icons.person, "Leads"),
+                sidebarItem(Icons.add, "Add Lead"),
+                sidebarItem(Icons.follow_the_signs, "Follow-Up", selected: true),
+                sidebarItem(Icons.bar_chart, "Reports"),
+                sidebarItem(Icons.group, "Users"),
+                sidebarItem(Icons.settings, "Settings"),
+
+                const Spacer(),
+
+                Container(
+                  width: double.infinity,
+                  color: Colors.red.shade100,
+                  padding: const EdgeInsets.all(12),
+                  child: const Text("Logout",
+                      style: TextStyle(color: Colors.red)),
+                )
               ],
             ),
+          ),
 
-            const SizedBox(height: 25),
-
-            /// TABLE
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                      columnSpacing: 45,
-                    columns: const [
-                      DataColumn(label: Text("LEAD NAME",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15),)),
-                      DataColumn(label: Text("FOLLOW-UP DATE",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15))),
-                      DataColumn(label: Text("TIME",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15))),
-                      DataColumn(label: Text("PRIORITY",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15))),
-                      DataColumn(label: Text("ASSIGNED AGENT",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15))),
-                      DataColumn(label: Text("ACTIONS",style: TextStyle(fontWeight:FontWeight.bold ,fontSize: 15))),
-                    ],
-                    rows: [
-                      followRow(
-                        "Alice Cooper",
-                        "2026-01-06",
-                        "10:00 AM",
-                        "High",
-                        Colors.red,
-                        "John Smith",
-                      ),
-                      followRow(
-                        "Bob Martin",
-                        "2026-01-06",
-                        "02:00 PM",
-                        "Medium",
-                        Colors.orange,
-                        "Emily Davis",
-                      ),
-                      followRow(
-                        "Daniel Kim",
-                        "2026-01-07",
-                        "09:30 AM",
-                        "High",
-                        Colors.red,
-                        "Sarah Miller",
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// CARD WIDGET
-  Widget statCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+          /// MAIN CONTENT
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              color: Colors.grey.shade200,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 10),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                        fontSize: 26, fontWeight: FontWeight.bold),
+                  const Text(
+                    "FOLLOW-UP",
+                    style:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 20),
+
+                  /// TOP CARDS
+                  Row(
+                    children: [
+                      dashboardCard("Due Today", "23", Colors.red),
+                      const SizedBox(width: 10),
+                      dashboardCard("This Week", "15", Colors.blue),
+                      const SizedBox(width: 10),
+                      dashboardCard("Completed", "50", Colors.green),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// TABLE
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          tableHeader(),
+                          const Divider(height: 1),
+
+                          Expanded(
+                            child: ListView(
+                              children: const [
+                                tableRow("Shibin", "2026-01-08", "10:00 AM",
+                                    "High", "Shibina"),
+                                tableRow("Riswana", "2026-01-09", "01:30 PM",
+                                    "Medium", "Shahid"),
+                                tableRow("Finiya", "2026-01-10", "10:45 AM",
+                                    "High", "Shruthy"),
+                                tableRow("Anshad", "2026-01-15", "10:20 AM",
+                                    "Medium", "Shruthy"),
+                                tableRow("Aysha", "2026-01-15", "11:30 AM",
+                                    "Low", "Shibina"),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
                 ],
               ),
-              Icon(icon, color: color),
-            ],
-          ),
-        ),
+            ),
+          )
+        ],
       ),
     );
   }
+}
 
-  /// TABLE ROW
-  DataRow followRow(
-      String name,
-      String date,
-      String time,
-      String priority,
-      Color priorityColor,
-      String agent) {
-    return DataRow(
-      cells: [
-        DataCell(Text(name)),
-        DataCell(Text(date)),
-        DataCell(Text(time)),
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: priorityColor.withOpacity(.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              priority,
-              style: TextStyle(color: priorityColor),
-            ),
+Widget sidebarItem(IconData icon, String title, {bool selected = false}) {
+  return Container(
+    color: selected ? Colors.blue.shade50 : Colors.transparent,
+    child: ListTile(
+      leading: Icon(icon, color: Colors.black54),
+      title: Text(title),
+    ),
+  );
+}
+
+Widget dashboardCard(String title, String value, Color color) {
+  return Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade400),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
-        ),
-        DataCell(Text(agent)),
-        DataCell(
-          Row(
+        ],
+      ),
+    ),
+  );
+}
+
+Widget tableHeader() {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+    color: Colors.grey.shade300,
+    child: Row(
+      children: const [
+        Expanded(child: Text("LEAD NAME")),
+        Expanded(child: Text("FOLLOW-UP DATE")),
+        Expanded(child: Text("TIME")),
+        Expanded(child: Text("PRIORITY")),
+        Expanded(child: Text("ASSIGNED AGENT")),
+        Expanded(child: Text("ACTIONS")),
+      ],
+    ),
+  );
+}
+
+class tableRow extends StatelessWidget {
+  final String name, date, time, priority, agent;
+
+  const tableRow(this.name, this.date, this.time, this.priority, this.agent,
+      {super.key});
+
+  Color getPriorityColor() {
+    switch (priority) {
+      case "High":
+        return Colors.red;
+      case "Medium":
+        return Colors.orange;
+      default:
+        return Colors.green;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          child: Row(
             children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                onPressed: () {},
-                child: const Text("Complete"),
+              Expanded(child: Text(name)),
+              Expanded(child: Text(date)),
+              Expanded(child: Text(time)),
+              Expanded(
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: getPriorityColor().withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(priority,
+                      style: TextStyle(color: getPriorityColor())),
+                ),
               ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                onPressed: () {},
-                child: const Text("Reschedule"),
+              Expanded(child: Text(agent)),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text("Complete",
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text("Reschedule",
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
+        const Divider(height: 1),
       ],
     );
   }
