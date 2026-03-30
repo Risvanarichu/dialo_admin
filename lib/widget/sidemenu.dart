@@ -28,7 +28,7 @@ class _SideMenuState extends State<SideMenu> {
     Calls(),
     Leads(),
     AddLead(),
-    FollowUpsPage(),
+    FollowupPage(),
     ReportsPage(),
     UsersPage(),
     SettingsPage(),

@@ -1,5 +1,6 @@
 
-import 'package:dialo_admin/providers/mainProvider.dart';
+// import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'views/calls.dart';
+import 'views/followUpPage.dart';
 
 Future<void> main() async {
   await Firebase.initializeApp(
@@ -26,11 +28,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_)=>SettingsProvider())
+        ChangeNotifierProvider(create: (_)=>SettingsProvider()),
+        ChangeNotifierProvider(create: (_)=> MainProvider())
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:LeadSettingsScreen(),
+        home:FollowupPage(),
         debugShowCheckedModeBanner: false,
       ),
     );
