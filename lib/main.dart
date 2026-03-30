@@ -1,5 +1,5 @@
 
-import 'package:dialo_admin/providers/mainProvider.dart';
+//import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:LeadSettingsScreen(),
+        home:SideMenu(),
         debugShowCheckedModeBanner: false,
       ),
     );
