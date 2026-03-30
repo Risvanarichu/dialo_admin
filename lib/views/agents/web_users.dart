@@ -6,7 +6,7 @@ class UsersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: const Color(0xfff4f6fb),
       body:   SingleChildScrollView(
   child: Padding(
     padding: const EdgeInsets.all(20),

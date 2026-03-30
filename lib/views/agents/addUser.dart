@@ -23,7 +23,7 @@ class _NewLeadPageState extends State<NewLeadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xfff4f6fb),
 
       body: SafeArea(
         child: Column(

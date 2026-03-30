@@ -6,7 +6,7 @@ class FollowUpsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff5f6fa),
+      backgroundColor: const Color(0xfff4f6fb),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

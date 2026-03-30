@@ -11,7 +11,7 @@ class Dashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
     return Scaffold(
-      backgroundColor: const Color(0xffFFFFFF),
+      backgroundColor: const Color(0xfff4f6fb),
      // drawer: isDesktop ? null : const SideMenu(),
       body: Row(
         children: [
