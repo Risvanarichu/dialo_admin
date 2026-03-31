@@ -345,7 +345,6 @@ class _AddUserPageState extends State<AddUserPage> {
                           const SizedBox(height: 15,),
 
                              Row(
-                               // crossAxisAlignment: CrossAxisAlignment.start,
                                children: [
                                  Expanded(
                                    child: Column(
@@ -684,7 +683,7 @@ class _AddUserPageState extends State<AddUserPage> {
                               ?const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: AppColors.whitetext,strokeWidth: 2,),
+                              child: CircularProgressIndicator(color: AppColors.themeColor,strokeWidth: 2,),
                             )
                                 :Text(
                               context.watch<MainProvider>().isEdit
