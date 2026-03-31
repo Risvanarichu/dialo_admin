@@ -25,6 +25,7 @@ class MainProvider extends ChangeNotifier {
   final emailController = TextEditingController();
   final roleController = TextEditingController();
   final employeeController = TextEditingController();
+  final passwordController = TextEditingController();
   final searchController = TextEditingController();
   List<Map<String,dynamic>>filteredUserList = [];
   List<Map<String,dynamic>> userList = [];
@@ -124,6 +125,7 @@ class MainProvider extends ChangeNotifier {
         "EMAIL": emailController.text.trim(),
         "EMPLOYEEID": employeeController.text.trim(),
         "ROLE": roleController.text.trim(),
+        "PASSWORD":passwordController.text.trim(),
         "IMAGE":imageUrl ??"",
         "STATUS":true,
       };
@@ -161,6 +163,7 @@ class MainProvider extends ChangeNotifier {
     emailController.text = user["EMAIL"]??"";
     employeeController.text = user["EMPLOYEEID"]??"";
     roleController.text = user["ROLE"]??"";
+    passwordController.text = user["PASSWORD"]??"";
 
     existingImage = user["IMAGE"];
     
@@ -193,6 +196,7 @@ class MainProvider extends ChangeNotifier {
         "EMAIL":emailController.text.trim(),
         "EMPLOYEEID":employeeController.text.trim(),
         "ROLE":roleController.text.trim(),
+        "PASSWORD":passwordController.text.trim(),
         "STATUS":isActive,
       };
       
@@ -255,6 +259,7 @@ class MainProvider extends ChangeNotifier {
         final name = user["NAME"].toString().toLowerCase();
         final role = user["ROLE"].toString().toLowerCase();
         final email = user["EMAIL"].toString().toLowerCase();
+        final password = user["PASSWORD"].toString().toLowerCase();
         final status = user["STATUS"] == true ? "active":"inactive";
 
         return name.contains(search)||

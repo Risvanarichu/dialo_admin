@@ -2,6 +2,7 @@ import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 
+import '../views/agents/addUser.dart';
 import '../views/agents/web_users.dart';
 import '../views/calls.dart';
 import '../views/followUpPage.dart';
@@ -28,11 +29,12 @@ class _SideMenuState extends State<SideMenu> {
     Calls(),
     Leads(),
     AddLead(),
-    FollowupPage(),
+    FollowUpPage(),
     ReportsPage(),
     UsersPage(),
     SettingsPage(),
     LogoutPage(),
+    AddUserPage(),
   ];
 
   @override
