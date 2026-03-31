@@ -23,7 +23,7 @@ class _AddLeadState extends State<AddLead> {
     final isMobile = MediaQuery.of(context).size.width < 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
+      backgroundColor: const Color(0xfff4f6fb),
       body: Row(
         children: [
           //if (!isMobile) _sideBar(),

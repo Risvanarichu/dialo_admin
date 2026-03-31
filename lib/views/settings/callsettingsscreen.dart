@@ -12,6 +12,7 @@ class _CallSettingsState extends State<CallSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xfff4f6fb),
       body: Row(
         children: [
 
