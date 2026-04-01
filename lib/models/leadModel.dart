@@ -4,22 +4,30 @@ import 'package:intl/intl.dart';
 class LeadModel {
   String id;
   String name;
+  String phone;
+  String email;
+  String source;
+  String status;
   DateTime followupDate;
   String followupTime;
   String time;
   String priority;
   String agent;
-  String status;
+  String followupstatus;
 
   LeadModel({
     required this.id,
     required this.name,
+    required this.phone,
+    required this.email,
+    required this.source,
+    required this.status,
     required this.followupDate,
     required this.followupTime,
     required this.time,
     required this.priority,
     required this.agent,
-    required this.status,
+    required this.followupstatus,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -39,15 +47,43 @@ class LeadModel {
 
     return LeadModel(
       id: id,
-      name: map['NAME']?.toString() ?? "No Name",
+      name: map['NAME']?.toString().toUpperCase() ?? "",
+      phone: map['PHONE']?.toString()??"",
+      email: map['EMAIL']?.toString()??"",
+      source: map['SOURCE']?.toString()??"",
+      status: map['STATUS']?.toString().toUpperCase()??"",
       followupDate: followDate,
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
       time: map['FOLLOW_UP_TIME']?.toString() ??
           DateFormat('hh:mm a').format(followDate),
       priority: map['PRIORITY']?.toString() ?? "Medium",
-      agent: map['ASSIGNED_AGENT']?.toString() ?? "No Agent",
-      status: map['FOLLOW_UP_STATUS']?.toString() ?? "pending",
+      agent: map['ASSIGNED_AGENT']?.toString().toUpperCase() ?? "No Agent",
+      followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
 
     );
+  }
+}
+extension LeadPriority on LeadModel {
+  int get priorityRank {
+    final now = DateTime.now();
+
+    final diff = followupDate.difference(
+      DateTime(now.year, now.month, now.day),
+    ).inDays;
+
+    if (diff <= 2) return 3;
+    if (diff <= 7) return 2;
+    return 1;
+  }
+
+  String get autoPriority {
+    switch (priorityRank) {
+      case 3:
+        return "High";
+      case 2:
+        return "Medium";
+      default:
+        return "Low";
+    }
   }
 }

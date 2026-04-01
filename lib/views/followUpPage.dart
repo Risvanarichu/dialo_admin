@@ -36,7 +36,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
      return lead.followupDate.year == now.year &&
      lead.followupDate.month == now.month &&
      lead.followupDate.day == now.day &&
-     lead.status != "completed";
+     lead.followupstatus != "completed";
    }).length;
   }
   int thisWeekCount(List<LeadModel> leads) {
@@ -47,22 +47,24 @@ class _FollowUpPageState extends State<FollowUpPage> {
     return leads.where((lead) {
       return !lead.followupDate.isBefore(startOfWeek) &&
           !lead.followupDate.isAfter(endOfWeek) &&
-          lead.status != "completed";
+          lead.followupstatus != "completed";
     }).length;
   }
 
   int completedCount(List<LeadModel> leads) {
-    return leads.where((lead) => lead.status == "completed").length;
+    return leads.where((lead) => lead.followupstatus == "completed").length;
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<LeadProvider>();
-    List<LeadModel> filteredLeads = provider.leads.where((lead) {
+    List<LeadModel> sortedLeads = List.from(provider.leads);
+
+    sortedLeads.sort((a, b) => b.priorityRank.compareTo(a.priorityRank));
+    List<LeadModel> filteredLeads = sortedLeads.where((lead) {
       final now = DateTime.now();
 
-      /// 🚀 ALWAYS HIDE COMPLETED (except when selected)
-      if (selectedFilter != "Completed" && lead.status == "completed") {
+      if (selectedFilter != "Completed" && lead.followupstatus == "completed") {
         return false;
       }
 
@@ -81,7 +83,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
             !lead.followupDate.isBefore(startOfWeek) &&
                 !lead.followupDate.isAfter(endOfWeek);
       } else if (selectedFilter == "Completed") {
-        matchesFilter = lead.status == "completed";
+        matchesFilter = lead.followupstatus == "completed";
       }
 
       /// SEARCH
@@ -280,11 +282,19 @@ Widget tableHeader() {
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
-  Color getPrioritycolor(){
-    switch(lead.priority){
-      case"High":
+
+  final priority = lead.autoPriority;
+  Color color(){
+    if(priority == "High") return Colors.red;
+    if(priority == "Medium") return Colors.orange;
+    return Colors.green;
+  }
+
+  Color getPrioritycolor() {
+    switch (priority) {
+      case "High":
         return Colors.red;
-      case"Medium":
+      case "Medium":
         return Colors.orange;
       default:
         return Colors.green;
@@ -299,7 +309,7 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
 
           tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
           tableCell(lead.time),
-          tableCell(lead.priority,color: getPrioritycolor(),),
+          tableCell(priority,color: getPrioritycolor(),),
           tableCell(lead.agent),
 
           Expanded(child: Wrap(

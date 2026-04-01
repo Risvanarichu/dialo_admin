@@ -7,9 +7,18 @@ import 'dart:async';
 class LeadProvider extends ChangeNotifier{
   FirebaseFirestore fbd = FirebaseFirestore.instance;
   List<LeadModel>leads=[];
+  List<LeadModel> get leadsList => leads;
+  List<LeadModel>allLeads =[];
   bool isLoading = false;
   StreamSubscription? leadSubscription;
   final searchController = TextEditingController();
+  String selectedStatus = "All Status";
+  String selectedSources = "All Sources";
+  String searchQuery = "";
+
+  LeadProvider(){
+    listenLeads();
+  }
 
 
   void listenLeads() {
@@ -55,7 +64,8 @@ class LeadProvider extends ChangeNotifier{
 
   Future<void> completedLead(String id) async {
     await fbd.collection('LEADS').doc(id).update({
-      "FOLLOW_UP_STATUS": "completed"
+      "FOLLOW_UP_STATUS": "completed",
+      "STATUS":"Converted",
     });
   }
   Future<void> rescheduleLead(String id, DateTime date, String time) async {
@@ -65,24 +75,22 @@ class LeadProvider extends ChangeNotifier{
     });
   }
 
-  Future<void> searchLeads(String query) async {
+  void searchLeads(String query) {
+    searchQuery = query;
     isLoading = true;
     notifyListeners();
 
-    try {
-      final snapshot = await fbd
-          .collection('LEADS')
-          .where('NAME', isGreaterThanOrEqualTo: query)
-          .where('NAME', isLessThanOrEqualTo: query + '\uf8ff')
-          .get();
+    if (query.isEmpty) {
+      leads = allLeads;
+    } else {
+      final q = query.toLowerCase();
 
-      leads = snapshot.docs
-          .map((doc) => LeadModel.fromMap(doc.id, doc.data()))
-          .toList();
-    } catch (e) {
-      print("Search error: $e");
+      leads = allLeads.where((lead) {
+        return lead.name.toLowerCase().contains(q) ||
+            lead.phone.toLowerCase().contains(q) ||
+            lead.email.toLowerCase().contains(q);
+      }).toList();
     }
-
     isLoading = false;
     notifyListeners();
   }
