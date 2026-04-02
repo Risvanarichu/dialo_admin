@@ -67,30 +67,6 @@ class _AddUserPageState extends State<AddUserPage> {
 
                           const SizedBox(height: 20),
 
-                          // Row(
-                          //   children: [
-                          //     Expanded(child: buildField("Full Name*")),
-                          //
-                          //     const SizedBox(width: 20),
-                          //
-                          //     Expanded(child: buildField("Email Address*")),
-                          //   ],
-                          // ),
-                          //
-                          // const SizedBox(height: 15),
-                          //
-                          // Row(
-                          //   children: [
-                          //     Expanded(child: buildField("Phone Number*")),
-                          //
-                          //     const SizedBox(width: 20),
-                          //
-                          //     Expanded(child: buildField("Employee ID*")),
-                          //   ],
-                          // ),
-                          //
-                          // const SizedBox(height: 15),
-                          // SizedBox(width: 300, child: buildField("Role*")),
 
                           Row(
                             children: [
@@ -368,15 +344,22 @@ class _AddUserPageState extends State<AddUserPage> {
 
                           const SizedBox(height: 15,),
 
-                             Text(
-                             'Role',
-                             textAlign: TextAlign.center,
-                             style: TextStyle(
-                               color: Colors.black,
-                               fontWeight: FontWeight.bold,
-                               fontSize: 14,
-                             ),
-                                                     ),
+                             Row(
+                               children: [
+                                 Expanded(
+                                   child: Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     children: [
+                                       Text(
+                                       'Role',
+                                       textAlign: TextAlign.center,
+                                       style: TextStyle(
+                                         color: Colors.black,
+                                         fontWeight: FontWeight.bold,
+                                         fontSize: 14,
+                                       ),
+                                                               ),
+
                           TextFormField(
                             controller: context.read<MainProvider>().roleController,
                             inputFormatters: [
@@ -420,6 +403,90 @@ class _AddUserPageState extends State<AddUserPage> {
                               return null;
                             },
                           ),
+                                     ],
+                                   ),
+                                 ),
+
+                                 SizedBox(width: 20,),
+                                 Expanded(
+                                   child: Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     children: [
+                                       Text(
+                                         'Password',
+                                         textAlign: TextAlign.center,
+                                         style: TextStyle(
+                                           color: Colors.black,
+                                           fontWeight: FontWeight.bold,
+                                           fontSize: 14,
+                                         ),
+                                       ),
+
+                                       TextFormField(
+                                         controller: context.read<MainProvider>().passwordController,
+                                         inputFormatters: [
+                                           FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                                         ],
+                                         keyboardType: TextInputType.name,
+                                         decoration: InputDecoration(
+                                             hintText: "Enter Passsword",
+                                             hintStyle: TextStyle(color: Colors.grey),
+                                             // errorStyle: TextStyle(color: Colors.red),
+                                             enabledBorder: OutlineInputBorder(
+                                               borderSide: BorderSide(
+                                                 color: Colors.black,
+                                                 width: 1,
+                                               ),
+                                             ),
+                                             focusedBorder: OutlineInputBorder(
+                                               borderSide: BorderSide(
+                                                 color: Colors.black,
+                                                 width: 1,
+                                               ),
+                                             ),
+
+                                             errorBorder: OutlineInputBorder(
+                                                 borderSide: BorderSide(color: Colors.red,width: 2)
+                                             ),
+                                             focusedErrorBorder: OutlineInputBorder(
+                                               borderSide: BorderSide(color: Colors.red,
+                                                   width: 1 ),
+                                             )
+                                         ),
+                                         validator: (value) {
+                                           if (value == null || value.isEmpty) {
+                                             return "Please enter password";
+                                           }
+
+                                           if (value.length < 6) {
+                                             return "Password must be at least 6 characters";
+                                           }
+
+                                           if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                             return "Must contain at least 1 uppercase letter";
+                                           }
+
+                                           if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                             return "Must contain at least 1 lowercase letter";
+                                           }
+
+                                           if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                             return "Must contain at least 1 number";
+                                           }
+
+                                           if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+                                             return "Must contain at least 1 special character";
+                                           }
+
+                                           return null;
+                                         },
+                                       ),
+
+                                     ],
+                                   )
+                                   ),
+                               ],
+                             ),
 
 
 
@@ -616,7 +683,7 @@ class _AddUserPageState extends State<AddUserPage> {
                               ?const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: AppColors.whitetext,strokeWidth: 2,),
+                              child: CircularProgressIndicator(color: AppColors.themeColor,strokeWidth: 2,),
                             )
                                 :Text(
                               context.watch<MainProvider>().isEdit

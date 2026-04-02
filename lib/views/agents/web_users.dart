@@ -123,7 +123,7 @@ class UsersPage extends StatelessWidget {
                        // }
 
                        if(provider.isPageLoading){
-                         return const Center(child: CircularProgressIndicator());
+                         return const Center(child: CircularProgressIndicator(color: AppColors.themeColor,));
                        }
                        if(provider.filteredUserList.isEmpty)  {
                          return const Center(child: Text("No Users Found"),);
@@ -380,7 +380,7 @@ Widget fullScreenLoader(){
   return Container(
     color: Colors.black.withOpacity(0.2),
     child: const Center(
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator(color: AppColors.themeColor,),
     ),
   );
 }

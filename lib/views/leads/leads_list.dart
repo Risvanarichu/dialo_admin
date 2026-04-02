@@ -1,48 +1,21 @@
+import 'package:dialo_admin/models/leadModel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/leadProvider.dart';
 
 class Leads extends StatelessWidget {
   const Leads  ({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<LeadProvider>();
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-      body: Row(
+      body:provider.isLoading
+          ?const Center(child: CircularProgressIndicator())
+          : Row(
         children: [
-          // Container(
-          //   width: 230,
-          //   color: Colors.white,
-          //   child: Column(
-          //     children: [
-          //       const SizedBox(height: 30),
-          //       Column(
-          //         children: const [
-          //
-          //           Text("DIALO", style: TextStyle(fontWeight: FontWeight.bold)),
-          //           Text("CALL CENTER", style: TextStyle(fontSize: 10)),
-          //         ],
-          //       ),
-          //       const SizedBox(height: 30),
-          //       sideItem(Icons.dashboard_outlined, "Dashboard"),
-          //       sideItem(Icons.call_outlined, "Calls"),
-          //       sideItem(Icons.people_alt_outlined, "Leads"),
-          //       sideItem(Icons.person_add_alt_1_outlined, "Add lead"),
-          //       sideItem(Icons.calendar_month_outlined, "Follow-Up"),
-          //       sideItem(Icons.bar_chart_outlined, "Reports"),
-          //       sideItem(Icons.group_outlined, "Users"),
-          //       const Spacer(),
-          //       Container(
-          //         color: Colors.red.shade50,
-          //         child: ListTile(
-          //           leading: const Icon(Icons.logout, color: Colors.red),
-          //           title: const Text("Logout",
-          //               style: TextStyle(color: Colors.red)),
-          //           onTap: () {},
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
 
         
           Expanded(
@@ -69,11 +42,16 @@ class Leads extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: TextField(
+                                  onChanged: (value){
+                                    provider.searchLeads(value);
+                                  },
                                   decoration: InputDecoration(
                                     hintText: "Search By Name Phone",
                                     prefixIcon: const Icon(Icons.search),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
+                                        borderRadius: BorderRadius.circular(8),
+
+                                    ),
                                   ),
                                 ),
                               ),
@@ -90,6 +68,7 @@ class Leads extends StatelessWidget {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey),
+                              color: Colors.grey.shade200
                             ),
                             child: Row(
                               children:  [
@@ -102,9 +81,23 @@ class Leads extends StatelessWidget {
                               ],
                             ),
                           ),
-                    
-                     
-                          ...leads.map((e) => tableRow(e)).toList(),
+
+
+                          provider.leads.isEmpty
+                              ? Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Center(
+                              child: Text(
+                                "No results for '${provider.searchQuery}'",
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
+                            ),
+                          )
+                              : Column(
+                            children: provider.leads
+                                .map((e) => tableRow(e))
+                                .toList(),
+                          ),
                         ],
                       ),
                     ),
@@ -117,6 +110,7 @@ class Leads extends StatelessWidget {
       ),
     );
   }
+
 }
 
 Widget sideItem(IconData icon, String text) {
@@ -147,11 +141,13 @@ Widget dropdown(String value) {
 
 Widget tableHead(String text) {
   return Expanded(
-    child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+    child: Text(text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontWeight: FontWeight.bold)),
   );
 }
 
-Widget tableRow(Lead lead) {
+Widget tableRow(LeadModel lead) {
   return Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
@@ -163,24 +159,25 @@ Widget tableRow(Lead lead) {
     ),
     child: Row(
       children: [
-        Expanded(child: Text(lead.name)),
-        Expanded(child: Text(lead.phone)),
-        Expanded(child: Text(lead.email)),
-        Expanded(child: statusChip(lead.status)),
-        Expanded(child: Text(lead.source)),
-        Expanded(child: Text(lead.agent)),
+        Expanded(child: alignCenter(lead.name)),
+        Expanded(child: alignCenter(lead.phone)),
+        Expanded(child: alignCenter(lead.email)),
+        Expanded(child: Center(child: statusChip(lead.status))),
+        Expanded(child: alignCenter(lead.source)),
+        Expanded(child: alignCenter(lead.agent)),
       ],
     ),
   );
 }
 
 Widget statusChip(String status) {
+  final s = status.trim().toUpperCase();
   Color color;
-  switch (status) {
-    case "New":
+  switch (s) {
+    case "NEW":
       color = Colors.blue.shade300;
       break;
-    case "Converted":
+    case "CONVERTED":
       color = Colors.orange.shade300;
       break;
     default:
@@ -188,10 +185,12 @@ Widget statusChip(String status) {
   }
 
   return Container(
+    alignment: Alignment.center,
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration:
         BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-    child: Text(status),
+    child: Text(status,
+    textAlign: TextAlign.center),
   );
 }
 
@@ -200,16 +199,14 @@ class Lead {
   Lead(this.name, this.phone, this.email, this.status, this.source, this.agent);
 }
 
-final List<Lead> leads = [
-  Lead("Riswana", "+123-456-7788", "ris@gmail.com", "New", "Website", "Shibina"),
-  Lead("Aysha", "+123-456-7890", "ais@gmail.com", "Converted", "Phone Call", "Shruthi"),
-  Lead("Finya", "+123-456-7890", "fin@gmail.com", "Interested", "Referral", "Anas"),
-  Lead("Shibin", "+123-456-7890", "shi@gmail.com", "New", "Social Media", "Jasim"),
-  Lead("Anshad", "+123-456-7890", "ans@gmail.com", "Converted", "Email Campaign", "Shibina"),
-  Lead("Hisana", "+123-456-7890", "his@gmail.com", "Interested", "Phone Call", "Anas"),
-  Lead("Faiha", "+123-456-7890", "fai@gmail.com", "New", "Website", "Shahid"),
-  Lead("Nida", "+123-456-7890", "nid@gmail.com", "Converted", "Referral", "Shruthi"),
-  Lead("Nasla", "+123-456-7890", "nas@gmail.com", "Interested", "Social Media", "Jasim"),
-  Lead("Jafna", "+123-456-7890", "jaf@gmail.com", "New", "Email Campaign", "Shibina"),
-];
+Widget alignCenter(String text) {
+  return Align(
+    alignment: Alignment.center,
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+    ),
+  );
+}
+
   
