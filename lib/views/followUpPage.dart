@@ -36,7 +36,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
      return lead.followupDate.year == now.year &&
      lead.followupDate.month == now.month &&
      lead.followupDate.day == now.day &&
-     lead.followupstatus != "completed";
+     lead.followupstatus != "COMPLETED";
    }).length;
   }
   int thisWeekCount(List<LeadModel> leads) {
@@ -47,12 +47,12 @@ class _FollowUpPageState extends State<FollowUpPage> {
     return leads.where((lead) {
       return !lead.followupDate.isBefore(startOfWeek) &&
           !lead.followupDate.isAfter(endOfWeek) &&
-          lead.followupstatus != "completed";
+          lead.followupstatus != "COMPLETED";
     }).length;
   }
 
   int completedCount(List<LeadModel> leads) {
-    return leads.where((lead) => lead.followupstatus == "completed").length;
+    return leads.where((lead) => lead.followupstatus == "COMPLETED").length;
   }
 
   @override
@@ -64,7 +64,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
     List<LeadModel> filteredLeads = sortedLeads.where((lead) {
       final now = DateTime.now();
 
-      if (selectedFilter != "Completed" && lead.followupstatus == "completed") {
+      if (selectedFilter != "Completed" && lead.followupstatus == "COMPLETED") {
         return false;
       }
 
@@ -83,7 +83,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
             !lead.followupDate.isBefore(startOfWeek) &&
                 !lead.followupDate.isAfter(endOfWeek);
       } else if (selectedFilter == "Completed") {
-        matchesFilter = lead.followupstatus == "completed";
+        matchesFilter = lead.followupstatus == "COMPLETED";
       }
 
       /// SEARCH

@@ -57,7 +57,7 @@ class LeadModel {
       time: map['FOLLOW_UP_TIME']?.toString() ??
           DateFormat('hh:mm a').format(followDate),
       priority: map['PRIORITY']?.toString() ?? "Medium",
-      agent: map['ASSIGNED_AGENT']?.toString().toUpperCase() ?? "No Agent",
+      agent: map['ADDED_BY_ID']?.toString().toUpperCase() ?? "No Agent",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
 
     );

@@ -17,7 +17,7 @@ class Leads extends StatelessWidget {
           : Row(
         children: [
 
-        
+
           Expanded(
             child: Column(
               children: [
@@ -40,30 +40,110 @@ class Leads extends StatelessWidget {
                         children: [
                           Row(
                             children: [
+
+                              /// 🔍 SEARCH (takes more space)
                               Expanded(
+                                flex: 2,
                                 child: TextField(
-                                  onChanged: (value){
-                                    provider.searchLeads(value);
+                                  onChanged: (value) {
+                                    context.read<LeadProvider>().searchLeads(value);
                                   },
                                   decoration: InputDecoration(
-                                    hintText: "Search By Name Phone",
+                                    hintText: "Search...",
                                     prefixIcon: const Icon(Icons.search),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(color: Colors.grey),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: Colors.grey,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: Colors.grey,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10)
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 20),
-                              dropdown("All Status"),
-                              const SizedBox(width: 20),
-                              dropdown("All Sources"),
+
+                              const SizedBox(width: 10),
+
+                              /// 🎯 STATUS FILTER
+                              Expanded(
+                                child: Consumer<LeadProvider>(
+                                  builder: (context, provider, child) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.grey)
+                                      ),
+                                      child: DropdownButton(
+                                        value: provider.selectedStatus,
+                                        isExpanded: true,
+                                        underline: const SizedBox(),
+                                        items: ["All Status", "New", "Converted", "Interested"]
+                                            .map((e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(e),
+                                        ))
+                                            .toList(),
+                                        onChanged: (value) {
+                                          provider.updateStatus(value!);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              /// 📊 SOURCE FILTER
+                              Expanded(
+                                child: Consumer<LeadProvider>(
+                                  builder: (context, provider, child) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.grey)
+                                      ),
+                                      child: DropdownButton(
+                                        value: provider.selectedSources,
+                                        isExpanded: true,
+                                        underline: const SizedBox(),
+                                        items: ["All Sources", "Facebook", "Website", "Call"]
+                                            .map((e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(e),
+                                        ))
+                                            .toList(),
+                                        onChanged: (value) {
+                                          provider.updateSource(value!);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                    
-                          
+
+
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -83,7 +163,7 @@ class Leads extends StatelessWidget {
                           ),
 
 
-                          provider.leads.isEmpty
+                          provider.allLeads.isEmpty
                               ? Padding(
                             padding: const EdgeInsets.all(20),
                             child: Center(
@@ -94,7 +174,7 @@ class Leads extends StatelessWidget {
                             ),
                           )
                               : Column(
-                            children: provider.leads
+                            children: provider.allLeads
                                 .map((e) => tableRow(e))
                                 .toList(),
                           ),
@@ -180,8 +260,11 @@ Widget statusChip(String status) {
     case "CONVERTED":
       color = Colors.orange.shade300;
       break;
+    case "INTERESTED":
+      color = Colors.green;
+      break;
     default:
-      color = Colors.green.shade300;
+      color = Colors.grey.shade300;
   }
 
   return Container(
@@ -209,4 +292,4 @@ Widget alignCenter(String text) {
   );
 }
 
-  
+

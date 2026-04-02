@@ -33,65 +33,90 @@ class LeadProvider extends ChangeNotifier{
               .map((doc) => LeadModel.fromMap(doc.id, doc.data()))
               .toList();
 
+          applyFilters();
+
           isLoading = false;
           notifyListeners();
         });
   }
 
-  Future<void>fetchLeads()async{
+  Future<void>fetchLeads()async {
     isLoading = true;
     notifyListeners();
 
-   try {
-     final snapshot = await fbd.collection('LEADS').get();
+    try {
+      final snapshot = await fbd.collection('LEADS').get();
 
-     leads = [];
+      leads = [];
 
-     for (var doc in snapshot.docs) {
-       try {
-         leads.add(LeadModel.fromMap(doc.id, doc.data()));
-       } catch (e) {
-         print("Error in doc ${doc.id}: $e");
-       }
-     }
-   }catch(e) {
-     print("Error fetching leads: $e");
-   }finally{
-     isLoading = false;
-     notifyListeners();
-   }
-   }
-
-  Future<void> completedLead(String id) async {
-    await fbd.collection('LEADS').doc(id).update({
-      "FOLLOW_UP_STATUS": "completed",
-      "STATUS":"Converted",
-    });
-  }
-  Future<void> rescheduleLead(String id, DateTime date, String time) async {
-    await fbd.collection("LEADS").doc(id).update({
-      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
-      "FOLLOW_UP_TIME": time,
-    });
-  }
-
-  void searchLeads(String query) {
-    searchQuery = query;
-    isLoading = true;
-    notifyListeners();
-
-    if (query.isEmpty) {
-      leads = allLeads;
-    } else {
-      final q = query.toLowerCase();
-
-      leads = allLeads.where((lead) {
-        return lead.name.toLowerCase().contains(q) ||
-            lead.phone.toLowerCase().contains(q) ||
-            lead.email.toLowerCase().contains(q);
-      }).toList();
+      for (var doc in snapshot.docs) {
+        try {
+          leads.add(LeadModel.fromMap(doc.id, doc.data()));
+        } catch (e) {
+          print("Error in doc ${doc.id}: $e");
+        }
+      }
+    } catch (e) {
+      print("Error fetching leads: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-    isLoading = false;
-    notifyListeners();
   }
-}
+
+    Future<void> completedLead(String id) async {
+      await fbd.collection('LEADS').doc(id).update({
+        "FOLLOW_UP_STATUS": "completed",
+        "STATUS": "Converted",
+      });
+      notifyListeners();
+    }
+    Future<void> rescheduleLead(String id, DateTime date, String time) async {
+      await fbd.collection("LEADS").doc(id).update({
+        "FOLLOW_UP_DATE": Timestamp.fromDate(date),
+        "FOLLOW_UP_TIME": time,
+      });
+    }
+
+    void searchLeads(String query) {
+      searchQuery = query;
+      applyFilters();
+    }
+
+    void applyFilters() {
+      final query = searchQuery.toLowerCase();
+
+      allLeads = leads.where((lead) {
+        final name = lead.name?.toLowerCase() ?? "";
+        final phone = lead.phone?.toLowerCase() ?? "";
+        final email = lead.email?.toLowerCase() ?? "";
+        final status = lead.status.toUpperCase();
+        final source = lead.source.toUpperCase();
+
+        final matchesSearch = query.isEmpty ||
+            name.contains(query) ||
+            phone.contains(query) ||
+            email.contains(query);
+
+        final matchesStatus = selectedStatus == "All Status" ||
+            status == selectedStatus.toUpperCase();
+
+        final matchesSource = selectedSources == "All Sources" ||
+            source == selectedSources.toUpperCase();
+
+        return matchesSearch && matchesStatus && matchesSource;
+      }).toList();
+
+      notifyListeners();
+    }
+
+    void updateStatus(String status) {
+      selectedStatus = status;
+      applyFilters();
+    }
+
+    void updateSource(String source) {
+      selectedSources = source;
+      applyFilters();
+    }
+  }
