@@ -32,7 +32,6 @@ class _SideMenuState extends State<SideMenu> {
     ReportsPage(),
     UsersPage(),
     SettingsPage(),
-    LogoutPage(),
   ];
 
   @override
@@ -56,7 +55,7 @@ class _SideMenuState extends State<SideMenu> {
                     CircleAvatar(
                       radius:35,
                     backgroundImage: AssetImage(
-                      "android/assets/dialo-logo1.png"),
+                      "assets/dialo-logo1.png"),
                     ),
             SizedBox(height: 8),
     Text(

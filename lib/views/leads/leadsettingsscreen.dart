@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 
+import '../../constants/appcolors.dart';
+
 class LeadSettingsScreen extends StatefulWidget {
   const LeadSettingsScreen({super.key});
 
@@ -13,7 +15,8 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
   bool showCategories = false;
   bool showCallStatus = false;
 
-  final _formKey = GlobalKey<FormState>();
+  final _categoryFormKey = GlobalKey<FormState>();
+  final _callStatusformKey = GlobalKey<FormState>();
   final TextEditingController statusController = TextEditingController();
 
   @override
@@ -32,7 +35,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       backgroundColor: const Color(0xfff4f6fb),
       body: Row(
         children: [
-          Container(width: 1, color: Colors.black),
+          //Container(width: 1, color: Colors.black),
 
           Expanded(
             child: Padding(
@@ -49,21 +52,24 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
                   Expanded(
                     child: Center(
-                      child: Container(
-                        width: 1100,
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.black),
-                          color: Colors.white,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _leftCard(),
-                            if (showCategories) _categoryCard(provider),
-                            if (showCallStatus) _callStatusCard(provider),
-                          ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(80),
+                        child: Container(
+                         // width: 1100,
+                          padding: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.grey),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _leftCard(),
+                              if (showCategories) _categoryCard(provider),
+                              if (showCallStatus) _callStatusCard(provider),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -94,12 +100,13 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
+              Provider.of<SettingsProvider>(context, listen: false).clearCategories();
               setState(() {
                 showCategories = true;
                 showCallStatus = false;
               });
             },
-            child: _box("Categories"),
+            child: _box("Additional Details"),
           ),
 
           const SizedBox(height: 40),
@@ -131,7 +138,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
         border: Border.all(color: Colors.black),
       ),
       child: Form(
-        key: _formKey,
+        key: _categoryFormKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -151,8 +158,8 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                key: ValueKey(cat["title"]),
-                                initialValue: cat["title"],
+                               // key: ValueKey(cat["title"]),
+                    controller: cat["controller"],
                                 decoration: InputDecoration(
                                   hintText: "Category",
                                   border: OutlineInputBorder(
@@ -171,15 +178,59 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
                             const SizedBox(width: 8),
 
+                    // IconButton(
+                    // icon: const Icon(Icons.add,
+                    //
+                    // ),
+                    // onPressed: () {
+                    // if (cat["title"] == null ||
+                    // cat["title"].toString().trim().isEmpty) {
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    // const SnackBar(
+                    // content: Text("Enter category first"),
+                    // ),
+                    // );
+                    // return;
+                    // }
+                    // else{
+                    //   if(cat["sub"]==null|| && cat ["sub"].isNotEmpty){
+                    //  String lastSub= cat["sub"].last.toString().trim();
+                    //  if(lastSub.isEmpty){
+                    //    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("fill the category first")));
+                    //
+                    //  }
+                    //   }
+                    // }
+                    //
+                    // provider.addSubCategory(index);
+                    // },
+                    // ),
                             IconButton(
-                              icon: const Icon(Icons.add, color: Colors.blue),
+                              icon: const Icon(Icons.add,color: Colors.blue),
                               onPressed: () {
+                                if (cat["controller"].text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Enter category first")),
+                                  );
+                                  return;
+                                }
+
+                                if (cat["subcontrollers"] != null && cat["subcontrollers"].isNotEmpty) {
+                                  final lastController = cat["subcontrollers"].last as TextEditingController;
+
+                                  if (lastController.text.trim().isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text("Fill the first sub category")),
+                                    );
+                                    return;
+                                  }
+                                }
+
                                 provider.addSubCategory(index);
                               },
                             ),
-
                             IconButton(
-                              icon: const Icon(Icons.delete),
+                              icon: const Icon(Icons.delete,color: Colors.red,),
                               onPressed: () {
                                 provider.deleteCategory(index);
                               },
@@ -200,9 +251,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                                   children: [
                                     Expanded(
                                       child: TextFormField(
-                                        key: ValueKey(cat["sub"][subIndex]),
-                                        initialValue:
-                                        cat["sub"][subIndex],
+                                        //key: ValueKey(cat["sub"][subIndex]),
+                                       // initialValue:
+                                controller: cat["subcontrollers"][subIndex],
                                         decoration: InputDecoration(
                                           hintText: "Sub Category",
                                           border: OutlineInputBorder(
@@ -226,7 +277,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                                     ),
 
                                     IconButton(
-                                      icon: const Icon(Icons.delete),
+                                      icon: const Icon(Icons.delete,color: Colors.red,),
                                       onPressed: () {
                                         provider.deleteSubCategory(
                                             index, subIndex);
@@ -245,9 +296,10 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   }),
 
                   ElevatedButton(
+                    style:ElevatedButton.styleFrom(backgroundColor: AppColors.themeColor),
                     onPressed: () {
                       if(provider.categories.isNotEmpty &&
-                      provider.categories.last["title"].toString().trim().isEmpty){
+                          (provider.categories.last["title"]??"").toString().trim().isEmpty){
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Enter Category first")),
                         );
@@ -255,26 +307,58 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                       }
                       provider.addCategory();
                     },
-                    child: const Text("Add Category"),
+                    child: const Text("Add Category",style: TextStyle(color: Colors.white),
                   ),
+                    )
                 ],
               ),
             ),
 
             /// SAVE BUTTON
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.themeColor,
+              ),
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                try {
+                  print("SAVE BUTTON CLICKED");
+
+                  final isValid = _categoryFormKey.currentState?.validate() ?? false;
+                  print("FORM VALID = $isValid");
+
+                  if (!isValid) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please fill all required fields")),
+                    );
+                    return;
+                  }
+
                   await provider.saveCategories();
+
+                  print("SAVE COMPLETED");
+
+                  if (!mounted) return;
+
                   provider.clearCategories();
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Saved Successfully")),
                   );
+                } catch (e) {
+                  print("SAVE ERROR = $e");
+
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Save failed: $e")),
+                  );
                 }
               },
-              child: const Text("Save"),
-            ),
+              child: const Text(
+                "Save",
+                style: TextStyle(color: Colors.white),
+              ),
+            )
           ],
         ),
       ),
@@ -283,71 +367,118 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
   /// CALL STATUS CARD
   Widget _callStatusCard(SettingsProvider provider) {
-    return Container(
-      width: 350,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black),
-      ),
-      child: Column(
-        children: [
-          const Text("Call Status"),
-
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: statusController,
-                  decoration: InputDecoration(
-                    hintText: "Enter status",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+    GlobalKey<FormState> key;
+    return Form(
+      key: _callStatusformKey,
+      child: Container(
+        width: 350,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.black),
+        ),
+        child: Column(
+          children: [
+            const Text("Call Status",style: TextStyle(fontSize:20),),
+const SizedBox(height: 30,),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: statusController,
+                    decoration: InputDecoration(
+                      hintText: "Enter status",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  if (
-                  statusController.text.isNotEmpty){
-                    provider.callStatus.add(statusController.text);
-                    statusController.clear();
-                    provider.notifyListeners();
-                  }
-                },
-              ),
-            ],
-          ),
-
-          Expanded(
-            child: ListView(
-              children: provider.callStatus
-                  .map((e) => ListTile(title: Text(e)))
-                  .toList(),
+                IconButton(
+                  icon: const Icon(Icons.add,color: Colors.blue),
+                  onPressed: () {
+                    if (
+                    statusController.text.isNotEmpty){
+                      provider.addCallStatus(statusController.text);
+                      statusController.clear();
+                      provider.notifyListeners();
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete,color: Colors.red,),
+                  onPressed: () {
+                  statusController.dispose();
+                  },
+                ),
+              ],
             ),
-          ),
 
-          ElevatedButton(
-            onPressed: () async {
-              await provider.saveCategories();
-              provider.clearCategories();
-            },
-            child: const Text("Save"),
+            Expanded(
+              child: ListView(
+                children: provider.callStatus
+                    .map((e) => ListTile(title: Text(e)))
+                    .toList(),
+              ),
+            ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.themeColor,
           ),
-        ],
+          onPressed: () async {
+            try {
+              if (provider.callStatus.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Add at least one status")),
+                );
+                return;
+              }
+
+              await provider.saveCallStatus();
+
+              provider.clearCallStatus();
+
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Saved Successfully")),
+              );
+            } catch (e) {
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Save failed: $e")),
+              );
+            }
+          },
+          child: const Text(
+            "Save",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _box(String text) {
     return Container(
+      width: 150,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
+        color:  Colors.white,
+        boxShadow:[
+          BoxShadow(
+            color: Colors.blueGrey.withBlue(1),
+            blurRadius: 3,
+            spreadRadius: 1,
+            offset: const Offset(2,3),
+          )
+        ] ,
         border: Border.all(),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Text(text),
     );
