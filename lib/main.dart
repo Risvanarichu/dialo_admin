@@ -1,6 +1,7 @@
 
 import 'package:dialo_admin/loginpage.dart';
-import 'package:dialo_admin/providers/mainProvider.dart';
+// import 'package:dialo_admin/loginprovider.dart';
+import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/addUser.dart';
 // import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
@@ -31,11 +32,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_)=>MainProvider())
+        ChangeNotifierProvider(create: (_)=>Loginprovider())
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:UsersPage(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

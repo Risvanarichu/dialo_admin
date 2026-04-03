@@ -1,6 +1,9 @@
 import 'dart:ui';
+import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
 
 
 class LoginPage extends StatefulWidget {
@@ -10,35 +13,11 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 class _LoginPageState extends State<LoginPage>{
-  bool isChecked = false;
-  bool isPasswordHidden = true;
+
   final _formKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
 
-
-
-
-  @override
-  void initState (){
-    super.initState();
-    _loadUserData();
-
-  }
-  void _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    bool remember = prefs.getBool('remember')?? false;
-
-    if(remember){
-      setState(() {
-        isChecked = true;
-        emailController.text = prefs.getString('email') ??'';
-        passwordController.text = prefs.getString("password") ?? '';
-      });
-    }
-  }
   Widget build(BuildContext context){
+    final provider = Provider.of<Loginprovider>(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -103,7 +82,7 @@ class _LoginPageState extends State<LoginPage>{
                                       label: "Email/Username",
                                       hint: "Enter your Email",
                                       icon: Icons.email_outlined,
-                                      controller: emailController,
+                                      controller: provider.emailController,
                                       validator: (value) {
                                         if (value == null ||
                                             value.isEmpty) {
@@ -127,8 +106,8 @@ class _LoginPageState extends State<LoginPage>{
                                       label: "Password",
                                       hint: "Enter your Password",
                                       icon: Icons.lock_outline_rounded,
-                                      isPassword: isPasswordHidden,
-                                      controller: passwordController,
+                                      isPassword:provider.isPasswordHidden,
+                                      controller: provider.passwordController,
                                       validator: (value){
                                         if(value == null|| value.isEmpty){
                                           return "Password is required";
@@ -136,21 +115,26 @@ class _LoginPageState extends State<LoginPage>{
                                         if(value.length<6){
                                           return"Password must be at least 6 characters";
                                         }
-                                        if(!RegExp(r'[8-9]').hasMatch(value)){
-                                          return 'Password must contain atleast one number';
+                                        if(!RegExp(r'[A-Z]').hasMatch(value)){
+                                          return "Must Contain at least 1 uppercase letter";
+                                        }
+                                        if(!RegExp(r'[a-z]').hasMatch(value)){
+                                          return 'Must contain at least 1 lowercase  letter';
+                                        }
+                                        if(!RegExp(r'[!@#$%^&*(),.?":{}\|<>]').hasMatch(value)){
+                                          return "Must contain at least 1 special character";
+                                        }
+                                        if(!RegExp(r'[0-9]').hasMatch(value)){
+                                          return 'Password must contain at least one number';
                                         }
                                         return null;
                                       },
                                       labelSize: 18,
                                       labelWeight: FontWeight.bold,
                                       suffixIcon: GestureDetector(
-                                        onTap: (){
-                                          setState(() {
-                                            isPasswordHidden = !isPasswordHidden;
-                                          });
-                                        },
+                                        onTap: provider.togglePassword,
                                         child: Icon(
-                                          isPasswordHidden
+                                         provider.isPasswordHidden
                                               ?Icons.visibility_off
                                               :Icons.visibility,
                                           color: Colors.indigo[900],
@@ -173,14 +157,9 @@ class _LoginPageState extends State<LoginPage>{
                                         ),
                                         SizedBox(width: 8,),
                                         GestureDetector(
-                                          onTap: (){
-                                            setState((){
-                                              isChecked = !isChecked;
-                                            });
-                                          },
+                                          onTap: provider.toggleRemember,
                                           child: Icon(
-                                            isChecked
-
+                                            provider.isChecked
                                                 ? Icons.check_box
                                                 : Icons.check_box_outline_blank_outlined,
                                             color: Colors.indigo[900],
@@ -210,16 +189,8 @@ class _LoginPageState extends State<LoginPage>{
                                               ),
                                               onPressed: () async {
                                                 if(_formKey.currentState!.validate()){
-                                                  final prefs = await SharedPreferences.getInstance();
+                                                 bool success = await provider.login();
 
-                                                  if (isChecked){
-                                                    await prefs.setString("email", emailController.text);
-                                                    await prefs.setBool('remember', true);
-                                                  }else {
-                                                    await prefs.remove('email');
-                                                    await prefs.remove('remember');
-                                                  }
-                                                  print("Login success");
                                                 }
                                               },
                                               child: Text(
@@ -237,7 +208,9 @@ class _LoginPageState extends State<LoginPage>{
                                         SizedBox(
                                           height: 40,
                                           child: ElevatedButton.icon(
-                                              onPressed: (){},
+                                              onPressed: () {
+
+                                              },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.blue[900],
                                                 padding: EdgeInsets.all(10),
