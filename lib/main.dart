@@ -1,14 +1,12 @@
 
-import 'package:dialo_admin/loginpage.dart';
-// import 'package:dialo_admin/loginprovider.dart';
-import 'package:dialo_admin/providers/loginprovider.dart';
-import 'package:dialo_admin/views/agents/addUser.dart';
 // import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
+import 'package:dialo_admin/views/leads/leads_list.dart';
+import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
 import 'package:dialo_admin/views/report/reportpage.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +30,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_)=>Loginprovider())
+        ChangeNotifierProvider(create: (_)=>SettingsProvider()),
+        ChangeNotifierProvider(create: (_)=> MainProvider()),
+        ChangeNotifierProvider(create: (_)=> LeadProvider())
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

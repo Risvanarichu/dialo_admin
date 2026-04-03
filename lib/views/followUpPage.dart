@@ -14,20 +14,92 @@ class FollowUpPage extends StatefulWidget {
 
 class _FollowUpPageState extends State<FollowUpPage> {
 
+  String selectedFilter = "All";
+  String searchQuery = "";
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    Future.microtask((){
-      context.read<LeadProvider>().fetchLeads();
+    Future.microtask(() {
+      context.read<LeadProvider>().listenLeads();
     });
   }
   @override
+  void dispose() {
+    context.read<LeadProvider>().leadSubscription?.cancel();
+    super.dispose();
+  }
+
+  int dueTodayCount(List<LeadModel>leads){
+   final now = DateTime.now();
+   return leads.where((lead){
+     return lead.followupDate.year == now.year &&
+     lead.followupDate.month == now.month &&
+     lead.followupDate.day == now.day &&
+     lead.followupstatus != "COMPLETED";
+   }).length;
+  }
+  int thisWeekCount(List<LeadModel> leads) {
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+    return leads.where((lead) {
+      return !lead.followupDate.isBefore(startOfWeek) &&
+          !lead.followupDate.isAfter(endOfWeek) &&
+          lead.followupstatus != "COMPLETED";
+    }).length;
+  }
+
+  int completedCount(List<LeadModel> leads) {
+    return leads.where((lead) => lead.followupstatus == "COMPLETED").length;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final provider = context.watch<LeadProvider>();
+    List<LeadModel> sortedLeads = List.from(provider.leads);
+
+    sortedLeads.sort((a, b) => b.priorityRank.compareTo(a.priorityRank));
+    List<LeadModel> filteredLeads = sortedLeads.where((lead) {
+      final now = DateTime.now();
+
+      if (selectedFilter != "Completed" && lead.followupstatus == "COMPLETED") {
+        return false;
+      }
+
+      bool matchesFilter = true;
+
+      if (selectedFilter == "Due Today") {
+        matchesFilter =
+            lead.followupDate.year == now.year &&
+                lead.followupDate.month == now.month &&
+                lead.followupDate.day == now.day;
+      } else if (selectedFilter == "This Week") {
+        final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+        matchesFilter =
+            !lead.followupDate.isBefore(startOfWeek) &&
+                !lead.followupDate.isAfter(endOfWeek);
+      } else if (selectedFilter == "Completed") {
+        matchesFilter = lead.followupstatus == "COMPLETED";
+      }
+
+      /// SEARCH
+      bool matchesSearch =
+          lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.agent.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.priority.toLowerCase().contains(searchQuery.toLowerCase());
+
+      return matchesFilter && matchesSearch;
+    }).toList();
+    print("Loading: ${provider.isLoading}");
+    print("Leads count: ${provider.leads.length}");
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
 
-      /// ✅ FIXED SCROLL ISSUE
+      ///  FIXED SCROLL ISSUE
       body:provider.isLoading
         ?const Center(child: CircularProgressIndicator())
         :SingleChildScrollView(
@@ -36,20 +108,100 @@ class _FollowUpPageState extends State<FollowUpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "FOLLOW-UP",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
+              /// HEADER + FILTER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "FOLLOW-UP",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.filter_list, size: 28),
+                    onSelected: (value) {
+                      setState(() {
+                        selectedFilter = value;
+                      });
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: "All",
+                        child: Text("All"),
+                      ),
+                      const PopupMenuItem(
+                        value: "Due Today",
+                        child: Text("Due Today"),
+                      ),
+                      const PopupMenuItem(
+                        value: "This Week",
+                        child: Text("This Week"),
+                      ),
+                      const PopupMenuItem(
+                        value: "Completed",
+                        child: Text("Completed"),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+
+
+
               const SizedBox(height: 20),
 
               /// TOP CARDS
               Row(
                 children: [
-                  dashboardCard("Due Today", "23"),
+                  dashboardCard(
+                    "Due Today",
+                    dueTodayCount(provider.leads).toString(),
+                  ),
                   const SizedBox(width: 10),
-                  dashboardCard("This Week", "15"),
+
+                  dashboardCard(
+                    "This Week",
+                    thisWeekCount(provider.leads).toString(),
+                  ),
                   const SizedBox(width: 10),
-                  dashboardCard("Completed", "50"),
+
+                  dashboardCard(
+                    "Completed",
+                    completedCount(provider.leads).toString(),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 15,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width:250,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextField(
+                      cursorColor: Colors.black,
+                        decoration: const InputDecoration(
+                          hintText: "search",
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10,vertical: 13),
+                        ),
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value;
+                        });
+
+                      },
+                    ),
+                  ),
+
                 ],
               ),
 
@@ -62,20 +214,21 @@ class _FollowUpPageState extends State<FollowUpPage> {
                   border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(8),
                 ),
+                child: filteredLeads.isEmpty
+                    ? const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: Text("No Follow-Ups Found")),
+                )
+                    : Column(
+                  children: [
+                    tableHeader(),
+                    const Divider(height: 1),
 
-                    /// ROWS
-                   child:  provider.leads.isEmpty
-                    ?const Center(child: Text("No Follow-Ups Found"),)
-                    :Column(
-                      children: [
-                        tableHeader(),
-                        const Divider(height: 1,),
-
-                  ...provider.leads.map((lead){
-                    return tableRowDynamic(context,lead);
-                  }).toList(),
-                      ],
-                    ),
+                    ...filteredLeads.map((lead) {
+                      return tableRowDynamic(context, lead);
+                    }).toList(),
+                  ],
+                ),
               ),
             ],
           ),
@@ -117,7 +270,7 @@ Widget tableHeader() {
     child: Row(
       children: const [
         tableCell("LEAD NAME", isHeader: true),
-        tableCell("ADDED_TIME", isHeader: true),
+        tableCell("FOLLOW_UP_DATE", isHeader: true),
         tableCell("TIME", isHeader: true),
         tableCell("PRIORITY", isHeader: true),
         tableCell("AGENT", isHeader: true),
@@ -129,11 +282,19 @@ Widget tableHeader() {
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
-  Color getPrioritycolor(){
-    switch(lead.priority){
-      case"High":
+
+  final priority = lead.autoPriority;
+  Color color(){
+    if(priority == "High") return Colors.red;
+    if(priority == "Medium") return Colors.orange;
+    return Colors.green;
+  }
+
+  Color getPrioritycolor() {
+    switch (priority) {
+      case "High":
         return Colors.red;
-      case"Medium":
+      case "Medium":
         return Colors.orange;
       default:
         return Colors.green;
@@ -145,9 +306,10 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
       child: Row(
         children: [
           tableCell(lead.name),
-          tableCell(DateFormat('hh:mm a').format(lead.addedTime)),
+
+          tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
           tableCell(lead.time),
-          tableCell(lead.priority,color: getPrioritycolor(),),
+          tableCell(priority,color: getPrioritycolor(),),
           tableCell(lead.agent),
 
           Expanded(child: Wrap(
@@ -161,15 +323,30 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
               ),
 
               GestureDetector(
-                onTap: ()async{
-                  DateTime? picked = await showDatePicker(context: context,
-                      initialDate:DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2030),
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2030),
                   );
-                if(picked != null){
-                  context.read<LeadProvider>().rescheduleLead(lead.id,picked);
-                }
+
+                  if (pickedDate != null) {
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+
+                    String formattedTime = pickedTime != null
+                        ? pickedTime.format(context)
+                        : DateFormat('hh:mm a').format(pickedDate);
+
+                    context.read<LeadProvider>().rescheduleLead(
+                      lead.id,
+                      pickedDate,
+                      formattedTime,
+                    );
+                  }
                 },
                 child: actionButton("Reschedule", Colors.blue),
               )
