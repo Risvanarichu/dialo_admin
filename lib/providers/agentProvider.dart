@@ -318,6 +318,7 @@ class MainProvider extends ChangeNotifier {
     emailController.clear();
     employeeController.clear();
     roleController.clear();
+    passwordController.clear();
 
     editingId = null;
     isEdit = false;

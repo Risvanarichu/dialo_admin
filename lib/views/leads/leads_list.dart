@@ -168,7 +168,7 @@ class Leads extends StatelessWidget {
                             padding: const EdgeInsets.all(20),
                             child: Center(
                               child: Text(
-                                "No results for '${provider.searchQuery}'",
+                                "N o results for '${provider.searchQuery}'",
                                 style: TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                             ),

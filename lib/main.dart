@@ -2,6 +2,7 @@
 // import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/providers/reportProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
@@ -33,7 +34,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
         ChangeNotifierProvider(create: (_)=> MainProvider()),
-        ChangeNotifierProvider(create: (_)=> LeadProvider())
+        ChangeNotifierProvider(create: (_)=> LeadProvider()),
+        ChangeNotifierProvider(create: (_)=> ReportProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
