@@ -89,7 +89,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
       /// SEARCH
       bool matchesSearch =
           lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              lead.agent.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.assignedAgent.toLowerCase().contains(searchQuery.toLowerCase()) ||
               lead.priority.toLowerCase().contains(searchQuery.toLowerCase());
 
       return matchesFilter && matchesSearch;
@@ -310,7 +310,7 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
           tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
           tableCell(lead.time),
           tableCell(priority,color: getPrioritycolor(),),
-          tableCell(lead.agent),
+          tableCell(lead.assignedAgent),
 
           Expanded(child: Wrap(
             spacing: 5,

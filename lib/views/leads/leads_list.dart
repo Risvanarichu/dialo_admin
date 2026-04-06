@@ -244,7 +244,7 @@ Widget tableRow(LeadModel lead) {
         Expanded(child: alignCenter(lead.email)),
         Expanded(child: Center(child: statusChip(lead.status))),
         Expanded(child: alignCenter(lead.source)),
-        Expanded(child: alignCenter(lead.agent)),
+        Expanded(child: alignCenter(lead.assignedAgent)),
       ],
     ),
   );

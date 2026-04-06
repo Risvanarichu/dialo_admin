@@ -330,13 +330,13 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
             ),
           ),
 
-          ElevatedButton(
-            onPressed: () async {
-              await provider.saveCategories();
-              provider.clearCategories();
-            },
-            child: const Text("Save"),
-          ),
+          // ElevatedButton(
+          //   onPressed: () async {
+          //     await provider.saveCategories();
+          //     provider.clearCategories();
+          //   },
+          //   child: const Text("Save"),
+          // ),
         ],
       ),
     );

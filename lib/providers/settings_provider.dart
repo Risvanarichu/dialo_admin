@@ -13,16 +13,20 @@ final TextEditingController categoryController = TextEditingController();
   }
 
   Future<void> saveCategories() async {
-    List<Map<String, dynamic>> clearCategories =
-    categories.map((e) {
-      return {
-        "title": e["title"],
-        "sub": e["sub"],
-      };
-    }).toList();
+    final docRef = db.collection("LEAD_SETTINGS").doc("categories");
+    final doc = await docRef.get();
 
-    await db.collection("LEAD_SETTINGS").doc("categories").set({
-      "categoryList": clearCategories,
+    List<Map<String, dynamic>> existing = [];
+
+    if (doc.exists) {
+      existing = List<Map<String, dynamic>>.from(
+        doc.data()?["categoryList"] ?? [],
+      );
+    }
+    final updatedList = [...existing, ...categories];
+
+    await docRef.set({
+      "categoryList": updatedList,
       "callStatus": callStatus,
     });
   }

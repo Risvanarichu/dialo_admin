@@ -12,7 +12,7 @@ class LeadModel {
   String followupTime;
   String time;
   String priority;
-  String agent;
+  String assignedAgent;
   String followupstatus;
 
   LeadModel({
@@ -26,7 +26,7 @@ class LeadModel {
     required this.followupTime,
     required this.time,
     required this.priority,
-    required this.agent,
+    required this.assignedAgent,
     required this.followupstatus,
   });
 
@@ -57,7 +57,7 @@ class LeadModel {
       time: map['FOLLOW_UP_TIME']?.toString() ??
           DateFormat('hh:mm a').format(followDate),
       priority: map['PRIORITY']?.toString() ?? "Medium",
-      agent: map['ADDED_BY_ID']?.toString().toUpperCase() ?? "No Agent",
+      assignedAgent: map['ADDED_BY_ID']?.toString().toUpperCase() ?? "No Agent",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
 
     );

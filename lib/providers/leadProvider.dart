@@ -16,6 +16,7 @@ class LeadProvider extends ChangeNotifier{
   String selectedSources = "All Sources";
   String searchQuery = "";
 
+
   LeadProvider(){
     listenLeads();
   }
@@ -109,6 +110,16 @@ class LeadProvider extends ChangeNotifier{
 
       notifyListeners();
     }
+
+  Future<void> assignAgent(String leadId, String agentId) async {
+    try {
+      await fbd.collection('LEADS').doc(leadId).update({
+        "ASSIGNED_AGENT_ID": agentId,
+      });
+    } catch (e) {
+      print("Assign Error: $e");
+    }
+  }
 
     void updateStatus(String status) {
       selectedStatus = status;
