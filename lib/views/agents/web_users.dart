@@ -1,239 +1,243 @@
 import 'package:flutter/material.dart';
 
+
 class UsersPage extends StatelessWidget {
   const UsersPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
-      body:   SingleChildScrollView(
-  child: Padding(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      children: [
-
-        
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: Colors.grey.shade100,
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
           children: [
 
-            const Text(
-              "USERS",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            
-            Container(
-              width: 350,
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.black26),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: "SEARCH",
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
+            /// TOP BAR
             Row(
-              children: const [
-                Icon(Icons.notifications_none, size: 28),
-                SizedBox(width: 20),
-                CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: Icon(Icons.person, color: Colors.white),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "USERS",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 8),
-                Text("PROFILE")
+
+                /// SEARCH
+                Container(
+                  width: 300,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: const TextField(
+                    decoration: InputDecoration(
+                      hintText: "Search",
+                      prefixIcon: Icon(Icons.search),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+
+                /// PROFILE
+                Row(
+                  children: const [
+                    Icon(Icons.notifications_none),
+                    SizedBox(width: 20),
+                    CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                    SizedBox(width: 8),
+                    Text("PROFILE"),
+                  ],
+                )
               ],
-            )
+            ),
+
+            const SizedBox(height: 20),
+
+            /// ADD USER BUTTON
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                onPressed: () {},
+                child: const Text(
+                  "Add User",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            /// TABLE CONTAINER
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+
+                  /// HEADER
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12)),
+                    ),
+                    child: const Row(
+                      children: [
+                        TableHeader("NAME", flex: 2),
+                        TableHeader("Role", flex: 2),
+                        TableHeader("Email", flex: 3),
+                        TableHeader("Status", flex: 2),
+                        TableHeader("ACTIONS", flex: 2),
+                      ],
+                    ),
+                  ),
+
+                  /// ROWS
+                  buildRow("Shibina", "Manager", "ygyhyu@gmail.com", true),
+                  buildRow("Shahid", "Agent", "gygtgy@gmail.com", false),
+                  buildRow("Shruthy", "Admin", "s23@gmail.com", true),
+                  buildRow("Anas", "Agent", "undujiimik@gmail.com", true),
+                  buildRow("Jasim", "Manager", "abcdkoko@gmail.com", false),
+                  buildRow("Rahul", "Agent", "rahul@gmail.com", true),
+                ],
+              ),
+            ),
           ],
         ),
-
-        const SizedBox(height: 20),
-
-        const Divider(),
-
-        const SizedBox(height: 20),
-
-        /// ADD USER BUTTON
-        Align(
-          alignment: Alignment.centerRight,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 30, vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-            ),
-            onPressed: () {},
-            child: const Text(
-              "Add User",
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        /// TABLE WITH SCROLL
-        Container(
-          height: 400,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.black26),
-          ),
-          child: Column(
-            children: [
-
-              /// HEADER
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(flex: 2, child: Text("NAME",style: TextStyle(fontWeight: FontWeight.bold))),
-                    Expanded(child: Text("Role",style: TextStyle(fontWeight: FontWeight.bold))),
-                    Expanded(flex: 2, child: Text("Email",style: TextStyle(fontWeight: FontWeight.bold))),
-                    Expanded(child: Text("Status",style: TextStyle(fontWeight: FontWeight.bold))),
-                    Expanded(child: Text("ACTIONS",style: TextStyle(fontWeight: FontWeight.bold))),
-                  ],
-                ),
-              ),
-
-              const Divider(height: 1),
-
-              /// USER LIST SCROLL
-              Expanded(
-                child: ListView(
-                  children: const [
-                    UserRow("Shibina", "Manager", "ygyhyu@gmail.com", true),
-                    UserRow("Shahid", "Agent", "gygtgy@gmail.com", false),
-                    UserRow("Shruthy", "Admin", "s23@gmail.com", true),
-                    UserRow("Anas", "Agent", "undujimiik@gmail.com", true),
-                    UserRow("Jasim", "Manager", "abcdkoko@gmail.com", false),
-                    UserRow("Rahul", "Agent", "rahul@gmail.com", true),
-                    UserRow("Afsal", "Manager", "afsal@gmail.com", false),
-                  ],
-                ),
-              )
-
-            ],
-          ),
-        )
-      ],
-    ),
-  ),
-),
+      ),
     );
   }
 }
 
-class UserRow extends StatelessWidget {
-  final String name;
-  final String role;
-  final String email;
-  final bool active;
+/// HEADER
+class TableHeader extends StatelessWidget {
+  final String text;
+  final int flex;
 
-  const UserRow(this.name, this.role, this.email, this.active, {super.key});
+  const TableHeader(this.text, {super.key, required this.flex});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-
-             
-              Expanded(
-                flex: 2,
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      radius: 14,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(name, style: const TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ),
-
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(role, textAlign: TextAlign.center),
-                ),
-              ),
-
-             
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Text(email),
-                ),
-              ),
-
-              
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade200,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    active ? "Active" : "Inactive",
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-
-             
-              Expanded(
-                child: Row(
-                  children: [
-
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.edit,
-                          size: 18, color: Colors.blue),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    const Icon(Icons.block, color: Colors.red)
-
-                  ],
-                ),
-              )
-            ],
+    return Expanded(
+      flex: flex,
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
           ),
         ),
-        const Divider(height: 1)
-      ],
+      ),
     );
   }
+}
+
+/// ROW
+Widget buildRow(
+    String name, String role, String email, bool isActive) {
+  return Container(
+    height: 60, // ✅ SAME HEIGHT FOR ALL ROWS
+    decoration: BoxDecoration(
+      border: Border(
+        bottom: BorderSide(color: Colors.grey.shade300), // ✅ DIVIDER
+      ),
+    ),
+    child: Row(
+      children: [
+
+        /// NAME
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Colors.blue,
+                ),
+                const SizedBox(width: 8),
+                Text(name),
+              ],
+            ),
+          ),
+        ),
+
+        /// ROLE
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: Container(
+              height: 28, // ✅ SAME SIZE
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(role),
+            ),
+          ),
+        ),
+
+        /// EMAIL
+        Expanded(
+          flex: 3,
+          child: Center(child: Text(email)),
+        ),
+
+        /// STATUS
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: Container(
+              height: 28, // ✅ SAME SIZE
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Colors.blue.shade200
+                    : Colors.grey.shade400,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(isActive ? "Active" : "Inactive"),
+            ),
+          ),
+        ),
+
+        /// ACTIONS
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.edit, color: Colors.blue),
+                SizedBox(width: 10),
+                Icon(Icons.block, color: Colors.red),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
