@@ -1,7 +1,8 @@
 
-// import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/loginpage.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
@@ -16,6 +17,7 @@ import 'firebase_options.dart';
 import 'views/calls.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -32,7 +34,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
         ChangeNotifierProvider(create: (_)=> MainProvider()),
-        ChangeNotifierProvider(create: (_)=> LeadProvider())
+        ChangeNotifierProvider(create: (_)=> LeadProvider()),
+        ChangeNotifierProvider(create: (_) => Loginprovider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

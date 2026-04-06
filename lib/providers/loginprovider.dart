@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialo_admin/views/usermodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Loginprovider extends ChangeNotifier{
   bool isChecked = false;
@@ -16,70 +19,88 @@ class Loginprovider extends ChangeNotifier{
 
   List<Usermodel> userList = [];
 
-  Future<void> loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    bool remember = prefs.getBool('remember') ?? false;
-
-    if(remember){
-      isChecked = true;
-      emailController.text = prefs.getString('email') ??'';
-      // passwordController.text = prefs.getString("password") ?? '';
-    }
-    notifyListeners ();
-  }
-  void toggleRemember(){
-    isChecked = !isChecked;
-    notifyListeners();
-  }
-  void togglePassword(){
-    isPasswordHidden = !isPasswordHidden;
-    notifyListeners();
-  }
-
   Future<bool> login() async {
     final prefs = await SharedPreferences.getInstance();
+
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      final user = userCredential.user;
+      final querySnapshot = await _firestore
+          .collection('AGENT')
+          .where('EMAIL', isEqualTo: emailController.text.trim())
+          .where('PASSWORD', isEqualTo: passwordController.text.trim())
+          .where('ROLE', isEqualTo: 'ADMIN')
+          .get();
 
-      if (user != null) {
-        print("Login success: ${user.email}");
+      if (querySnapshot.docs.isNotEmpty) {
+        Map<String, dynamic> userMap =
+        querySnapshot.docs.first.data() as Map<String, dynamic>;
 
-        if (isChecked) {
-          await prefs.setString("email", emailController.text);
-          // await prefs.setString('password', passwordController.text);
-          await prefs.setBool('remember', true);
-        } else {
-          await prefs.clear();
+        print("Login Success: ${emailController.text}");
 
-        }
-        final doc = await _firestore
-            .collection("USERS")
-            .doc(user.uid)
-            .get();
+        await prefs.setBool('remember', isChecked);
+        await prefs.setString('email', userMap['EMAIL'] ?? '');
+        await prefs.setString('password', userMap['PASSWORD'] ?? '');
+        await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+        await prefs.setString('name', userMap['NAME'] ?? '');
+        await prefs.setString('image', userMap['IMAGE'] ?? '');
 
-        if (!doc.exists) {
-          await createUserInDatabase(user);
-        }else{
-          print("User already exists in Firestore");
-        }
+        await fetchUsers();
+
         return true;
+      } else {
+        print("Login Failed: Invalid credentials");
+        return false;
       }
-    }on FirebaseAuthException catch (e) {
-      print("Login success: ${e.message}");
+    } catch (e) {
+      print("Unexpected Error: $e");
+      return false;
     }
-    return false;
   }
-  Future<void> createUserInDatabase(User user) async{
-    await _firestore.collection("USERS").doc(user.uid).set({
-      'email': user.email,
-      'createAt': Timestamp.now(),
-    });
-    // print('User created in database');
+
+  Future<User?> signInWithGoogle()async{
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null){
+        print("Google Sign-In cancelled");
+        return null;
+      }
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken:  googleAuth.accessToken,
+        idToken:  googleAuth.idToken,
+      );
+
+      final userCredential=
+       await _auth.signInWithCredential(credential);
+
+       final user = userCredential.user;
+
+      if (user == null ) return null;
+
+      await _saveUserToFirestore(user);
+      await fetchUsers();
+
+      print("Google Login Success: ${user.email}");
+      return user;
+    }catch (e){
+      print("Google Error: $e");
+      return null;
+    }
+  }
+  Future<void> _saveUserToFirestore(User user) async{
+    final docRef = _firestore.collection("USERS").doc(user.uid);
+
+        final doc = await docRef.get();
+
+    if (!doc.exists) {
+      await docRef.set({
+        'email' : user.email,
+        'uid': user.uid,
+        'createdAt' : Timestamp.now(),
+      });
+      print("User saved");
+    }
   }
 
   Future<void> fetchUsers() async {
@@ -95,9 +116,61 @@ class Loginprovider extends ChangeNotifier{
       print("Error fetching users: $e");
     }
   }
+
+  void toggleRemember(){
+    isChecked = !isChecked;
+    notifyListeners();
+  }
+  void togglePassword(){
+    isPasswordHidden = !isPasswordHidden;
+    notifyListeners();
+  }
+    Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    bool remember = prefs.getBool('remember') ?? false;
+
+    if(remember){
+      isChecked = true;
+      emailController.text = prefs.getString('email') ??'';
+      // passwordController.text = prefs.getString("password") ?? '';
+    }
+    notifyListeners ();
+  }
+
   void dispose(){
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 }
+
+
+
+
+      //   final doc = await _firestore
+      //       .collection("USERS")
+      //       .doc(user.uid)
+      //       .get();
+      //
+      //   if (!doc.exists) {
+      //     await createUserInDatabase(user);
+      //   }
+      //   await fetchUsers();
+      //   return true;
+      // }
+
+  // Future<void> createUserInDatabase(User user) async{
+  //   await _firestore.collection("USERS").doc(user.uid).set({
+  //     'email': user.email,
+  //     'createdAt': Timestamp.now(),
+  //   });
+    // print('User created in database');
+  // }
+
+
+
+
+
+
+
