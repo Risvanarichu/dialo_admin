@@ -7,6 +7,7 @@ import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
+import 'package:dialo_admin/views/followUpPage.dart';
 import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
 import 'package:dialo_admin/views/report/reportpage.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:FollowUpPage(),
+        home:LeadSettingsScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );
