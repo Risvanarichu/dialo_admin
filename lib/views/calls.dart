@@ -106,18 +106,18 @@ class _CallsState extends State<Calls> {
                         horizontal: 10,vertical: 12
                       ),
                       color: Colors.grey.shade100,
-                      child: Row(
-                        children: const[
-                          Expanded(child: Text("Caller Name")),
-                          Expanded(child: Text("Phone Number")),
-                          Expanded(child: Text("Call Type")),
-                          Expanded(child: Text("Status")),
-                          Expanded(child: Text("Duration")),
-                          Expanded(child: Text("Date")),
-                          Expanded(child: Text("Assigned Agent")),
-                          Expanded(child: Text("Actions")),
-                        ],
-                      ),
+                     child: Row(
+  children: const[
+    Expanded(child: Center(child: Text("Caller Name"))),
+    Expanded(child: Center(child: Text("Phone Number"))),
+    Expanded(child: Center(child: Text("Call Type"))),
+    Expanded(child: Center(child: Text("Status"))),
+    Expanded(child: Center(child: Text("Duration"))),
+    Expanded(child: Center(child: Text("Date"))),
+    Expanded(child: Center(child: Text("Assigned Agent"))),
+    Expanded(child: Center(child: Text("Actions"))),
+  ],
+),
                     ),
                     Expanded(
                         child: ListView(
@@ -178,10 +178,12 @@ class CallList extends StatelessWidget {
       ),
       child:  Row(
         children: [
-          Expanded(child: Text(name)),
-          Expanded(child: Text(phone)),
-          Expanded(child: Text(type)),
-          Expanded(child: Container(
+          Expanded(child: Center(child: Text(name))),
+          Expanded(child: Center(child: Text(phone))),
+          Expanded(child: Center(child: Text(type))),
+          Expanded(child: Center(child: Container( 
+            width: 100,
+            
             padding: const EdgeInsets.symmetric(
               horizontal: 10,vertical: 5),
             decoration: BoxDecoration(
@@ -196,15 +198,17 @@ class CallList extends StatelessWidget {
                   ?Colors.green
                   :Colors.red,
               fontWeight: FontWeight.w600,
+              ),
             ),
-            ),
+          ),),
           ),
-          ),
-          Expanded(child: Text(duration)),
-          Expanded(child: Text(date)),
-          Expanded(child: Text(agent)),
+          Expanded(child: Center(child: Text(duration))),
+    Expanded(child: Center(child: Text(date))),
+    Expanded(child: Center(child: Text(agent))),
+
 
           Expanded(child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.phone,size: 18,),
               SizedBox(width: 10,),
