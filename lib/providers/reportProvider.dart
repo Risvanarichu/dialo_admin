@@ -33,10 +33,10 @@ class ReportProvider extends ChangeNotifier {
     for (var doc in snapshot.docs) {
       final lead = doc.data() as Map<String, dynamic>;
 
-      String agent = (lead['ASSIGNED_AGENT'] == null ||
-          lead['ASSIGNED_AGENT'] == "")
+      String agent = (lead['ADDED_BY_ID'] == null ||
+          lead['ADDED_BY_ID'] == "")
           ? "Unassigned"
-          : lead['ASSIGNED_AGENT'];
+          : lead['ADDED_BY_ID'];
 
       String status = (lead['STATUS'] ?? "").toString();
 

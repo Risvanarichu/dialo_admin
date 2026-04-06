@@ -2,6 +2,7 @@ import 'package:dialo_admin/models/leadModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/agentProvider.dart';
 import '../../providers/leadProvider.dart';
 
 class Leads extends StatelessWidget {
@@ -175,7 +176,7 @@ class Leads extends StatelessWidget {
                           )
                               : Column(
                             children: provider.allLeads
-                                .map((e) => tableRow(e))
+                                .map((e) => tableRow(e,context))
                                 .toList(),
                           ),
                         ],
@@ -227,7 +228,10 @@ Widget tableHead(String text) {
   );
 }
 
-Widget tableRow(LeadModel lead) {
+Widget tableRow(LeadModel lead, BuildContext context) {
+  final mainProvider = context.read<MainProvider>();
+  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
+
   return Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
@@ -244,7 +248,7 @@ Widget tableRow(LeadModel lead) {
         Expanded(child: alignCenter(lead.email)),
         Expanded(child: Center(child: statusChip(lead.status))),
         Expanded(child: alignCenter(lead.source)),
-        Expanded(child: alignCenter(lead.assignedAgent)),
+        Expanded(child: alignCenter(agentName)),
       ],
     ),
   );

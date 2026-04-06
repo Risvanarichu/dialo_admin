@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/agentProvider.dart';
+
 
 class FollowUpPage extends StatefulWidget {
   const FollowUpPage({super.key});
@@ -89,7 +91,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
       /// SEARCH
       bool matchesSearch =
           lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              lead.assignedAgent.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.assignedAgentId.toLowerCase().contains(searchQuery.toLowerCase()) ||
               lead.priority.toLowerCase().contains(searchQuery.toLowerCase());
 
       return matchesFilter && matchesSearch;
@@ -282,6 +284,8 @@ Widget tableHeader() {
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
+  final mainProvider = context.read<MainProvider>();
+  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
   final priority = lead.autoPriority;
   Color color(){
@@ -310,7 +314,7 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
           tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
           tableCell(lead.time),
           tableCell(priority,color: getPrioritycolor(),),
-          tableCell(lead.assignedAgent),
+          tableCell(agentName),
 
           Expanded(child: Wrap(
             spacing: 5,

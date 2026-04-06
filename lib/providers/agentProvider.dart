@@ -301,6 +301,18 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  String getAgentName(String?agentId){
+    if(agentId == null) return "Unassigned";
+
+    try{
+      final agent = userList.firstWhere((e)=>e["ID"] == agentId);
+      return agent["NAME"];
+    }catch(e){
+      return "Unassigned";
+    }
+  }
+
   ///---------------DELETE USER---------------
 
   Future<void> deleteUser(String id) async{

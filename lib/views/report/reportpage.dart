@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
