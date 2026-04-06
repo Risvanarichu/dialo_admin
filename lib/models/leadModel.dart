@@ -87,3 +87,19 @@ extension LeadPriority on LeadModel {
     }
   }
 }
+class LeadCategoryModel {
+  final String title;
+  final List<String> sub;
+
+  LeadCategoryModel({
+    required this.title,
+    required this.sub,
+  });
+
+  factory LeadCategoryModel.fromMap(Map<String, dynamic> map) {
+    return LeadCategoryModel(
+      title: map['title']?.toString() ?? '',
+      sub: List<String>.from(map['sub'] ?? []),
+    );
+  }
+}

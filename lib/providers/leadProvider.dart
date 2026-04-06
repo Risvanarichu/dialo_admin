@@ -9,6 +9,10 @@ class LeadProvider extends ChangeNotifier{
   List<LeadModel>leads=[];
   List<LeadModel> get leadsList => leads;
   List<LeadModel>allLeads =[];
+  List<LeadCategoryModel> categoryList = [];
+  List<Map<String, dynamic>> categories = [];
+  Map<String, dynamic> additionalDetails = {};
+  bool isCategoryLoading=false;
   bool isLoading = false;
   StreamSubscription? leadSubscription;
   final searchController = TextEditingController();
@@ -20,6 +24,63 @@ class LeadProvider extends ChangeNotifier{
     listenLeads();
   }
 
+  Future<void> addLead({
+    required String name,
+    required String phone,
+    required String email,
+    required String source,
+    required String leadStatus,
+    required String notes,
+  }) async {
+    await fbd.collection("LEADS").add({
+      "name": name,
+      "phone": phone,
+      "email": email,
+      "source": source,
+      "leadStatus": leadStatus,
+      "notes": notes,
+      "additionalDetails": additionalDetails,
+    }
+
+    );
+    try {
+      final docRef = fbd.collection("LEADS").doc();
+      await docRef.set({
+        "LEAD_ID": docRef.id,
+        "NAME": name.trim(),
+        "PHONE": phone.trim(),
+        "EMAIL": email.trim(),
+        "SOURCE": source.trim(),
+        "STATUS": leadStatus.trim(),
+        "FOLLOW_UP_STATUS": "pending",
+        "NOTES": notes.trim(),
+        "ADDED_TIME": FieldValue.serverTimestamp(),
+        "ADDED_BY_ID": "web_admin",
+        "ASSIGNED_AGENT": "",
+        "FOLLOW_UP_DATE": null,
+        "FOLLOW_UP_TIME": "",
+        "PLACE": "",
+        "PRIORITY": "Medium",
+      });
+    } catch (e) {
+      debugPrint("Error adding lead: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> completedLead(String id) async {
+    await fbd.collection('LEADS').doc(id).update({
+      "FOLLOW_UP_STATUS": "completed",
+      "STATUS": "Converted",
+    });
+  }
+
+  Future<void> rescheduleLead(String id, DateTime date, String time) async {
+    await fbd.collection("LEADS").doc(id).update({
+      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
+      "FOLLOW_UP_TIME": time,
+    });
+  }
 
   void listenLeads() {
     isLoading = true;
@@ -62,19 +123,6 @@ class LeadProvider extends ChangeNotifier{
    }
    }
 
-  Future<void> completedLead(String id) async {
-    await fbd.collection('LEADS').doc(id).update({
-      "FOLLOW_UP_STATUS": "completed",
-      "STATUS":"Converted",
-    });
-  }
-  Future<void> rescheduleLead(String id, DateTime date, String time) async {
-    await fbd.collection("LEADS").doc(id).update({
-      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
-      "FOLLOW_UP_TIME": time,
-    });
-  }
-
   void searchLeads(String query) {
     searchQuery = query;
     isLoading = true;
@@ -92,6 +140,49 @@ class LeadProvider extends ChangeNotifier{
       }).toList();
     }
     isLoading = false;
+    notifyListeners();
+  }
+  void dispose() {
+    leadSubscription?.cancel();
+    searchController.dispose();
+    super.dispose();
+  }
+  Future<void> fetchCategories() async {
+    isLoading = true;
+    notifyListeners();
+  }
+  Future<void> fetchLeadSettings() async {
+    try {
+      isCategoryLoading = true;
+      notifyListeners();
+
+      final doc = await fbd.collection("LEAD_SETTINGS").doc("categories").get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final rawList = data["categoryList"] ?? data["categories"] ?? [];
+
+        categories = List<Map<String, dynamic>>.from(
+          rawList.map((e) => Map<String, dynamic>.from(e)),
+        );
+      } else {
+        categories = [];
+      }
+    } catch (e) {
+      categories = [];
+      debugPrint("fetchLeadSettings error: $e");
+    } finally {
+      isCategoryLoading = false;
+      notifyListeners();
+    }
+  }
+  void updateAdditionalDetail(String key, dynamic value) {
+    additionalDetails[key] = value;
+    notifyListeners();
+  }
+
+  void clearAdditionalDetails() {
+    additionalDetails.clear();
     notifyListeners();
   }
 }
