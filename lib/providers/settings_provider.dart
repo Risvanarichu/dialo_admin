@@ -29,40 +29,24 @@ final TextEditingController categoryController = TextEditingController();
 
   Future<void> saveCategories() async {
     final docRef = db.collection("LEAD_SETTINGS").doc("categories");
-
     final doc = await docRef.get();
 
     List<Map<String, dynamic>> existingCategories = [];
-    List<String> existingCallStatus = [];
 
     if (doc.exists) {
       final data = doc.data();
       existingCategories = List<Map<String, dynamic>>.from(
           data?["categoryList"] ?? []);
-      // existingCallStatus =
-      // List<String>.from(data?["callStatus"] ?? []);
     }
 
     List<Map<String, dynamic>> newCategories =
     categories.map((e) {
       return {
         "title": e["title"],
-        // "controller":TextEditingController(),
         "sub": e["sub"],
-        // "subcontrollers": [],
       };
     }).toList();
 
-    if (doc.exists) {
-      existing = List<Map<String, dynamic>>.from(
-        doc.data()?["categoryList"] ?? [],
-      );
-    }
-    final updatedList = [...existing, ...categories];
-
-    await docRef.set({
-      "categoryList": updatedList,
-      "callStatus": callStatus,
     // ✅ MERGE old + new
     existingCategories.addAll(newCategories);
 
@@ -71,9 +55,6 @@ final TextEditingController categoryController = TextEditingController();
 
     await docRef.set({
       "categoryList": existingCategories,
-      // "callStatus": callStatus.isNotEmpty
-      //     ? callStatus
-      //     : existingCallStatus,
     });
   }
 
