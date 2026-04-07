@@ -10,6 +10,7 @@ class SettingsPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: const Color(0xfff4f6fb),
       body: Row(
         children: [
 

@@ -1,512 +1,355 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:dialo_admin/providers/settings_provider.dart';
 
 class LeadSettingsScreen extends StatefulWidget {
-  LeadSettingsScreen({super.key});
+  const LeadSettingsScreen({super.key});
 
   @override
   State<LeadSettingsScreen> createState() => _LeadSettingsScreenState();
 }
-class _LeadSettingsScreenState extends State<LeadSettingsScreen>{
-  bool showAdditionalDetails = false;
+
+class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
+  bool showCategories = false;
   bool showCallStatus = false;
 
-  List<String> callStatus = [];
-  TextEditingController statusController = TextEditingController();
-  List<Map<String, dynamic>> categories = [
-    {
-      "title": "Category 1",
-      "sub": ["Sub Category 1.1", "Sub Category 1.2"],
-      "expanded": false
-    },
-    {
-      "title": "Category 2",
-      "sub": ["Sub Category 2.1"],
-      "expanded": false
-    },
-    {
-      "title": "Category 3",
-      "sub": ["Sub Category 3.1"],
-      "expanded": false
-    }
-  ];
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController statusController = TextEditingController();
 
   @override
-  Widget build(BuildContext context){
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<SettingsProvider>().fetchCategories();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<SettingsProvider>();
+
     return Scaffold(
+      backgroundColor: const Color(0xfff4f6fb),
       body: Row(
         children: [
-
-          Container(
-            width: 1,
-            color: Colors.grey.shade900,
-          ),
+          Container(width: 1, color: Colors.black),
 
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      "lead settings",
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  const Text(
+                    "LEAD SETTINGS",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 15),
 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10,vertical: .100),
-                    child: Text(
-                      "Home/Settings/Leads Settings",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 25,),
+                  const SizedBox(height: 20),
 
                   Expanded(
                     child: Center(
                       child: Container(
-                        width: 1200,
-                        padding: EdgeInsets.all(30),
+                        width: 1100,
+                        padding: const EdgeInsets.all(30),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1,
-                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.black),
                           color: Colors.white,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-
-                            _leftCard((){
-                              setState(() {
-                                showAdditionalDetails = true;
-                                showCallStatus = false;
-                              });
-                            }),
-                            if (showAdditionalDetails) _rightCard(),
-                            if (showCallStatus) _callStatusCard(),
+                            _leftCard(),
+                            if (showCategories) _categoryCard(provider),
+                            if (showCallStatus) _callStatusCard(provider),
                           ],
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-
-          )
-
+          ),
         ],
       ),
     );
-
   }
 
-  Widget _leftCard(VoidCallback onAddLeadTap){
+  /// LEFT MENU
+  Widget _leftCard() {
     return Container(
-      width: 400,
-      padding: EdgeInsets.all(25),
+      width: 300,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: Colors.black
-        ),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.black),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 20),
-          Text(
-            "Add leads",
-            style: TextStyle(
-                fontWeight: FontWeight.w600
-            ),
-          ),
-          SizedBox(height: 15,),
-          GestureDetector(
-            onTap: onAddLeadTap,
+          const Text("Add Leads"),
+          const SizedBox(height: 10),
 
-            child: _roundBox("Additional Details"),
-          ),
-          SizedBox(height: 80,),
-
-          Text(
-            "Lead status",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: 15,),
           GestureDetector(
-            onTap: (){
+            onTap: () {
               setState(() {
-                showCallStatus = true;
-                showAdditionalDetails = false;
+                showCategories = true;
+                showCallStatus = false;
               });
             },
-            child: _roundBox("Call Status"),
+            child: _box("Categories"),
+          ),
+
+          const SizedBox(height: 40),
+
+          const Text("Lead Status"),
+          const SizedBox(height: 10),
+
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                showCallStatus = true;
+                showCategories = false;
+              });
+            },
+            child: _box("Call Status"),
           ),
         ],
       ),
     );
   }
 
-  Widget _rightCard(){
+  /// CATEGORY CARD
+  Widget _categoryCard(SettingsProvider provider) {
+    return Container(
+      width: 420,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.black),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Categories"),
+            const SizedBox(height: 10),
+
+            Expanded(
+              child: ListView(
+                children: [
+                  ...List.generate(provider.categories.length, (index) {
+                    var cat = provider.categories[index];
+
+                    return Column(
+                      children: [
+                        /// CATEGORY ROW
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                key: ValueKey(cat["title"]),
+                                initialValue: cat["title"],
+                                decoration: InputDecoration(
+                                  hintText: "Category",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                    ? "Required"
+                                    : null,
+                                onChanged: (value) {
+                                  provider.updateCategory(index, value);
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            IconButton(
+                              icon: const Icon(Icons.add, color: Colors.blue),
+                              onPressed: () {
+                                provider.addSubCategory(index);
+                              },
+                            ),
+
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                provider.deleteCategory(index);
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        /// SUB CATEGORIES
+                        Column(
+                          children: [
+                            ...List.generate(cat["sub"].length, (subIndex) {
+                              return Padding(
+                                padding:
+                                const EdgeInsets.only(bottom: 10, left: 20),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        key: ValueKey(cat["sub"][subIndex]),
+                                        initialValue:
+                                        cat["sub"][subIndex],
+                                        decoration: InputDecoration(
+                                          hintText: "Sub Category",
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        validator: (value) =>
+                                        value == null ||
+                                            value.trim().isEmpty
+                                            ? "Required"
+                                            : null,
+                                        onChanged: (value) {
+                                          provider.updateSubCategory(
+                                            index,
+                                            subIndex,
+                                            value,
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        provider.deleteSubCategory(
+                                            index, subIndex);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+
+                        const SizedBox(height: 10),
+                      ],
+                    );
+                  }),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      if(provider.categories.isNotEmpty &&
+                      provider.categories.last["title"].toString().trim().isEmpty){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Enter Category first")),
+                        );
+                        return;
+                      }
+                      provider.addCategory();
+                    },
+                    child: const Text("Add Category"),
+                  ),
+                ],
+              ),
+            ),
+
+            /// SAVE BUTTON
+            ElevatedButton(
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  await provider.saveCategories();
+                  provider.clearCategories();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Saved Successfully")),
+                  );
+                }
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// CALL STATUS CARD
+  Widget _callStatusCard(SettingsProvider provider) {
     return Container(
       width: 350,
-      padding: EdgeInsets.all(25),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.black),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Add Additional Details",
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            SizedBox(height: 5,),
+      child: Column(
+        children: [
+          const Text("Call Status"),
 
-            ...List.generate(categories.length, (index){
-              var category = categories[index];
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: (){
-                      setState((){
-                        categories[index]["expanded"] = !(categories[index]["expanded"]?? false);
-                      });
-                    },
-                    child: _categoryRow(category["title"]),
-                  ),
-                  if (category["expanded"])
-                    Column(
-                      children: category["sub"].isEmpty
-                          ?[Text("No Sub Category", style: TextStyle (fontSize: 12))]
-                          : List.generate(category["sub"].length,
-                            (subIndex) => _subCategoryRow(
-                          category['sub'][subIndex],
-                          index,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-
-            }),
-
-
-            SizedBox(height: 30,),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _addCategoryBox(),
-
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      side: BorderSide(
-                        color: Colors.black,
-                        width: 1,
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 30,vertical: 12),
-                  ),
-                  onPressed: (){},
-                  child: Text(
-                    "Submit",
-                    style: TextStyle(
-                      color: Colors.white,
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: statusController,
+                  decoration: InputDecoration(
+                    hintText: "Enter status",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                )
-              ],
-            ),
-
-          ],
-        ),
-      ),
-    );
-  }
-  Widget _categoryRow(String title){
-    return Padding(
-      padding: EdgeInsets.only(bottom: 20, ),
-      child: SizedBox(
-        width: 150,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
-            Row(
-              mainAxisAlignment:MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title,
-                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-              ],
-            ),
-            SizedBox(height: 6),
-            _submitBox(),
+              ),
 
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _submitBox(){
-    return Container(
-      height: 32,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.black),
-      ),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Padding(padding: EdgeInsets.only(right: 5),
-          child: Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: Colors.black,
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  if (
+                  statusController.text.isNotEmpty){
+                    provider.callStatus.add(statusController.text);
+                    statusController.clear();
+                    provider.notifyListeners();
+                  }
+                },
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget _subCategoryRow(String title,int categoryIndex){
-    return Padding(
-      padding: EdgeInsets.only(left: 150, bottom: 10),
-      child : SizedBox(
-        width: 170,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: 12),
+          Expanded(
+            child: ListView(
+              children: provider.callStatus
+                  .map((e) => ListTile(title: Text(e)))
+                  .toList(),
             ),
-            SizedBox(height: 1),
-            _plusBox(categoryIndex),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _plusBox(int categoryIndex){
-    return Container(
-      height: 32,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: InkWell(
-        onTap: (){
-          setState(() {
-            int subLength = categories[categoryIndex]['sub'].length + 1;
-
-            categories[categoryIndex]['sub'].add(
-                "Sub Category ${categoryIndex + 1}.$subLength"
-            );
-          });
-        },
-
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: EdgeInsets.only(right: 5),
-            child: Icon(Icons.add, size: 20,),
           ),
-        ),
+
+          // ElevatedButton(
+          //   onPressed: () async {
+          //     await provider.saveCategories();
+          //     provider.clearCategories();
+          //   },
+          //   child: const Text("Save"),
+          // ),
+        ],
       ),
     );
   }
 
-  Widget _roundBox(String text){
+  Widget _box(String text) {
     return Container(
-      width: 380,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black),
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(text),
     );
   }
-  Widget _addCategoryBox() {
-    return SizedBox(
-      height: 38,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          elevation: 0,
-          side: BorderSide(color: Colors.black),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 12),
-        ),
-        onPressed: () {
-          setState(() {
-            categories.add({
-              "title": "Category ${categories.length + 1}",
-              "sub": ["Sub Category ${categories.length + 1}.1"],
-              "expanded": true
-            });
-          });
-        },
-
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Add New Category",
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-
-      ),
-    );
-  }
-  Widget _callStatusCard(){
-    return Container(
-      width:  350,
-      padding: EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Add Call Status",
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 50,),
-
-
-          Container(
-            height: 35,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: TextField(
-                      controller: statusController,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                ),
-
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: (){
-                    setState(() {
-                      if(statusController.text.isNotEmpty){
-                        callStatus.add(statusController.text);
-                        statusController.clear();
-                      }
-                    });
-                  },
-                )
-              ],
-            ),
-          ),
-          SizedBox(height: 40,),
-
-          Text(
-            "Status",
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 10,),
-
-          ...callStatus.map((e) => Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child:  Divider(
-                    color: Colors.black,
-                    thickness: 1,
-                  ),
-                ),
-                SizedBox(width: 10,),
-                Text(e),
-              ],
-            ),
-          )),
-          Spacer(),
-          //     ),
-          // ),
-
-          Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  side: BorderSide(color: Colors.black),
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 12,
-                ),
-              ),
-              onPressed: (){},
-              child: Text(
-                "Submit",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-
-    );
-  }
 }
-
-

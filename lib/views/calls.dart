@@ -1,6 +1,9 @@
+import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class Calls extends StatefulWidget {
   const Calls({super.key});
@@ -13,7 +16,7 @@ class _CallsState extends State<Calls> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF5F6FA),
+      backgroundColor: const Color(0xfff4f6fb),
       body: Padding(padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +115,7 @@ class _CallsState extends State<Calls> {
     Expanded(child: Center(child: Text("Phone Number"))),
     Expanded(child: Center(child: Text("Call Type"))),
     Expanded(child: Center(child: Text("Status"))),
-    Expanded(child: Center(child: Text("Duration"))),
+    Expanded(child: Center(child: Text("Time"))),
     Expanded(child: Center(child: Text("Date"))),
     Expanded(child: Center(child: Text("Assigned Agent"))),
     Expanded(child: Center(child: Text("Actions"))),
@@ -120,28 +123,30 @@ class _CallsState extends State<Calls> {
 ),
                     ),
                     Expanded(
-                        child: ListView(
-                          shrinkWrap: true,
-                      // physics: const NeverScrollableScrollPhysics(),
-                      children: const[
-                      CallList(name: "Finiya",
-                          phone: "+91 1234567891",
-                          type: "Inbound",
-                          status: "Answered",
-                          duration: "5:23",
-                          date: "06-01-2026",
-                          agent: "Shibina"),
-                        CallList(name: "Riswana", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Ayisha", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Shibin", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Anshad", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Shifa", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Swabirinn", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                      ],
-                    ))
+                        child:Consumer<LeadProvider>(
+  builder: (context, value, child) {
+    final leads = value.leads;
+
+    return ListView.builder(
+      itemCount: leads.length,
+      itemBuilder: (context, index) {
+        final lead = leads[index];
+
+        return CallList(
+          name: lead.name,
+          phone: lead.phone,
+          type: lead.source, // inbound/outbound
+          status: lead.followupstatus == "pending"
+              ? "Missed"
+              : "Answered",
+          duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
+          date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
+          agent: lead.assignedAgent,
+        );
+      },
+    );
+  },
+))
                   ],
                 ),
               ))
