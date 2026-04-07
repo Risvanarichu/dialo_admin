@@ -16,6 +16,7 @@ class LeadProvider extends ChangeNotifier {
   String selectedStatus = "All Status";
   String selectedSources = "All Sources";
   String searchQuery = "";
+  final String agentId = "1775024001964000";
 
   LeadProvider() {
     listenLeads();
@@ -48,9 +49,19 @@ class LeadProvider extends ChangeNotifier {
     leadSubscription?.cancel();
 
     leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
-      leads = snapshot.docs
-          .map((doc) => LeadModel.fromMap(doc.id, doc.data()))
-          .toList();
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
+        }
+
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
 
       applyFilters();
 
@@ -59,6 +70,30 @@ class LeadProvider extends ChangeNotifier {
     });
   }
 
+  // Future<void> fetchLeads() async {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final snapshot = await fbd.collection('LEADS').get();
+  //
+  //     leads = [];
+  //
+  //     for (var doc in snapshot.docs) {
+  //       try {
+  //         leads.add(LeadModel.fromMap(doc.id, doc.data()));
+  //       } catch (e) {
+  //         print("Error in doc ${doc.id}: $e");
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching leads: $e");
+  //   } finally {
+  //     isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
+
   Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
@@ -66,21 +101,27 @@ class LeadProvider extends ChangeNotifier {
     try {
       final snapshot = await fbd.collection('LEADS').get();
 
-      leads = [];
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-      for (var doc in snapshot.docs) {
-        try {
-          leads.add(LeadModel.fromMap(doc.id, doc.data()));
-        } catch (e) {
-          print("Error in doc ${doc.id}: $e");
+        /// ✅ AUTO FIX
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
         }
-      }
+
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
     } catch (e) {
       print("Error fetching leads: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
     }
+
+    isLoading = false;
+    applyFilters();
+    notifyListeners();
   }
 
   Future<void> completedLead(String id) async {
@@ -107,9 +148,9 @@ class LeadProvider extends ChangeNotifier {
     final query = searchQuery.toLowerCase();
 
     allLeads = leads.where((lead) {
-      final name = lead.name?.toLowerCase() ?? "";
-      final phone = lead.phone?.toLowerCase() ?? "";
-      final email = lead.email?.toLowerCase() ?? "";
+      final name = lead.name.toLowerCase() ;
+      final phone = lead.phone.toLowerCase() ;
+      final email = lead.email.toLowerCase() ;
       final status = lead.status.toUpperCase();
       final source = lead.source.toUpperCase();
 

@@ -302,13 +302,14 @@ class MainProvider extends ChangeNotifier {
   }
 
 
-  String getAgentName(String?agentId){
-    if(agentId == null) return "Unassigned";
+  String getAgentName(String? agentId) {
+    if (agentId == null || agentId.isEmpty) return "Unassigned";
 
-    try{
-      final agent = userList.firstWhere((e)=>e["ID"] == agentId);
-      return agent["NAME"];
-    }catch(e){
+    try {
+      final agent =
+      userList.firstWhere((e) => e["ID"] == agentId);
+      return agent["NAME"] ?? "Unknown";
+    } catch (e) {
       return "Unassigned";
     }
   }
