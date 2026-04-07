@@ -53,6 +53,16 @@ final TextEditingController categoryController = TextEditingController();
       };
     }).toList();
 
+    if (doc.exists) {
+      existing = List<Map<String, dynamic>>.from(
+        doc.data()?["categoryList"] ?? [],
+      );
+    }
+    final updatedList = [...existing, ...categories];
+
+    await docRef.set({
+      "categoryList": updatedList,
+      "callStatus": callStatus,
     // ✅ MERGE old + new
     existingCategories.addAll(newCategories);
 

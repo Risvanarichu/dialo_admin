@@ -1,11 +1,15 @@
+import 'package:dialo_admin/providers/reportProvider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});
 
+
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ReportProvider>();
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
       body: Padding(
@@ -77,7 +81,10 @@ class DateFilterSection extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
-            onPressed: () {},
+            onPressed: () async {
+              final provider = context.read<ReportProvider>();
+              await provider.fetchReports();
+            },
             child: const Text("Apply"),
           ),
         )
@@ -120,6 +127,7 @@ class AgentPerformanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ReportProvider>();
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,15 +140,23 @@ class AgentPerformanceCard extends StatelessWidget {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 160,
+                maxY: provider.agentPerformance.isEmpty
+                  ?10
+                  :provider.agentPerformance
+                  .map((e)=>(e['total']??0))
+                  .reduce((a,b)=> a>b ? a:b)
+                  .toDouble()+10,
                 gridData: FlGridData(show: true),
                 borderData: FlBorderData(show: false),
-                barGroups: [
-                  _barGroup(0, 150, 35),
-                  _barGroup(1, 135, 30),
-                  _barGroup(2, 130, 28),
-                  _barGroup(3, 120, 25),
-                ],
+               barGroups: List.generate(
+                  provider.agentPerformance.length,
+                   (index){
+                    final data = provider.agentPerformance[index];
+                    return _barGroup(index,
+                        (data["total"]??0).toDouble(),
+                        (data['converted']?? 0).toDouble(),
+                    );
+                   })
               ),
             ),
           ),
@@ -178,10 +194,12 @@ class AgentPerformanceCard extends StatelessWidget {
 class LeadFunnelCard extends StatelessWidget {
   const LeadFunnelCard({super.key});
 
-  final double maxValue = 500;
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ReportProvider>();
+    final funnel = provider.funnelData;
+    double maxValue = (funnel['total'] ?? 1).toDouble();
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,17 +207,15 @@ class LeadFunnelCard extends StatelessWidget {
           const Text("Lead Conversion Funnel",
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          _funnelBar(context, "Leads", 500),
-          _funnelBar(context, "Contacted", 350),
-          _funnelBar(context, "Qualified", 200),
-          _funnelBar(context, "Proposal", 100),
-          _funnelBar(context, "Converted", 60),
+         _funnelBar(context,"Total",(funnel['total']??0).toDouble(),maxValue),
+         _funnelBar(context,"Pending",(funnel['pending']??0).toDouble(),maxValue),
+         _funnelBar(context,"Converted",(funnel['converted']??0).toDouble(),maxValue),
         ],
       ),
     );
   }
 
-  Widget _funnelBar(BuildContext context, String label, double value) {
+  Widget _funnelBar(BuildContext context, String label, double value,double maxValue) {
     double percent = value / maxValue;
 
     return Padding(
@@ -243,6 +259,7 @@ class AgentTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ReportProvider>();
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,29 +282,18 @@ class AgentTableCard extends StatelessWidget {
                 DataColumn(label: Text("Conversions")),
                 DataColumn(label: Text("Conversion Rate")),
               ],
-              rows: const [
-                DataRow(cells: [
-                  DataCell(Text("RISWANA")),
-                  DataCell(Text("145")),
-                  DataCell(Text("138")),
-                  DataCell(Text("32")),
-                  DataCell(Text("22.1%")),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text("SHIBIN")),
-                  DataCell(Text("132")),
-                  DataCell(Text("125")),
-                  DataCell(Text("26")),
-                  DataCell(Text("21.2%")),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text("FINIYA")),
-                  DataCell(Text("128")),
-                  DataCell(Text("120")),
-                  DataCell(Text("23")),
-                  DataCell(Text("19.1%")),
-                ]),
-              ],
+              rows: provider.agentPerformance.map((e){
+                int total = e['total']??0;
+                int converted = e['converted']?? 0;
+                double rate=total == 0?0:(converted / total)*100;
+                 return DataRow(cells: [
+                   DataCell(Text(e['agent'].toString().toUpperCase())),
+                   DataCell(Text(total.toString())),
+                   DataCell(Text("_")),
+                   DataCell(Text(converted.toString())),
+                   DataCell(Text("${rate.toStringAsFixed(1)}%")),
+                 ]);
+              }).toList(),
             ),
           ),
         ],

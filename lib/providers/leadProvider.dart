@@ -4,11 +4,12 @@ import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:async';
 
-class LeadProvider extends ChangeNotifier{
+class LeadProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
-  List<LeadModel>leads=[];
+  List<LeadModel> leads = [];
+
   List<LeadModel> get leadsList => leads;
-  List<LeadModel>allLeads =[];
+  List<LeadModel> allLeads = [];
   List<LeadCategoryModel> categoryList = [];
   List<Map<String, dynamic>> categories = [];
   Map<String, dynamic> additionalDetails = {};
@@ -19,8 +20,9 @@ class LeadProvider extends ChangeNotifier{
   String selectedStatus = "All Status";
   String selectedSources = "All Sources";
   String searchQuery = "";
+  final String agentId = "1775024001964000";
 
-  LeadProvider(){
+  LeadProvider() {
     listenLeads();
   }
 
@@ -88,58 +90,114 @@ class LeadProvider extends ChangeNotifier{
 
     leadSubscription?.cancel();
 
-    leadSubscription =
-        fbd.collection('LEADS').snapshots().listen((snapshot) {
-          leads = snapshot.docs
-              .map((doc) => LeadModel.fromMap(doc.id, doc.data()))
-              .toList();
+    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-          isLoading = false;
-          notifyListeners();
-        });
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
+        }
+
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
+
+      applyFilters();
+
+      isLoading = false;
+      notifyListeners();
+    });
   }
 
-  Future<void>fetchLeads()async{
+  // Future<void> fetchLeads() async {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final snapshot = await fbd.collection('LEADS').get();
+  //
+  //     leads = [];
+  //
+  //     for (var doc in snapshot.docs) {
+  //       try {
+  //         leads.add(LeadModel.fromMap(doc.id, doc.data()));
+  //       } catch (e) {
+  //         print("Error in doc ${doc.id}: $e");
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching leads: $e");
+  //   } finally {
+  //     isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
+
+  Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
 
-   try {
-     final snapshot = await fbd.collection('LEADS').get();
+    try {
+      final snapshot = await fbd.collection('LEADS').get();
 
-     leads = [];
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-     for (var doc in snapshot.docs) {
-       try {
-         leads.add(LeadModel.fromMap(doc.id, doc.data()));
-       } catch (e) {
-         print("Error in doc ${doc.id}: $e");
-       }
-     }
-   }catch(e) {
-     print("Error fetching leads: $e");
-   }finally{
-     isLoading = false;
-     notifyListeners();
-   }
-   }
+        /// ✅ AUTO FIX
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
+        }
+
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
+    } catch (e) {
+      print("Error fetching leads: $e");
+    }
+
+    isLoading = false;
+    applyFilters();
+    notifyListeners();
+  }
 
   void searchLeads(String query) {
     searchQuery = query;
-    isLoading = true;
-    notifyListeners();
+    applyFilters();
+  }
 
-    if (query.isEmpty) {
-      leads = allLeads;
-    } else {
-      final q = query.toLowerCase();
+  void applyFilters() {
+    final query = searchQuery.toLowerCase();
 
-      leads = allLeads.where((lead) {
-        return lead.name.toLowerCase().contains(q) ||
-            lead.phone.toLowerCase().contains(q) ||
-            lead.email.toLowerCase().contains(q);
-      }).toList();
-    }
-    isLoading = false;
+    allLeads = leads.where((lead) {
+      final name = lead.name.toLowerCase() ;
+      final phone = lead.phone.toLowerCase() ;
+      final email = lead.email.toLowerCase() ;
+      final status = lead.status.toUpperCase();
+      final source = lead.source.toUpperCase();
+
+      final matchesSearch =
+          query.isEmpty ||
+          name.contains(query) ||
+          phone.contains(query) ||
+          email.contains(query);
+
+      final matchesStatus =
+          selectedStatus == "All Status" ||
+          status == selectedStatus.toUpperCase();
+
+      final matchesSource =
+          selectedSources == "All Sources" ||
+          source == selectedSources.toUpperCase();
+
+      return matchesSearch && matchesStatus && matchesSource;
+    }).toList();
+
     notifyListeners();
   }
   void dispose() {
@@ -184,5 +242,25 @@ class LeadProvider extends ChangeNotifier{
   void clearAdditionalDetails() {
     additionalDetails.clear();
     notifyListeners();
+  }
+
+  Future<void> assignAgent(String leadId, String agentId) async {
+    try {
+      await fbd.collection('LEADS').doc(leadId).update({
+        "ASSIGNED_AGENT_ID": agentId,
+      });
+    } catch (e) {
+      print("Assign Error: $e");
+    }
+  }
+
+  void updateStatus(String status) {
+    selectedStatus = status;
+    applyFilters();
+  }
+
+  void updateSource(String source) {
+    selectedSources = source;
+    applyFilters();
   }
 }

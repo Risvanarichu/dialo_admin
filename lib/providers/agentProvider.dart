@@ -301,6 +301,19 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  String getAgentName(String? agentId) {
+    if (agentId == null || agentId.isEmpty) return "Unassigned";
+
+    try {
+      final agent =
+      userList.firstWhere((e) => e["ID"] == agentId);
+      return agent["NAME"] ?? "Unknown";
+    } catch (e) {
+      return "Unassigned";
+    }
+  }
+
   ///---------------DELETE USER---------------
 
   Future<void> deleteUser(String id) async{
@@ -318,6 +331,7 @@ class MainProvider extends ChangeNotifier {
     emailController.clear();
     employeeController.clear();
     roleController.clear();
+    passwordController.clear();
 
     editingId = null;
     isEdit = false;

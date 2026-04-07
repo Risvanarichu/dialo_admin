@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/agentProvider.dart';
+
 
 class FollowUpPage extends StatefulWidget {
   const FollowUpPage({super.key});
@@ -36,7 +38,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
      return lead.followupDate.year == now.year &&
      lead.followupDate.month == now.month &&
      lead.followupDate.day == now.day &&
-     lead.followupstatus != "completed";
+     lead.followupstatus != "COMPLETED";
    }).length;
   }
   int thisWeekCount(List<LeadModel> leads) {
@@ -47,12 +49,12 @@ class _FollowUpPageState extends State<FollowUpPage> {
     return leads.where((lead) {
       return !lead.followupDate.isBefore(startOfWeek) &&
           !lead.followupDate.isAfter(endOfWeek) &&
-          lead.followupstatus != "completed";
+          lead.followupstatus != "COMPLETED";
     }).length;
   }
 
   int completedCount(List<LeadModel> leads) {
-    return leads.where((lead) => lead.followupstatus == "completed").length;
+    return leads.where((lead) => lead.followupstatus == "COMPLETED").length;
   }
 
   @override
@@ -64,7 +66,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
     List<LeadModel> filteredLeads = sortedLeads.where((lead) {
       final now = DateTime.now();
 
-      if (selectedFilter != "Completed" && lead.followupstatus == "completed") {
+      if (selectedFilter != "Completed" && lead.followupstatus == "COMPLETED") {
         return false;
       }
 
@@ -83,13 +85,13 @@ class _FollowUpPageState extends State<FollowUpPage> {
             !lead.followupDate.isBefore(startOfWeek) &&
                 !lead.followupDate.isAfter(endOfWeek);
       } else if (selectedFilter == "Completed") {
-        matchesFilter = lead.followupstatus == "completed";
+        matchesFilter = lead.followupstatus == "COMPLETED";
       }
 
       /// SEARCH
       bool matchesSearch =
           lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              lead.agent.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.assignedAgentId.toLowerCase().contains(searchQuery.toLowerCase()) ||
               lead.priority.toLowerCase().contains(searchQuery.toLowerCase());
 
       return matchesFilter && matchesSearch;
@@ -282,6 +284,8 @@ Widget tableHeader() {
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
+  final mainProvider = context.read<MainProvider>();
+  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
   final priority = lead.autoPriority;
   Color color(){
@@ -310,7 +314,7 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
           tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
           tableCell(lead.time),
           tableCell(priority,color: getPrioritycolor(),),
-          tableCell(lead.agent),
+          tableCell(agentName),
 
           Expanded(child: Wrap(
             spacing: 5,
