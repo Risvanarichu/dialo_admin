@@ -12,7 +12,7 @@ class LeadModel {
   String followupTime;
   String time;
   String priority;
-  String assignedAgent;
+  String assignedAgentId;
   String followupstatus;
   DateTime lastContactedDate;
 
@@ -27,7 +27,7 @@ class LeadModel {
     required this.followupTime,
     required this.time,
     required this.priority,
-    required this.assignedAgent,
+    required this.assignedAgentId,
     required this.followupstatus,
       required this.lastContactedDate,
   });
@@ -35,7 +35,7 @@ class LeadModel {
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
     DateTime followDate;
 
-    var value = map['FOLLOW_UP_DATE'];
+    var value = map['FOLLOW UP DATE'];
 
     if (value is Timestamp) {
       followDate = value.toDate();
@@ -70,7 +70,7 @@ class LeadModel {
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
       time: DateFormat('hh:mm a').format(added_date),
       priority: map['PRIORITY']?.toString() ?? "Medium",
-      assignedAgent: map['ADDED_BY_ID']?.toString().toUpperCase() ?? "No Agent",
+      assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
       lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
           ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()

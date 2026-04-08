@@ -141,7 +141,7 @@ class _CallsState extends State<Calls> {
               : "Answered",
           duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
           date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
-          agent: lead.assignedAgent,
+          agent: lead.assignedAgentId, actions: '',
         );
       },
     );
@@ -164,6 +164,7 @@ class CallList extends StatelessWidget {
   final String duration;
   final String date;
   final String agent;
+  final String actions;
 
   const CallList ({
     required this.name,
@@ -173,6 +174,7 @@ class CallList extends StatelessWidget {
     required this.duration,
     required this.date,
     required this.agent,
+    required this.actions,
   });
   @override
   Widget build(BuildContext context){
@@ -210,6 +212,7 @@ class CallList extends StatelessWidget {
           Expanded(child: Center(child: Text(duration))),
     Expanded(child: Center(child: Text(date))),
     Expanded(child: Center(child: Text(agent))),
+    Expanded(child: Center(child: Text("Actions"))),
 
 
           Expanded(child: Row(

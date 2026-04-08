@@ -4,23 +4,43 @@ import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:async';
 
-class LeadProvider extends ChangeNotifier{
+class LeadProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
-  List<LeadModel>leads=[];
+  List<LeadModel> leads = [];
+
   List<LeadModel> get leadsList => leads;
-  List<LeadModel>allLeads =[];
+  List<LeadModel> allLeads = [];
   bool isLoading = false;
   StreamSubscription? leadSubscription;
   final searchController = TextEditingController();
   String selectedStatus = "All Status";
   String selectedSources = "All Sources";
   String searchQuery = "";
+  final String agentId = "1775024001964000";
 
-
-  LeadProvider(){
+  LeadProvider() {
     listenLeads();
   }
 
+  Future<void> fixOldLeads() async {
+    final agents = await fbd.collection('AGENT').get();
+    final leads = await fbd.collection('LEADS').get();
+
+    if (agents.docs.isEmpty) return;
+
+    String defaultAgentId = agents.docs.first.id;
+
+    for (var lead in leads.docs) {
+      await lead.reference.update({
+        "ASSIGNED_AGENT_ID":
+        lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId,
+        "ADDED_BY_ID":
+        lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
+      });
+    }
+
+    print("Fixed old leads ✅");
+  }
 
   void listenLeads() {
     isLoading = true;
@@ -28,88 +48,131 @@ class LeadProvider extends ChangeNotifier{
 
     leadSubscription?.cancel();
 
-    leadSubscription =
-        fbd.collection('LEADS').snapshots().listen((snapshot) {
-          leads = snapshot.docs
-              .map((doc) => LeadModel.fromMap(doc.id, doc.data()))
-              .toList();
+    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-          applyFilters();
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
+        }
 
-          isLoading = false;
-          notifyListeners();
-        });
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
+
+      applyFilters();
+
+      isLoading = false;
+      notifyListeners();
+    });
   }
 
-  Future<void>fetchLeads()async {
+  // Future<void> fetchLeads() async {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   try {
+  //     final snapshot = await fbd.collection('LEADS').get();
+  //
+  //     leads = [];
+  //
+  //     for (var doc in snapshot.docs) {
+  //       try {
+  //         leads.add(LeadModel.fromMap(doc.id, doc.data()));
+  //       } catch (e) {
+  //         print("Error in doc ${doc.id}: $e");
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching leads: $e");
+  //   } finally {
+  //     isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
+
+  Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
 
     try {
       final snapshot = await fbd.collection('LEADS').get();
 
-      leads = [];
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-      for (var doc in snapshot.docs) {
-        try {
-          leads.add(LeadModel.fromMap(doc.id, doc.data()));
-        } catch (e) {
-          print("Error in doc ${doc.id}: $e");
+        /// ✅ AUTO FIX
+        if (data["ASSIGNED_AGENT_ID"] == null ||
+            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId,
+            "ADDED_BY_ID": agentId,
+          });
         }
-      }
+
+        return LeadModel.fromMap(doc.id, data);
+      }).toList();
     } catch (e) {
       print("Error fetching leads: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
     }
+
+    isLoading = false;
+    applyFilters();
+    notifyListeners();
   }
 
-    Future<void> completedLead(String id) async {
-      await fbd.collection('LEADS').doc(id).update({
-        "FOLLOW_UP_STATUS": "completed",
-        "STATUS": "Converted",
-      });
-      notifyListeners();
-    }
-    Future<void> rescheduleLead(String id, DateTime date, String time) async {
-      await fbd.collection("LEADS").doc(id).update({
-        "FOLLOW_UP_DATE": Timestamp.fromDate(date),
-        "FOLLOW_UP_TIME": time,
-      });
-    }
+  Future<void> completedLead(String id) async {
+    await fbd.collection('LEADS').doc(id).update({
+      "FOLLOW_UP_STATUS": "completed",
+      "STATUS": "Converted",
+    });
+    notifyListeners();
+  }
 
-    void searchLeads(String query) {
-      searchQuery = query;
-      applyFilters();
-    }
+  Future<void> rescheduleLead(String id, DateTime date, String time) async {
+    await fbd.collection("LEADS").doc(id).update({
+      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
+      "FOLLOW_UP_TIME": time,
+    });
+  }
 
-    void applyFilters() {
-      final query = searchQuery.toLowerCase();
+  void searchLeads(String query) {
+    searchQuery = query;
+    applyFilters();
+  }
 
-      allLeads = leads.where((lead) {
-        final name = lead.name?.toLowerCase() ?? "";
-        final phone = lead.phone?.toLowerCase() ?? "";
-        final email = lead.email?.toLowerCase() ?? "";
-        final status = lead.status.toUpperCase();
-        final source = lead.source.toUpperCase();
+  void applyFilters() {
+    final query = searchQuery.toLowerCase();
 
-        final matchesSearch = query.isEmpty ||
-            name.contains(query) ||
-            phone.contains(query) ||
-            email.contains(query);
+    allLeads = leads.where((lead) {
+      final name = lead.name.toLowerCase() ;
+      final phone = lead.phone.toLowerCase() ;
+      final email = lead.email.toLowerCase() ;
+      final status = lead.status.toUpperCase();
+      final source = lead.source.toUpperCase();
 
-        final matchesStatus = selectedStatus == "All Status" ||
-            status == selectedStatus.toUpperCase();
+      final matchesSearch =
+          query.isEmpty ||
+          name.contains(query) ||
+          phone.contains(query) ||
+          email.contains(query);
 
-        final matchesSource = selectedSources == "All Sources" ||
-            source == selectedSources.toUpperCase();
+      final matchesStatus =
+          selectedStatus == "All Status" ||
+          status == selectedStatus.toUpperCase();
 
-        return matchesSearch && matchesStatus && matchesSource;
-      }).toList();
+      final matchesSource =
+          selectedSources == "All Sources" ||
+          source == selectedSources.toUpperCase();
 
-      notifyListeners();
-    }
+      return matchesSearch && matchesStatus && matchesSource;
+    }).toList();
+
+    notifyListeners();
+  }
 
   Future<void> assignAgent(String leadId, String agentId) async {
     try {
@@ -121,13 +184,13 @@ class LeadProvider extends ChangeNotifier{
     }
   }
 
-    void updateStatus(String status) {
-      selectedStatus = status;
-      applyFilters();
-    }
-
-    void updateSource(String source) {
-      selectedSources = source;
-      applyFilters();
-    }
+  void updateStatus(String status) {
+    selectedStatus = status;
+    applyFilters();
   }
+
+  void updateSource(String source) {
+    selectedSources = source;
+    applyFilters();
+  }
+}
