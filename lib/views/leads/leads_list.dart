@@ -176,7 +176,7 @@ class Leads extends StatelessWidget {
                           )
                               : Column(
                             children: provider.allLeads
-                                .map((e) => tableRow(e,context))
+                                .map((e) => tableRowDynamic(e,context))
                                 .toList(),
                           ),
                         ],
@@ -228,7 +228,7 @@ Widget tableHead(String text) {
   );
 }
 
-Widget tableRow(LeadModel lead, BuildContext context) {
+Widget tableRowDynamic(LeadModel lead, BuildContext context) {
   final mainProvider = context.read<MainProvider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
