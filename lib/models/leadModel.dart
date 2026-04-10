@@ -15,6 +15,7 @@ class LeadModel {
   String assignedAgentId;
   String followupstatus;
   DateTime lastContactedDate;
+  String assignedAgentName;
 
   LeadModel({
     required this.id,
@@ -29,7 +30,8 @@ class LeadModel {
     required this.priority,
     required this.assignedAgentId,
     required this.followupstatus,
-      required this.lastContactedDate,
+   required this.lastContactedDate,
+   required this.assignedAgentName,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -71,6 +73,7 @@ class LeadModel {
       time: DateFormat('hh:mm a').format(added_date),
       priority: map['PRIORITY']?.toString() ?? "Medium",
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
+      assignedAgentName: map["ASSIGNED_AGENT_NAME"] ?? "",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
       lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
           ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()

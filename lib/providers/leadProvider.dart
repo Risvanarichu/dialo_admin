@@ -2,14 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:async';
+import 'dart:async';  
 
+
+
+  
 class LeadProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
   List<LeadModel> leads = [];
 
   List<LeadModel> get leadsList => leads;
   List<LeadModel> allLeads = [];
+  Map<String, String> agentMap = {};
+  String selectedCallStatus = "all";
+
   bool isLoading = false;
   StreamSubscription? leadSubscription;
   final searchController = TextEditingController();
@@ -18,9 +24,20 @@ class LeadProvider extends ChangeNotifier {
   String searchQuery = "";
   final String agentId = "1775024001964000";
 
-  LeadProvider() {
-    listenLeads();
-  }
+  var userList;
+
+  LeadProvider() {         
+  init();
+}
+
+Future<void> init() async {
+  listenLeads();   
+}
+
+void setCallStatus(String status) {
+  selectedCallStatus = status;
+  notifyListeners();
+}
 
   Future<void> fixOldLeads() async {
     final agents = await fbd.collection('AGENT').get();
@@ -32,11 +49,11 @@ class LeadProvider extends ChangeNotifier {
 
     for (var lead in leads.docs) {
       await lead.reference.update({
-        "ASSIGNED_AGENT_ID":
-        lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId,
-        "ADDED_BY_ID":
-        lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
-      });
+  "ASSIGNED_AGENT_ID":
+      lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId, // ✅ add
+  "ADDED_BY_ID":
+      lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
+});
     }
 
     print("Fixed old leads ✅");
@@ -48,19 +65,27 @@ class LeadProvider extends ChangeNotifier {
 
     leadSubscription?.cancel();
 
-    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
-      leads = snapshot.docs.map((doc) {
-        final data = doc.data();
+leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+  leads = snapshot.docs.map((doc) {
+    final data = doc.data();
 
-        if (data["ASSIGNED_AGENT_ID"] == null ||
-            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
-          doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId,
-            "ADDED_BY_ID": agentId,
-          });
-        }
+    String agentId = data["ASSIGNED_AGENT_ID"] ?? "";
 
-        return LeadModel.fromMap(doc.id, data);
+    if (data["ASSIGNED_AGENT_ID"] == null ||
+        data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+      doc.reference.update({
+        "ASSIGNED_AGENT_ID": agentId,
+        "ADDED_BY_ID": agentId,
+      });
+    }
+
+return LeadModel.fromMap(
+  doc.id,
+  {
+    ...data,
+    "ASSIGNED_AGENT_NAME": agentMap[agentId] ?? "Unknown", 
+  },
+);
       }).toList();
 
       applyFilters();
@@ -104,13 +129,14 @@ class LeadProvider extends ChangeNotifier {
       leads = snapshot.docs.map((doc) {
         final data = doc.data();
 
-        /// ✅ AUTO FIX
+      
         if (data["ASSIGNED_AGENT_ID"] == null ||
             data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
           doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId,
-            "ADDED_BY_ID": agentId,
-          });
+  "ASSIGNED_AGENT_ID": agentId,
+  "ASSIGNED_AGENT_NAME": "Anshad", // ✅ add
+  "ADDED_BY_ID": agentId,
+});
         }
 
         return LeadModel.fromMap(doc.id, data);
@@ -167,30 +193,39 @@ class LeadProvider extends ChangeNotifier {
       final matchesSource =
           selectedSources == "All Sources" ||
           source == selectedSources.toUpperCase();
+        final callStatus = (lead.followupstatus ?? "") == "pending"
+    ? "missed"
+    : "answered";
+    
+final matchesCallStatus =
+    selectedCallStatus == "all" ||
+    callStatus == selectedCallStatus;
 
-      return matchesSearch && matchesStatus && matchesSource;
-    }).toList();
+return matchesSearch &&
+       matchesStatus &&
+       matchesSource &&
+       matchesCallStatus;    
+       }).toList();
 
     notifyListeners();
   }
 
-  Future<void> assignAgent(String leadId, String agentId) async {
-    try {
-      await fbd.collection('LEADS').doc(leadId).update({
-        "ASSIGNED_AGENT_ID": agentId,
-      });
-    } catch (e) {
-      print("Assign Error: $e");
-    }
+  Future<void> assignAgent(String leadId, String agentId, String agentName) async {
+  try {
+    await fbd.collection('LEADS').doc(leadId).update({
+      "ASSIGNED_AGENT_ID": agentId,
+      "ASSIGNED_AGENT_NAME": agentName, // ✅ add this
+    });
+  } catch (e) {
+    print("Assign Error: $e");
   }
+}
 
-  void updateStatus(String status) {
-    selectedStatus = status;
-    applyFilters();
-  }
 
   void updateSource(String source) {
     selectedSources = source;
     applyFilters();
   }
+
+  void updateStatus(String s) {}
 }
