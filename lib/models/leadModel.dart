@@ -14,6 +14,7 @@ class LeadModel {
   String priority;
   String assignedAgentId;
   String followupstatus;
+  String calltype;
 
   LeadModel({
     required this.id,
@@ -28,6 +29,7 @@ class LeadModel {
     required this.priority,
     required this.assignedAgentId,
     required this.followupstatus,
+    required this.calltype,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -59,6 +61,7 @@ class LeadModel {
       priority: map['PRIORITY']?.toString() ?? "Medium",
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
+     calltype: map['INCOMING']?.toString().toUpperCase() ?? "OUTGOING",
 
     );
   }

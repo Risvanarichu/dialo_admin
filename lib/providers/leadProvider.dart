@@ -26,22 +26,26 @@ class LeadProvider extends ChangeNotifier {
     listenLeads();
   }
 
+  get calltype => null;
+
   Future<void> addLead({
     required String name,
     required String phone,
     required String email,
     required String source,
     required String leadStatus,
+    required String callType,
     required String notes,
   }) async {
     await fbd.collection("LEADS").add({
-      "name": name,
-      "phone": phone,
-      "email": email,
-      "source": source,
-      "leadStatus": leadStatus,
-      "notes": notes,
-      "additionalDetails": additionalDetails,
+      "NAME": name,
+      "PHONE": phone,
+      "EMAIL": email,
+      "SOURCE": source,
+      "LEAD STATUS": leadStatus,
+     "CALL TYPE":calltype,
+      "NOTES": notes,
+      "ADDITIONAL DETAILS": additionalDetails,
     }
 
     );
@@ -54,13 +58,14 @@ class LeadProvider extends ChangeNotifier {
         "EMAIL": email.trim(),
         "SOURCE": source.trim(),
         "STATUS": leadStatus.trim(),
+        "CALL TYPE":callType.trim(),
         "FOLLOW_UP_STATUS": "pending",
         "NOTES": notes.trim(),
-        "ADDED_TIME": FieldValue.serverTimestamp(),
-        "ADDED_BY_ID": "web_admin",
-        "ASSIGNED_AGENT": "",
-        "FOLLOW_UP_DATE": null,
-        "FOLLOW_UP_TIME": "",
+        "ADDED TIME": FieldValue.serverTimestamp(),
+        "ADDED BY ID": "web_admin",
+        "ASSIGNED AGENT": "",
+        "FOLLOW UP DATE": null,
+        "FOLLOW UP TIME": "",
         "PLACE": "",
         "PRIORITY": "Medium",
       });
@@ -179,6 +184,7 @@ class LeadProvider extends ChangeNotifier {
       final phone = lead.phone.toLowerCase() ;
       final email = lead.email.toLowerCase() ;
       final status = lead.status.toUpperCase();
+      final calltype = lead.calltype.toUpperCase();
       final source = lead.source.toUpperCase();
 
       final matchesSearch =

@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/dashboardProvider.dart';
 import '../widget/sidemenu.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+
+class _DashboardState extends State<Dashboard> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<DashboardProvider>().fetchDashboardCounts();
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
@@ -157,27 +172,50 @@ class DashboardContent extends StatelessWidget {
         alignment: WrapAlignment.center,
         spacing: 16,
         runSpacing: 25,
-        children: const [
-          InfoCard(title: "TOTAL LEADS",
-            value: "22",
-            color: Color(0xffFFF2E8),
-            icon: Icons.trending_up,),
-          InfoCard(
-            title: "TODAY'S CALLS",
-            value: "50",
-            color: Color(0xffF0FFDE),
-            icon: Icons.call,
+        children: [
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "TOTAL LEADS",
+                value: provider.totalLeads.toString(),
+                color: const Color(0xffFFF2E8),
+                icon: Icons.trending_up,
+              );
+            },
           ),
-          InfoCard(
-            title: "UPCOMING",
-            value: "10",
-            color: Color(0xffFFFCDD),
-            icon: Icons.calendar_today,),
-          InfoCard(
-            title: "OVERDUE",
-            value: "5",
-            color: Color(0xffF3ECFF),
-            icon: Icons.access_time,),
+
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "TODAYS CALLS",
+                value: provider.totalLeads.toString(),
+                color: const Color( 0xffF0FFDE),
+                icon: Icons.trending_up,
+              );
+            },
+          ),
+
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "UPCOMING",
+                value: provider.totalLeads.toString(),
+                color: const Color(0xffFFFCDD),
+                icon: Icons.trending_up,
+              );
+            },
+          ),
+
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "OVERDUE",
+                value: provider.totalLeads.toString(),
+                color: const Color( 0xffF3ECFF),
+                icon: Icons.trending_up,
+              );
+            },
+          ),
         ],
       ),
     );
