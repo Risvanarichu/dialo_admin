@@ -13,8 +13,13 @@ class LeadProvider extends ChangeNotifier {
 
   List<LeadModel> get leadsList => leads;
   List<LeadModel> allLeads = [];
+  List<LeadCategoryModel> categoryList = [];
+  List<Map<String, dynamic>> categories = [];
+  Map<String, dynamic> additionalDetails = {};
+  bool isCategoryLoading=false;
   Map<String, String> agentMap = {};
   String selectedCallStatus = "all";
+  List<String> callStatusList = [];
 
   bool isLoading = false;
   StreamSubscription? leadSubscription;
@@ -39,24 +44,67 @@ void setCallStatus(String status) {
   notifyListeners();
 }
 
-  Future<void> fixOldLeads() async {
-    final agents = await fbd.collection('AGENT').get();
-    final leads = await fbd.collection('LEADS').get();
+  get calltype => null;
 
-    if (agents.docs.isEmpty) return;
-
-    String defaultAgentId = agents.docs.first.id;
-
-    for (var lead in leads.docs) {
-      await lead.reference.update({
-  "ASSIGNED_AGENT_ID":
-      lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId, // ✅ add
-  "ADDED_BY_ID":
-      lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
-});
+  Future<void> addLead({
+    required String name,
+    required String phone,
+    required String email,
+    required String source,
+    required String leadStatus,
+    required String callType,
+    required String notes,
+  }) async {
+    await fbd.collection("LEADS").add({
+      "NAME": name,
+      "PHONE": phone,
+      "EMAIL": email,
+      "SOURCE": source,
+      "LEAD STATUS": leadStatus,
+     "CALL TYPE":calltype,
+      "NOTES": notes,
+      "ADDITIONAL DETAILS": additionalDetails,
     }
 
-    print("Fixed old leads ✅");
+    );
+    try {
+      final docRef = fbd.collection("LEADS").doc();
+      await docRef.set({
+        "LEAD_ID": docRef.id,
+        "NAME": name.trim(),
+        "PHONE": phone.trim(),
+        "EMAIL": email.trim(),
+        "SOURCE": source.trim(),
+        "STATUS": leadStatus.trim(),
+        "CALL TYPE":callType.trim(),
+        "FOLLOW_UP_STATUS": "pending",
+        "NOTES": notes.trim(),
+        "ADDED TIME": FieldValue.serverTimestamp(),
+        "ADDED BY ID": "web_admin",
+        "ASSIGNED AGENT": "",
+        "FOLLOW UP DATE": null,
+        "FOLLOW UP TIME": "",
+        "PLACE": "",
+        "PRIORITY": "Medium",
+      });
+    } catch (e) {
+      debugPrint("Error adding lead: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> completedLead(String id) async {
+    await fbd.collection('LEADS').doc(id).update({
+      "FOLLOW_UP_STATUS": "completed",
+      "STATUS": "Converted",
+    });
+  }
+
+  Future<void> rescheduleLead(String id, DateTime date, String time) async {
+    await fbd.collection("LEADS").doc(id).update({
+      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
+      "FOLLOW_UP_TIME": time,
+    });
   }
 
   void listenLeads() {
@@ -150,21 +198,6 @@ return LeadModel.fromMap(
     notifyListeners();
   }
 
-  Future<void> completedLead(String id) async {
-    await fbd.collection('LEADS').doc(id).update({
-      "FOLLOW_UP_STATUS": "completed",
-      "STATUS": "Converted",
-    });
-    notifyListeners();
-  }
-
-  Future<void> rescheduleLead(String id, DateTime date, String time) async {
-    await fbd.collection("LEADS").doc(id).update({
-      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
-      "FOLLOW_UP_TIME": time,
-    });
-  }
-
   void searchLeads(String query) {
     searchQuery = query;
     applyFilters();
@@ -178,6 +211,7 @@ return LeadModel.fromMap(
       final phone = lead.phone.toLowerCase() ;
       final email = lead.email.toLowerCase() ;
       final status = lead.status.toUpperCase();
+      final calltype = lead.calltype.toUpperCase();
       final source = lead.source.toUpperCase();
 
       final matchesSearch =
@@ -209,6 +243,95 @@ return matchesSearch &&
 
     notifyListeners();
   }
+  void dispose() {
+    leadSubscription?.cancel();
+    searchController.dispose();
+    super.dispose();
+  }
+  Future<void> fetchCategories() async {
+    isLoading = true;
+    notifyListeners();
+  }
+
+  Future<void> fetchCallStatuses() async {
+    try {
+      final snapshot = await fbd.collection("LEAD_SETTINGS").doc("call_statuses").get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final rawList = data["statuses"] ?? [];
+        callStatusList = List<String>.from(rawList.map((e) => e.toString()));
+      } else {
+        callStatusList = [];
+      }
+    } catch (e) {
+      callStatusList = [];
+      debugPrint("fetchCallStatuses error: $e");
+    } finally {
+      
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
+Future<void> fetchLeadCategories() async {
+    try {
+      final snapshot = await fbd.collection("LEAD_SETTINGS").doc("categories").get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final rawList = data["categoryList"] ?? data["categories"] ?? [];
+
+        categoryList = List<LeadCategoryModel>.from(
+          rawList.map((e) => LeadCategoryModel.fromMap(Map<String, dynamic>.from(e))),
+        );
+      } else {
+        categoryList = [];
+      }
+    } catch (e) {
+      categoryList = [];
+      debugPrint("fetchLeadCategories error: $e");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchLeadSettings() async {
+    try {
+      isCategoryLoading = true;
+      notifyListeners();
+
+      final doc = await fbd.collection("LEAD_SETTINGS").doc("categories").get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final rawList = data["categoryList"] ?? data["categories"] ?? [];
+
+        categories = List<Map<String, dynamic>>.from(
+          rawList.map((e) => Map<String, dynamic>.from(e)),
+        );
+      } else {
+        categories = [];
+      }
+    } catch (e) {
+      categories = [];
+      debugPrint("fetchLeadSettings error: $e");
+    } finally {
+      isCategoryLoading = false;
+      notifyListeners();
+    }
+  }
+  void updateAdditionalDetail(String key, dynamic value) {
+    additionalDetails[key] = value;
+    notifyListeners();
+  }
+
+  void clearAdditionalDetails() {
+    additionalDetails.clear();
+    notifyListeners();
+  }
 
   Future<void> assignAgent(String leadId, String agentId, String agentName) async {
   try {
@@ -220,6 +343,8 @@ return matchesSearch &&
     print("Assign Error: $e");
   }
 }
+
+
 
 
   void updateSource(String source) {

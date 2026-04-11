@@ -14,6 +14,7 @@ class LeadModel {
   String priority;
   String assignedAgentId;
   String followupstatus;
+  String calltype;
   DateTime lastContactedDate;
   String assignedAgentName;
 
@@ -30,6 +31,7 @@ class LeadModel {
     required this.priority,
     required this.assignedAgentId,
     required this.followupstatus,
+    required this.calltype,
    required this.lastContactedDate,
    required this.assignedAgentName,
   });
@@ -37,7 +39,7 @@ class LeadModel {
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
     DateTime followDate;
 
-    var value = map['FOLLOW UP DATE'];
+    var value = map['FOLLOW_UP_DATE'];
 
     if (value is Timestamp) {
       followDate = value.toDate();
@@ -75,6 +77,7 @@ class LeadModel {
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       assignedAgentName: map["ASSIGNED_AGENT_NAME"] ?? "",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
+     calltype: map['INCOMING']?.toString().toUpperCase() ?? "OUTGOING",
       lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
           ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
           : added_date,
@@ -104,5 +107,21 @@ extension LeadPriority on LeadModel {
       default:
         return "Low";
     }
+  }
+}
+class LeadCategoryModel {
+  final String title;
+  final List<String> sub;
+
+  LeadCategoryModel({
+    required this.title,
+    required this.sub,
+  });
+
+  factory LeadCategoryModel.fromMap(Map<String, dynamic> map) {
+    return LeadCategoryModel(
+      title: map['title']?.toString() ?? '',
+      sub: List<String>.from(map['sub'] ?? []),
+    );
   }
 }

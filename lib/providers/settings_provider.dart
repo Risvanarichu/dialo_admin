@@ -12,35 +12,82 @@ final TextEditingController categoryController = TextEditingController();
     fetchCategories();
   }
 
+  // Future<void> saveCategories() async {
+  //   List<Map<String, dynamic>> clearCategories =
+  //   categories.map((e) {
+  //     return {
+  //       "title": e["title"],
+  //       "sub": e["sub"],
+  //     };
+  //   }).toList();
+  //
+  //   // await db.collection("LEAD_SETTINGS").doc("categories").set({
+  //   //   "categoryList": clearCategories,
+  //   //   "callStatus": callStatus,
+  //   // });
+  // }
+
   Future<void> saveCategories() async {
     final docRef = db.collection("LEAD_SETTINGS").doc("categories");
     final doc = await docRef.get();
 
-    List<Map<String, dynamic>> existing = [];
+    List<Map<String, dynamic>> existingCategories = [];
 
     if (doc.exists) {
-      existing = List<Map<String, dynamic>>.from(
-        doc.data()?["categoryList"] ?? [],
-      );
+      final data = doc.data();
+      existingCategories = List<Map<String, dynamic>>.from(
+          data?["categoryList"] ?? []);
     }
-    final updatedList = [...existing, ...categories];
+
+    List<Map<String, dynamic>> newCategories =
+    categories.map((e) {
+      return {
+        "title": e["title"],
+        "sub": e["sub"],
+      };
+    }).toList();
+
+    // ✅ MERGE old + new
+    existingCategories.addAll(newCategories);
+
+    // ✅ Remove duplicates (optional)
+    existingCategories = existingCategories.toSet().toList();
 
     await docRef.set({
-      "categoryList": updatedList,
-      "callStatus": callStatus,
+      "categoryList": existingCategories,
     });
   }
 
   void addCategory() {
     categories.add({
       "title": "",
+      "controller":TextEditingController(),
       "sub": [],
+      "subcontrollers": [],
     });
+    notifyListeners();
+  }
+  void addCallStatus(String value) {
+    value = value.trim();
+
+    if (value.isEmpty || callStatus.contains(value)) return;
+
+    callStatus.add(value);
     notifyListeners();
   }
 
   void deleteCategory(int index) {
+    categories[index]["controller"].dispose();
+    for(var c in categories[index]["subcontrollers"]){
+      c.dispose();
+    }
     categories.removeAt(index);
+    notifyListeners();
+  }
+  void deleteCallStatus(String value){
+    value=value.trim();
+    if(value.isEmpty)return;
+    callStatus.remove(value);
     notifyListeners();
   }
 
@@ -49,7 +96,13 @@ final TextEditingController categoryController = TextEditingController();
   }
 
   void addSubCategory(int index) {
+    if (categories[index]["sub"] != null && categories[index]["sub"].isNotEmpty) {
+      String lastSub = categories[index]["sub"].last.toString().trim();
+      if (lastSub.isEmpty) return;
+    }
+
     categories[index]["sub"].add("");
+    categories[index]["subcontrollers"].add(TextEditingController());
     notifyListeners();
   }
 
@@ -61,7 +114,6 @@ final TextEditingController categoryController = TextEditingController();
     categories[index]["sub"].removeAt(subIndex);
     notifyListeners();
   }
-
   Future<void> fetchCategories() async {
     final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
@@ -69,9 +121,17 @@ final TextEditingController categoryController = TextEditingController();
       final data = doc.data();
 
       categories = List<Map<String, dynamic>>.from(
-        (data?["categoryList"] ?? []).map((e) => {
-          "title": e["title"],
-          "sub": List<String>.from(e["sub"] ?? []),
+        (data?["categoryList"] ?? []).map((e) {
+          List<String> subList = List<String>.from(e["sub"] ?? []);
+
+          return {
+            "title": e["title"] ?? "",
+            "controller": TextEditingController(text: e["title"] ?? ""),
+            "sub": subList,
+            "subcontrollers": subList
+                .map((sub) => TextEditingController(text: sub))
+                .toList(),
+          };
         }),
       );
 
@@ -81,13 +141,74 @@ final TextEditingController categoryController = TextEditingController();
     }
   }
 
+  // Future<void> fetchCategories() async {
+  //   final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
+  //
+  //   if (doc.exists) {
+  //     final data = doc.data();
+  //
+  //     categories = List<Map<String, dynamic>>.from(
+  //       (data?["categoryList"] ?? []).map((e) => {
+  //         "title": e["title"],
+  //         "sub": List<String>.from(e["sub"] ?? []),
+  //       }),
+  //     );
+  //
+  //     callStatus = List<String>.from(data?["callStatus"] ?? []);
+  //
+  //     notifyListeners();
+  //   }
+  // }
+  Future<void>fetchCallStatus()async{
+    final doc=await db.collection("LEAD SETTINGS").doc("CALL STATUS").get();
+    if(doc.exists){
+      final data=doc.data();
+    }
+  }
+
   void clearCategories() {
     categories = [
       {
         "title": "",
+        "controller":TextEditingController(),
         "sub": [],
+        "subcontrollers":[],
       }
     ];
     notifyListeners();
+  }
+  void clearCallStatus(){
+    callStatus.clear();
+    notifyListeners();
+  }
+  void dispose() {
+    categoryController.dispose();
+    super.dispose();
+  }
+ // Future<void> saveCallStatus() async {
+ //    await db.collection("LEAD_SETTINGS").doc("call_status").set({
+ //      "callStatus": callStatus,
+ //    });
+ //  }
+
+  Future<void> saveCallStatus() async {
+    final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
+
+    final doc = await docRef.get();
+
+    List<String> existing = [];
+
+    if (doc.exists) {
+      existing = List<String>.from(doc.data()?["callStatus"] ?? []);
+    }
+
+    existing.addAll(callStatus);
+
+    // remove duplicates
+    existing = existing.toSet().toList();
+
+    await docRef.set({
+      "callStatus": existing,
+    });
   }
 }
