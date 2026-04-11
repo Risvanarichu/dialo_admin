@@ -169,14 +169,14 @@ class Leads extends StatelessWidget {
                             padding: const EdgeInsets.all(20),
                             child: Center(
                               child: Text(
-                                "N o results for '${provider.searchQuery}'",
+                                "No results for '${provider.searchQuery}'",
                                 style: TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                             ),
                           )
                               : Column(
                             children: provider.allLeads
-                                .map((e) => tableRow(e,context))
+                                .map((e) => tableRowDynamic(e,context))
                                 .toList(),
                           ),
                         ],
@@ -228,7 +228,7 @@ Widget tableHead(String text) {
   );
 }
 
-Widget tableRow(LeadModel lead, BuildContext context) {
+Widget tableRowDynamic(LeadModel lead, BuildContext context) {
   final mainProvider = context.read<MainProvider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
@@ -280,12 +280,6 @@ Widget statusChip(String status) {
     textAlign: TextAlign.center),
   );
 }
-
-class Lead {
-  final String name, phone, email, status, source, agent;
-  Lead(this.name, this.phone, this.email, this.status, this.source, this.agent);
-}
-
 Widget alignCenter(String text) {
   return Align(
     alignment: Alignment.center,

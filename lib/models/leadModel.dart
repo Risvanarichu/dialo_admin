@@ -14,6 +14,8 @@ class LeadModel {
   String priority;
   String assignedAgentId;
   String followupstatus;
+  String calltype;
+  DateTime lastContactedDate;
 
   LeadModel({
     required this.id,
@@ -28,6 +30,8 @@ class LeadModel {
     required this.priority,
     required this.assignedAgentId,
     required this.followupstatus,
+    required this.calltype,
+      required this.lastContactedDate,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -45,6 +49,18 @@ class LeadModel {
       followDate = DateTime.now();
     }
 
+    var added_date = map['ADDED_TIME'];
+
+    if (added_date is Timestamp) {
+      added_date = added_date.toDate();
+    } else if (added_date is String) {
+      added_date = DateTime.tryParse(added_date) ?? DateTime.now();
+    } else if (added_date is DateTime) {
+      added_date = added_date;
+    } else {
+      added_date = DateTime.now();
+    }
+
     return LeadModel(
       id: id,
       name: map['NAME']?.toString().toUpperCase() ?? "",
@@ -54,11 +70,14 @@ class LeadModel {
       status: map['STATUS']?.toString().toUpperCase()??"",
       followupDate: followDate,
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
-      time: map['FOLLOW_UP_TIME']?.toString() ??
-          DateFormat('hh:mm a').format(followDate),
+      time: DateFormat('hh:mm a').format(added_date),
       priority: map['PRIORITY']?.toString() ?? "Medium",
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
+     calltype: map['INCOMING']?.toString().toUpperCase() ?? "OUTGOING",
+      lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
+          ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
+          : added_date,
 
     );
   }
@@ -85,5 +104,21 @@ extension LeadPriority on LeadModel {
       default:
         return "Low";
     }
+  }
+}
+class LeadCategoryModel {
+  final String title;
+  final List<String> sub;
+
+  LeadCategoryModel({
+    required this.title,
+    required this.sub,
+  });
+
+  factory LeadCategoryModel.fromMap(Map<String, dynamic> map) {
+    return LeadCategoryModel(
+      title: map['title']?.toString() ?? '',
+      sub: List<String>.from(map['sub'] ?? []),
+    );
   }
 }
