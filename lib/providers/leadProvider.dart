@@ -16,7 +16,7 @@ class LeadProvider extends ChangeNotifier {
   String selectedStatus = "All Status";
   String selectedSources = "All Sources";
   String searchQuery = "";
-  final String agentId = "1775024001964000";
+  final String agentId = "1775141226586000";
 
   LeadProvider() {
     listenLeads();
@@ -28,7 +28,7 @@ class LeadProvider extends ChangeNotifier {
 
     if (agents.docs.isEmpty) return;
 
-    String defaultAgentId = agents.docs.first.id;
+    String defaultAgentId = agents.docs.first. id;
 
     for (var lead in leads.docs) {
       await lead.reference.update({
