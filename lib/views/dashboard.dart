@@ -188,9 +188,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "TODAYS CALLS",
-                value: provider.totalLeads.toString(),
+                value: provider.todaysCalls.toString(),
                 color: const Color( 0xffF0FFDE),
-                icon: Icons.trending_up,
+                icon: Icons.call,
               );
             },
           ),
@@ -199,9 +199,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "UPCOMING",
-                value: provider.totalLeads.toString(),
+                value: provider.upcoming.toString(),
                 color: const Color(0xffFFFCDD),
-                icon: Icons.trending_up,
+                icon: Icons.calendar_today,
               );
             },
           ),
@@ -210,9 +210,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "OVERDUE",
-                value: provider.totalLeads.toString(),
+                value: provider.overdue.toString(),
                 color: const Color( 0xffF3ECFF),
-                icon: Icons.trending_up,
+                icon: Icons.access_time,
               );
             },
           ),
@@ -507,132 +507,137 @@ class CallAnalytics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Color(0xFFEFF1F3), width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // const Text("Call Analyst",style: TextStyle(fontWeight: FontWeight.bold),),
-          const SizedBox(height: 16),
-          Expanded(
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 9,
-                minY: 0,
-                maxY: 100,
-
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                  getDrawingVerticalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 25,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: [
-                      FlSpot(0, 15),
-                      FlSpot(1, 5),
-                      FlSpot(2, 25),
-                      FlSpot(3, 65),
-                      FlSpot(4, 50),
-                      FlSpot(5, 25),
-                      FlSpot(6, 35),
-                      FlSpot(7, 75),
-                      FlSpot(8, 25),
-                      FlSpot(9, 30),
-                    ],
-                    isCurved: false,
-                    barWidth: 1,
-                    color: Color(0xFFA023F3),
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA023F3)
-                          );
-                        }),
-                  ),
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 85),
-                      FlSpot(1, 88),
-                      FlSpot(2, 0),
-                      FlSpot(3, 55),
-                      FlSpot(4, 78),
-                      FlSpot(5, 48),
-                      FlSpot(6, 30),
-                      FlSpot(7, 28),
-                      FlSpot(8, 55),
-                      FlSpot(9, 45),
-                    ],
-                    isCurved: false,
-                    color: Color(0xFFA17985),
-                    barWidth: 1,
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA17985)
-                          );
-                        }
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Consumer<DashboardProvider>(
+        builder: (context,provider,child) {
+          return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Color(0xFFEFF1F3), width: 2),
           ),
-        ],
-      ),
-    );
+          child:provider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+               : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const Text("Call Analyst",style: TextStyle(fontWeight: FontWeight.bold),),
+              const SizedBox(height: 16),
+              Expanded(
+                child: LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: 11,
+                    minY: 0,
+                    maxY: 20,
+
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: true,
+                      drawHorizontalLine: true,
+                      getDrawingHorizontalLine: (value) {
+                        return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+                      },
+                      getDrawingVerticalLine: (value) {
+                        return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+                      },
+                    ),
+                    borderData: FlBorderData(show: false),
+
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 1,
+                          getTitlesWidget: (value, _) {
+                            const months = [
+                              "Jan",
+                              "Feb",
+                              "Mar",
+                              "Apr",
+                              "May",
+                              "Jun",
+                              "Jul",
+                              "Aug",
+                              "Sep",
+                              "Oct",
+                              "Nov",
+                              "Dec",
+                            ];
+                            if (value.toInt() < 0 || value.toInt() > 11) {
+                              return const SizedBox();
+                            }
+
+                            return Text(
+                              months[value.toInt()],
+                              style: const TextStyle(fontSize: 12),
+                            );
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 5,
+                          getTitlesWidget: (value, _) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(fontSize: 12),
+                            );
+                          },
+                        ),
+                      ),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots:provider.leadSpots,
+                        isCurved:false,
+                        barWidth:2,
+                        color:const Color(0xFFA023F3),
+                        dotData:FlDotData(
+                          show: true,
+                          getDotPainter: (spot,percent,barData,index){
+                            return FlDotCirclePainter(
+                            radius: 4,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor:
+                            barData.color ?? const Color(0xFFA023F3),
+                            );
+                          },
+                        ),
+                  ),
+                      LineChartBarData(
+                        spots: provider.callSpots,
+                        isCurved: false,
+                        color: Color(0xFFA17985),
+                        barWidth: 2,
+                        dotData: FlDotData(show: true,
+                            getDotPainter: (spot,percent,barData,index){
+                              return FlDotCirclePainter(
+                                  radius: 4,
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                  strokeColor: barData.color??Color(0xFFA17985)
+                              );
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+              );
+        }
+      );
   }
 }
 
