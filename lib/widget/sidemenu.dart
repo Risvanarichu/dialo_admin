@@ -57,8 +57,9 @@ class _SideMenuState extends State<SideMenu> {
                   children: [
                     CircleAvatar(
                       radius:35,
-                    backgroundImage: AssetImage(
-                      "assets/dialo-logo1.png"),
+                    child: Image.asset("assets/side_logo.png"),
+                    // backgroundImage: AssetImage(
+                    //   "assets/dialo-logo1.png"),
                     ),
             SizedBox(height: 8),
     Text(
@@ -72,7 +73,7 @@ class _SideMenuState extends State<SideMenu> {
                   ],
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 /// MENU ITEMS
                 _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
