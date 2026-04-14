@@ -25,55 +25,7 @@ class ReportProvider extends ChangeNotifier {
 
 
 
-  // Future<void> fetchAgentPerformance() async {
-  //   Query query = fbd.collection("LEADS");
-  //
-  //
-  //   if (fromDate != null && toDate != null) {
-  //     query = query
-  //         .where("ADDED_TIME", isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate!))
-  //         .where("ADDED_TIME", isLessThanOrEqualTo: Timestamp.fromDate(toDate!));
-  //   }
-  //
-  //   final snapshot = await query.get();
-  //
-  //   Map<String, Map<String, int>> data = {};
-  //
-  //   for (var doc in snapshot.docs) {
-  //     final lead = doc.data() as Map<String, dynamic>;
-  //
-  //     String agent = (lead['ADDED_BY_ID'] == null ||
-  //         lead['ADDED_BY_ID'] == "")
-  //         ? "Unassigned"
-  //         : lead['ADDED_BY_ID'];
-  //
-  //     String status = (lead['STATUS'] ?? "").toString();
-  //
-  //     data.putIfAbsent(agent, () => {
-  //       "total": 0,
-  //       "converted": 0,
-  //     });
-  //
-  //
-  //     data[agent]!["total"] = data[agent]!["total"]! + 1;
-  //
-  //
-  //     if (status.toUpperCase() == "CONVERTED") {
-  //       data[agent]!["converted"] =
-  //           data[agent]!["converted"]! + 1;
-  //     }
-  //   }
-  //
-  //   agentPerformance = data.entries.map((e) {
-  //     return {
-  //       "agent": e.key,
-  //       "total": e.value["total"],
-  //       "converted": e.value["converted"],
-  //     };
-  //   }).toList();
-  //
-  //   notifyListeners();
-  // }
+
 
   Future<void> fetchAgentPerformance() async {
     try {

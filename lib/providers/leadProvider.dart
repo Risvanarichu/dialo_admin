@@ -28,57 +28,12 @@ class LeadProvider extends ChangeNotifier {
 
   Future<void> fixOldLeads() async {
     final agents = await fbd.collection('AGENT').get();
-    final leads = await fbd.collection('LEADS').get();
+    final leadsSnapshot = await fbd.collection('LEADS').get();
 
-  Future<void> addLead({
-    required String name,
-    required String phone,
-    required String email,
-    required String source,
-    required String leadStatus,
-    required String callType,
-    required String notes,
-  }) async {
-    await fbd.collection("LEADS").add({
-      "NAME": name,
-      "PHONE": phone,
-      "EMAIL": email,
-      "SOURCE": source,
-      "LEAD STATUS": leadStatus,
-     "CALL TYPE":calltype,
-      "NOTES": notes,
-      "ADDITIONAL DETAILS": additionalDetails,
-    }
+    String defaultAgentId =
+    agents.docs.isNotEmpty ? agents.docs.first.id : agentId;
 
-    String defaultAgentId = agents.docs.first. id;
-    );
-    try {
-      final docRef = fbd.collection("LEADS").doc();
-      await docRef.set({
-        "LEAD_ID": docRef.id,
-        "NAME": name.trim(),
-        "PHONE": phone.trim(),
-        "EMAIL": email.trim(),
-        "SOURCE": source.trim(),
-        "STATUS": leadStatus.trim(),
-        "CALL TYPE":callType.trim(),
-        "FOLLOW_UP_STATUS": "pending",
-        "NOTES": notes.trim(),
-        "ADDED TIME": FieldValue.serverTimestamp(),
-        "ADDED BY ID": "web_admin",
-        "ASSIGNED AGENT": "",
-        "FOLLOW UP DATE": null,
-        "FOLLOW UP TIME": "",
-        "PLACE": "",
-        "PRIORITY": "Medium",
-      });
-    } catch (e) {
-      debugPrint("Error adding lead: $e");
-      rethrow;
-    }
-  }
-
-    for (var lead in leads.docs) {
+    for (var lead in leadsSnapshot.docs) {
       await lead.reference.update({
         "ASSIGNED_AGENT_ID":
         lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId,
@@ -89,6 +44,45 @@ class LeadProvider extends ChangeNotifier {
 
     print("Fixed old leads ✅");
   }
+
+    Future<void> addLead({
+      required String name,
+      required String phone,
+      required String email,
+      required String source,
+      required String leadStatus,
+      required String callType,
+      required String notes,
+    }) async {
+      try {
+        final docRef = fbd.collection("LEADS").doc();
+
+        await docRef.set({
+          "LEAD_ID": docRef.id,
+          "NAME": name.trim(),
+          "PHONE": phone.trim(),
+          "EMAIL": email.trim(),
+          "SOURCE": source.trim(),
+          "STATUS": leadStatus.trim(),
+          "CALL TYPE": callType.trim(),
+          "FOLLOW_UP_STATUS": "pending",
+          "NOTES": notes.trim(),
+          "ADDITIONAL DETAILS": additionalDetails,
+          "ADDED TIME": FieldValue.serverTimestamp(),
+          "ADDED BY ID": agentId,
+          "ASSIGNED_AGENT_ID": agentId,
+          "FOLLOW UP DATE": null,
+          "FOLLOW UP TIME": "",
+          "PLACE": "",
+          "PRIORITY": "Medium",
+        });
+      } catch (e) {
+        debugPrint("Error adding lead: $e");
+        rethrow;
+      }
+    }
+
+
 
   void listenLeads() {
     isLoading = true;
@@ -269,5 +263,20 @@ class LeadProvider extends ChangeNotifier {
   void updateSource(String source) {
     selectedSources = source;
     applyFilters();
+  }
+
+  Future<void> completedLead(String leadId) async {
+    await fbd.collection('LEADS').doc(leadId).update({
+      "FOLLOW_UP_STATUS": "COMPLETED",
+    });
+  }
+
+  Future<void> rescheduleLead(
+      String leadId, DateTime date, String time) async {
+    await fbd.collection('LEADS').doc(leadId).update({
+      "FOLLOW UP DATE": date,
+      "FOLLOW UP TIME": time,
+      "FOLLOW_UP_STATUS": "pending",
+    });
   }
 }

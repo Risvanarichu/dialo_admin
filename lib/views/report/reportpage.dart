@@ -164,11 +164,14 @@ class AgentPerformanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Agent Performance",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 380,
+          const Text(
+            "Agent Performance",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Expanded( // ✅ FIXED
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
@@ -179,11 +182,9 @@ class AgentPerformanceCard extends StatelessWidget {
                     .reduce((a, b) => a > b ? a : b)
                     .toDouble() +
                     10,
-
                 gridData: FlGridData(show: true),
                 borderData: FlBorderData(show: false),
 
-                /// ✅ ADD THIS PART
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
@@ -195,15 +196,17 @@ class AgentPerformanceCard extends StatelessWidget {
                           return const SizedBox();
                         }
 
-                        String agentName = provider.agentPerformance[index]['agent'];
+                        String agentName =
+                        provider.agentPerformance[index]['agent'];
 
                         agentName = agentName.length > 6
                             ? agentName.substring(0, 6) + "..."
                             : agentName;
+
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            agentName.toString(),
+                            agentName,
                             style: const TextStyle(fontSize: 10),
                           ),
                         );
@@ -227,7 +230,7 @@ class AgentPerformanceCard extends StatelessWidget {
                   },
                 ),
               ),
-            )
+            ),
           ),
         ],
       ),
@@ -278,44 +281,49 @@ class LeadFunnelCard extends StatelessWidget {
           const SizedBox(height: 20),
          _funnelBar(context,"Total",(funnel['total']??0).toDouble(),maxValue),
          _funnelBar(context,"Pending",(funnel['pending']??0).toDouble(),maxValue),
+          _funnelBar(context,"Contacted",(funnel['contacted']??0).toDouble(),maxValue),
          _funnelBar(context,"Converted",(funnel['converted']??0).toDouble(),maxValue),
         ],
       ),
     );
   }
 
-  Widget _funnelBar(BuildContext context, String label, double value,double maxValue) {
+  Widget _funnelBar(BuildContext context, String label, double value, double maxValue) {
     double percent = maxValue == 0 ? 0 : value / maxValue;
-    if (maxValue == 0) {
-      return const Text("No data available");
-    }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label),
-          const SizedBox(height: 5),
-          Center(
-            child: Container(
-              height: 30,
-              width: MediaQuery.of(context).size.width * 0.35 * percent,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+          const SizedBox(height: 6),
+
+          /// ✅ FIXED WIDTH CONTAINER (IMPORTANT)
+          Container(
+            width: double.infinity, // 🔥 gives bounded width
+            alignment: Alignment.center,
+            child: FractionallySizedBox(
+              widthFactor: percent,
+              child: Container(
+                height: 35,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 12),
-              child: Text(
-                value.toInt().toString(),
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                alignment: Alignment.center,
+                child: Text(
+                  value.toInt().toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -386,7 +394,6 @@ class LeadsReportCard extends StatelessWidget {
     final provider = context.watch<ReportProvider>();
 
     return _card(
-      height: 450, // 🔥 FIXED SIZE
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -431,7 +438,8 @@ class LeadsReportCard extends StatelessWidget {
           const SizedBox(height: 15),
 
           /// 🔥 FIXED AREA + SCROLL
-          Expanded(
+          SizedBox(
+            height: 250,
             child: provider.leadsReport.isEmpty
                 ? const Center(
               child: Text("No Data Available"),
@@ -553,19 +561,17 @@ class LeadsFilterSection extends StatelessWidget {
 /// CARD UI
 ////////////////////////////////////////////////////////////
 
-Widget _card({required Widget child, double height = 400}) {
-  return SizedBox(
-    height: height,
-    child: Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 8)
-        ],
-      ),
-      child: child,
+Widget _card({required Widget child}) {
+  return Container(
+    height: 420, // ✅ SAME HEIGHT FOR ALL
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 8)
+      ],
     ),
+    child: child,
   );
 }
