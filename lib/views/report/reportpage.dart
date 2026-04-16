@@ -33,7 +33,7 @@ class ReportsPage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(child: AgentPerformanceCard()),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   Expanded(child: LeadFunnelCard()),
                 ],
               ),
@@ -48,6 +48,8 @@ class ReportsPage extends StatelessWidget {
                   Expanded(child: LeadsReportCard()),
                 ],
               ),
+
+
             ],
           ),
         ),
@@ -67,9 +69,9 @@ class DateFilterSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _dateField("From Date"),
+        _dateField(context, "From Date", true),
         const SizedBox(width: 20),
-        _dateField("To Date"),
+        _dateField(context, "To Date", false),
         const SizedBox(width: 20),
         Padding(
           padding: const EdgeInsets.only(top: 25),
@@ -92,26 +94,56 @@ class DateFilterSection extends StatelessWidget {
     );
   }
 
-  Widget _dateField(String label) {
+  Widget _dateField(BuildContext context, String label, bool isFrom) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label),
           const SizedBox(height: 6),
-          Container(
-            height: 45,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Align(
+          InkWell(
+            onTap: () async {
+              final provider = context.read<ReportProvider>();
+
+              DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+              );
+
+              if (picked != null) {
+                if (isFrom) {
+                  provider.fromDate = picked;
+                } else {
+                  provider.toDate = picked;
+                }
+                provider.notifyListeners(); // 🔥 IMPORTANT
+              }
+            },
+            child: Container(
+              height: 45,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
               alignment: Alignment.centerLeft,
-              child: Text("dd-mm-yyyy"),
+              child: Consumer<ReportProvider>(
+                builder: (_, provider, __) {
+                  DateTime? date =
+                  isFrom ? provider.fromDate : provider.toDate;
+
+                  return Text(
+                    date == null
+                        ? "dd-mm-yyyy"
+                        : "${date.day}-${date.month}-${date.year}",
+                  );
+                },
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -132,31 +164,71 @@ class AgentPerformanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Agent Performance",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 380,
+          const Text(
+            "Agent Performance",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Expanded( // ✅ FIXED
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: provider.agentPerformance.isEmpty
-                  ?10
-                  :provider.agentPerformance
-                  .map((e)=>(e['total']??0))
-                  .reduce((a,b)=> a>b ? a:b)
-                  .toDouble()+10,
+                    ? 10
+                    : provider.agentPerformance
+                    .map((e) => (e['total'] ?? 0))
+                    .reduce((a, b) => a > b ? a : b)
+                    .toDouble() +
+                    10,
                 gridData: FlGridData(show: true),
                 borderData: FlBorderData(show: false),
-               barGroups: List.generate(
+
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        int index = value.toInt();
+
+                        if (index >= provider.agentPerformance.length) {
+                          return const SizedBox();
+                        }
+
+                        String agentName =
+                        provider.agentPerformance[index]['agent'];
+
+                        agentName = agentName.length > 6
+                            ? agentName.substring(0, 6) + "..."
+                            : agentName;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            agentName,
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
+                ),
+
+                barGroups: List.generate(
                   provider.agentPerformance.length,
-                   (index){
+                      (index) {
                     final data = provider.agentPerformance[index];
-                    return _barGroup(index,
-                        (data["total"]??0).toDouble(),
-                        (data['converted']?? 0).toDouble(),
+                    return _barGroup(
+                      index,
+                      (data["total"] ?? 0).toDouble(),
+                      (data['converted'] ?? 0).toDouble(),
                     );
-                   })
+                  },
+                ),
               ),
             ),
           ),
@@ -209,41 +281,49 @@ class LeadFunnelCard extends StatelessWidget {
           const SizedBox(height: 20),
          _funnelBar(context,"Total",(funnel['total']??0).toDouble(),maxValue),
          _funnelBar(context,"Pending",(funnel['pending']??0).toDouble(),maxValue),
+          _funnelBar(context,"Contacted",(funnel['contacted']??0).toDouble(),maxValue),
          _funnelBar(context,"Converted",(funnel['converted']??0).toDouble(),maxValue),
         ],
       ),
     );
   }
 
-  Widget _funnelBar(BuildContext context, String label, double value,double maxValue) {
-    double percent = value / maxValue;
+  Widget _funnelBar(BuildContext context, String label, double value, double maxValue) {
+    double percent = maxValue == 0 ? 0 : value / maxValue;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label),
-          const SizedBox(height: 5),
-          Center(
-            child: Container(
-              height: 30,
-              width: MediaQuery.of(context).size.width * 0.35 * percent,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+          const SizedBox(height: 6),
+
+          /// ✅ FIXED WIDTH CONTAINER (IMPORTANT)
+          Container(
+            width: double.infinity, // 🔥 gives bounded width
+            alignment: Alignment.center,
+            child: FractionallySizedBox(
+              widthFactor: percent,
+              child: Container(
+                height: 35,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 12),
-              child: Text(
-                value.toInt().toString(),
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                alignment: Alignment.center,
+                child: Text(
+                  value.toInt().toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -311,6 +391,8 @@ class LeadsReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ReportProvider>();
+
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,55 +400,98 @@ class LeadsReportCard extends StatelessWidget {
           const Text("LEADS REPORT",
               style: TextStyle(fontWeight: FontWeight.bold)),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 15),
 
-          const LeadsFilterSection(),
-
-          const SizedBox(height: 20),
-
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 120,
-              border: TableBorder(
-                verticalInside: BorderSide(color: Colors.grey.shade300),
-                horizontalInside: BorderSide(color: Colors.grey.shade300),
+          /// FILTERS
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _dropdown(
+                value: provider.selectedAgent,
+                items: ["All Agents"],
+                onChanged: provider.updateAgent,
               ),
-              columns: const [
-                DataColumn(label: Text("Lead ID")),
-                DataColumn(label: Text("Lead Name")),
-                DataColumn(label: Text("Phone")),
-                DataColumn(label: Text("Source")),
-                DataColumn(label: Text("Agent")),
-                DataColumn(label: Text("Stage")),
-                DataColumn(label: Text("Status")),
-                DataColumn(label: Text("Value")),
-              ],
-              rows: const [
-                DataRow(cells: [
-                  DataCell(Text("L001")),
-                  DataCell(Text("John")),
-                  DataCell(Text("9876543210")),
-                  DataCell(Text("Website")),
-                  DataCell(Text("RISWANA")),
-                  DataCell(Text("Qualified")),
-                  DataCell(Text("Follow-up")),
-                  DataCell(Text("₹50000")),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text("L002")),
-                  DataCell(Text("Sarah")),
-                  DataCell(Text("9123456780")),
-                  DataCell(Text("Facebook")),
-                  DataCell(Text("SHIBIN")),
-                  DataCell(Text("Proposal")),
-                  DataCell(Text("Contacted")),
-                  DataCell(Text("₹35000")),
-                ]),
-              ],
+              _dropdown(
+                value: provider.selectedStatus,
+                items: ["All Status", "New", "Converted"],
+                onChanged: provider.updateStatusFilter,
+              ),
+              _dropdown(
+                value: provider.selectedSource,
+                items: ["All Sources"],
+                onChanged: provider.updateSource,
+              ),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  onChanged: provider.searchLeads,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Search leads...",
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 15),
+
+          /// 🔥 FIXED AREA + SCROLL
+          SizedBox(
+            height: 250,
+            child: provider.leadsReport.isEmpty
+                ? const Center(
+              child: Text("No Data Available"),
+            )
+                : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: DataTable(
+                  columnSpacing: 80,
+                  columns: const [
+                    DataColumn(label: Text("Lead ID")),
+                    DataColumn(label: Text("Lead Name")),
+                    DataColumn(label: Text("Phone")),
+                    DataColumn(label: Text("Source")),
+                    DataColumn(label: Text("Agent")),
+                    DataColumn(label: Text("Status")),
+                  ],
+                  rows: provider.leadsReport.map((e) {
+                    return DataRow(cells: [
+                      DataCell(Text(e["id"])),
+                      DataCell(Text(e["name"])),
+                      DataCell(Text(e["phone"])),
+                      DataCell(Text(e["source"])),
+                      DataCell(Text(e["agent"])),
+                      DataCell(Text(e["status"])),
+                    ]);
+                  }).toList(),
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _dropdown({
+    required String value,
+    required List<String> items,
+    required Function(String) onChanged,
+  }) {
+    return SizedBox(
+      width: 150,
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
+        onChanged: (val) => onChanged(val!),
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+        ),
       ),
     );
   }
@@ -381,30 +506,32 @@ class LeadsFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
       children: [
-        _dropdown(["All Agents", "RISWANA", "SHIBIN", "FINIYA"]),
-        const SizedBox(width: 10),
-        _dropdown(["All Status", "New", "Contacted", "Converted"]),
-        const SizedBox(width: 10),
-        _dropdown(["All Sources", "Website", "Facebook", "Referral"]),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const TextField(
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: "Search leads...",
-              ),
+        SizedBox(
+          width: 160,
+          child: _dropdown(["All Agents", "RISWANA", "SHIBIN", "FINIYA"]),
+        ),
+        SizedBox(
+          width: 160,
+          child: _dropdown(["All Status", "New", "Contacted", "Converted"]),
+        ),
+        SizedBox(
+          width: 160,
+          child: _dropdown(["All Sources", "Website", "Facebook", "Referral"]),
+        ),
+        SizedBox(
+          width: 200,
+          child: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: "Search leads...",
+              contentPadding: EdgeInsets.symmetric(horizontal: 10),
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -436,6 +563,7 @@ class LeadsFilterSection extends StatelessWidget {
 
 Widget _card({required Widget child}) {
   return Container(
+    height: 420, // ✅ SAME HEIGHT FOR ALL
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: Colors.white,

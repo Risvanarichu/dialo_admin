@@ -178,33 +178,6 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
                             const SizedBox(width: 8),
 
-                    // IconButton(
-                    // icon: const Icon(Icons.add,
-                    //
-                    // ),
-                    // onPressed: () {
-                    // if (cat["title"] == null ||
-                    // cat["title"].toString().trim().isEmpty) {
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    // const SnackBar(
-                    // content: Text("Enter category first"),
-                    // ),
-                    // );
-                    // return;
-                    // }
-                    // else{
-                    //   if(cat["sub"]==null|| && cat ["sub"].isNotEmpty){
-                    //  String lastSub= cat["sub"].last.toString().trim();
-                    //  if(lastSub.isEmpty){
-                    //    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("fill the category first")));
-                    //
-                    //  }
-                    //   }
-                    // }
-                    //
-                    // provider.addSubCategory(index);
-                    // },
-                    // ),
                             IconButton(
                               icon: const Icon(Icons.add,color: Colors.blue),
                               onPressed: () {
@@ -229,6 +202,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                                 provider.addSubCategory(index);
                               },
                             ),
+
                             IconButton(
                               icon: const Icon(Icons.delete,color: Colors.red,),
                               onPressed: () {

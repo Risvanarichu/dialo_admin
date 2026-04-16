@@ -27,7 +27,7 @@ class LeadProvider extends ChangeNotifier {
   String selectedStatus = "All Status";
   String selectedSources = "All Sources";
   String searchQuery = "";
-  final String agentId = "1775024001964000";
+  final String agentId = "1775141226586000";
 
   var userList;
 
@@ -44,68 +44,63 @@ void setCallStatus(String status) {
   notifyListeners();
 }
 
-  get calltype => null;
+  Future<void> fixOldLeads() async {
+    final agents = await fbd.collection('AGENT').get();
+    final leadsSnapshot = await fbd.collection('LEADS').get();
 
-  Future<void> addLead({
-    required String name,
-    required String phone,
-    required String email,
-    required String source,
-    required String leadStatus,
-    required String callType,
-    required String notes,
-  }) async {
-    await fbd.collection("LEADS").add({
-      "NAME": name,
-      "PHONE": phone,
-      "EMAIL": email,
-      "SOURCE": source,
-      "LEAD STATUS": leadStatus,
-     "CALL TYPE":calltype,
-      "NOTES": notes,
-      "ADDITIONAL DETAILS": additionalDetails,
-    }
+    String defaultAgentId =
+    agents.docs.isNotEmpty ? agents.docs.first.id : agentId;
 
-    );
-    try {
-      final docRef = fbd.collection("LEADS").doc();
-      await docRef.set({
-        "LEAD_ID": docRef.id,
-        "NAME": name.trim(),
-        "PHONE": phone.trim(),
-        "EMAIL": email.trim(),
-        "SOURCE": source.trim(),
-        "STATUS": leadStatus.trim(),
-        "CALL TYPE":callType.trim(),
-        "FOLLOW_UP_STATUS": "pending",
-        "NOTES": notes.trim(),
-        "ADDED TIME": FieldValue.serverTimestamp(),
-        "ADDED BY ID": "web_admin",
-        "ASSIGNED AGENT": "",
-        "FOLLOW UP DATE": null,
-        "FOLLOW UP TIME": "",
-        "PLACE": "",
-        "PRIORITY": "Medium",
+    for (var lead in leadsSnapshot.docs) {
+      await lead.reference.update({
+        "ASSIGNED_AGENT_ID":
+        lead.data()["ASSIGNED_AGENT_ID"] ?? defaultAgentId,
+        "ADDED_BY_ID":
+        lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
       });
-    } catch (e) {
-      debugPrint("Error adding lead: $e");
-      rethrow;
     }
+
+    print("Fixed old leads ✅");
   }
 
-  Future<void> completedLead(String id) async {
-    await fbd.collection('LEADS').doc(id).update({
-      "FOLLOW_UP_STATUS": "completed",
-      "STATUS": "Converted",
-    });
-  }
+    Future<void> addLead({
+      required String name,
+      required String phone,
+      required String email,
+      required String source,
+      required String leadStatus,
+      required String callType,
+      required String notes,
+    }) async {
+      try {
+        final docRef = fbd.collection("LEADS").doc();
 
-  Future<void> rescheduleLead(String id, DateTime date, String time) async {
-    await fbd.collection("LEADS").doc(id).update({
-      "FOLLOW_UP_DATE": Timestamp.fromDate(date),
-      "FOLLOW_UP_TIME": time,
-    });
-  }
+        await docRef.set({
+          "LEAD_ID": docRef.id,
+          "NAME": name.trim(),
+          "PHONE": phone.trim(),
+          "EMAIL": email.trim(),
+          "SOURCE": source.trim(),
+          "STATUS": leadStatus.trim(),
+          "CALL TYPE": callType.trim(),
+          "FOLLOW_UP_STATUS": "pending",
+          "NOTES": notes.trim(),
+          "ADDITIONAL DETAILS": additionalDetails,
+          "ADDED TIME": FieldValue.serverTimestamp(),
+          "ADDED BY ID": agentId,
+          "ASSIGNED_AGENT_ID": agentId,
+          "FOLLOW UP DATE": null,
+          "FOLLOW UP TIME": "",
+          "PLACE": "",
+          "PRIORITY": "Medium",
+        });
+      } catch (e) {
+        debugPrint("Error adding lead: $e");
+        rethrow;
+      }
+    }
+
+
 
   void listenLeads() {
     isLoading = true;
@@ -352,5 +347,22 @@ Future<void> fetchLeadCategories() async {
     applyFilters();
   }
 
+<<<<<<< HEAD
   void updateStatus(String s) {}
+=======
+  Future<void> completedLead(String leadId) async {
+    await fbd.collection('LEADS').doc(leadId).update({
+      "FOLLOW_UP_STATUS": "COMPLETED",
+    });
+  }
+
+  Future<void> rescheduleLead(
+      String leadId, DateTime date, String time) async {
+    await fbd.collection('LEADS').doc(leadId).update({
+      "FOLLOW UP DATE": date,
+      "FOLLOW UP TIME": time,
+      "FOLLOW_UP_STATUS": "pending",
+    });
+  }
+>>>>>>> ab06e2bedc20e2f238375112331876365af475f0
 }

@@ -31,12 +31,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
-    // return MaterialApp(
-    //   title: 'Flutter Demo',
-    //   home: WebAddlead(),
-    //   debugShowCheckedModeBanner: false,
-    
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
@@ -52,10 +46,13 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
+<<<<<<< HEAD
         home:Dashboard(),
+=======
+        home:ReportsPage(),
+>>>>>>> ab06e2bedc20e2f238375112331876365af475f0
         debugShowCheckedModeBanner: false,
       ),
-
     );
   }
 }
