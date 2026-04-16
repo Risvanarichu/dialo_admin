@@ -188,9 +188,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "TODAYS CALLS",
-                value: provider.totalLeads.toString(),
+                value: provider.todaysCalls.toString(),
                 color: const Color( 0xffF0FFDE),
-                icon: Icons.trending_up,
+                icon: Icons.call,
               );
             },
           ),
@@ -199,9 +199,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "UPCOMING",
-                value: provider.totalLeads.toString(),
+                value: provider.upcoming.toString(),
                 color: const Color(0xffFFFCDD),
-                icon: Icons.trending_up,
+                icon: Icons.calendar_today,
               );
             },
           ),
@@ -210,9 +210,9 @@ class DashboardContent extends StatelessWidget {
             builder: (context, provider, child) {
               return InfoCard(
                 title: "OVERDUE",
-                value: provider.totalLeads.toString(),
+                value: provider.overdue.toString(),
                 color: const Color( 0xffF3ECFF),
-                icon: Icons.trending_up,
+                icon: Icons.access_time,
               );
             },
           ),
@@ -507,132 +507,137 @@ class CallAnalytics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Color(0xFFEFF1F3), width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // const Text("Call Analyst",style: TextStyle(fontWeight: FontWeight.bold),),
-          const SizedBox(height: 16),
-          Expanded(
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 9,
-                minY: 0,
-                maxY: 100,
-
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                  getDrawingVerticalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 25,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: [
-                      FlSpot(0, 15),
-                      FlSpot(1, 5),
-                      FlSpot(2, 25),
-                      FlSpot(3, 65),
-                      FlSpot(4, 50),
-                      FlSpot(5, 25),
-                      FlSpot(6, 35),
-                      FlSpot(7, 75),
-                      FlSpot(8, 25),
-                      FlSpot(9, 30),
-                    ],
-                    isCurved: false,
-                    barWidth: 1,
-                    color: Color(0xFFA023F3),
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA023F3)
-                          );
-                        }),
-                  ),
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 85),
-                      FlSpot(1, 88),
-                      FlSpot(2, 0),
-                      FlSpot(3, 55),
-                      FlSpot(4, 78),
-                      FlSpot(5, 48),
-                      FlSpot(6, 30),
-                      FlSpot(7, 28),
-                      FlSpot(8, 55),
-                      FlSpot(9, 45),
-                    ],
-                    isCurved: false,
-                    color: Color(0xFFA17985),
-                    barWidth: 1,
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA17985)
-                          );
-                        }
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Consumer<DashboardProvider>(
+        builder: (context,provider,child) {
+          return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Color(0xFFEFF1F3), width: 2),
           ),
-        ],
-      ),
-    );
+          child:provider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+               : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const Text("Call Analyst",style: TextStyle(fontWeight: FontWeight.bold),),
+              const SizedBox(height: 16),
+              Expanded(
+                child: LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: 11,
+                    minY: 0,
+                    maxY: 20,
+
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: true,
+                      drawHorizontalLine: true,
+                      getDrawingHorizontalLine: (value) {
+                        return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+                      },
+                      getDrawingVerticalLine: (value) {
+                        return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
+                      },
+                    ),
+                    borderData: FlBorderData(show: false),
+
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 1,
+                          getTitlesWidget: (value, _) {
+                            const months = [
+                              "Jan",
+                              "Feb",
+                              "Mar",
+                              "Apr",
+                              "May",
+                              "Jun",
+                              "Jul",
+                              "Aug",
+                              "Sep",
+                              "Oct",
+                              "Nov",
+                              "Dec",
+                            ];
+                            if (value.toInt() < 0 || value.toInt() > 11) {
+                              return const SizedBox();
+                            }
+
+                            return Text(
+                              months[value.toInt()],
+                              style: const TextStyle(fontSize: 12),
+                            );
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 5,
+                          getTitlesWidget: (value, _) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(fontSize: 12),
+                            );
+                          },
+                        ),
+                      ),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots:provider.leadSpots,
+                        isCurved:false,
+                        barWidth:2,
+                        color:const Color(0xFFA023F3),
+                        dotData:FlDotData(
+                          show: true,
+                          getDotPainter: (spot,percent,barData,index){
+                            return FlDotCirclePainter(
+                            radius: 4,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor:
+                            barData.color ?? const Color(0xFFA023F3),
+                            );
+                          },
+                        ),
+                  ),
+                      LineChartBarData(
+                        spots: provider.callSpots,
+                        isCurved: false,
+                        color: Color(0xFFA17985),
+                        barWidth: 2,
+                        dotData: FlDotData(show: true,
+                            getDotPainter: (spot,percent,barData,index){
+                              return FlDotCirclePainter(
+                                  radius: 4,
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                  strokeColor: barData.color??Color(0xFFA17985)
+                              );
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+              );
+        }
+      );
   }
 }
 
@@ -641,75 +646,108 @@ class CallDistribution extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String,dynamic>>callData=[
-      {"label":"Incoming","value":55.0,"color":Colors.blue},
-      {"label":"Outgoing","value":35.0,"color":Colors.green},
-      {"label":"Missed","value":5.0,"color":Colors.red},
-      {"label":"Voicemail","value":5.0,"color":Colors.yellow},
+    return Consumer<DashboardProvider>(
+  builder: (context, provider, child) {
+
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final callData = [
+      {
+        "label": "Incoming",
+        "value": provider.incoming.toDouble(),
+        "color": Colors.blue
+      },
+      {
+        "label": "Outgoing",
+        "value": provider.outgoing.toDouble(),
+        "color": Colors.green
+      },
+      {
+        "label": "Missed",
+        "value": provider.missed.toDouble(),
+        "color": Colors.red
+      },
+      {
+        "label": "Voicemail",
+        "value": provider.voicemail.toDouble(),
+        "color": Colors.yellow
+      },
     ];
-    double total = callData.fold(0,
-          (sum,item)=>sum+(item["value"]as double),
+
+    double total = callData.fold(
+      0,
+      (sum, item) => sum + (item["value"] as double),
     );
+
     return Container(
       height: 300,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white,
-          border: Border.all(color: Colors.black )),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black),
+      ),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "Call Distribution",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
+
                 Text(
-                  "Today's Calls:1,245",
-                  style: TextStyle(color: Colors.grey),
+                  "Today's Calls: ${provider.todaysCalls}",
+                  style: const TextStyle(color: Colors.grey),
                 ),
-                SizedBox(height: 20),
-                // LegendItem(color: Colors.blue, text: "Incoming"),
-                // LegendItem(color: Colors.green, text: "Outgoing"),
-                // LegendItem(color: Colors.red, text: "Missed"),
-                // LegendItem(color: Colors.yellow, text: "Voicemail"),
-                ...callData.map((data){
-                  final percent=((data["value"]/total)*100).toStringAsFixed(0);
-                  return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
+
+                const SizedBox(height: 20),
+
+                ...callData.map((data) {
+                  final percent =
+                      total == 0 ? "0" : (((data["value"] as double) / total) * 100).toStringAsFixed(0);
+return LegendItem(
+  color: data["color"] as Color,
+  text: "${data["label"]} - $percent%",
+);
                 }).toList(),
               ],
             ),
           ),
+
           Expanded(
             child: Stack(
               alignment: Alignment.center,
               children: [
                 PieChart(
                   PieChartData(
-                      sectionsSpace: 0,
-                      centerSpaceRadius: 50,
-                      sections: callData.map((data){
-                        return PieChartSectionData(
-                          value: data["value"],
-                          color: data["color"],
-                          showTitle: false,
-                        );
-                      }).toList()
+                    sectionsSpace: 0,
+                    centerSpaceRadius: 50,
+                    sections: callData.map((data) {
+                      return PieChartSectionData(
+                        value: data["value"] as double?,
+                        color: data["color"] as Color,
+                        showTitle: false,
+                      );
+                    }).toList(),
                   ),
                 ),
+
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       "Today's Calls:",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "1,245",
-                      style: TextStyle(
+                      "${provider.todaysCalls}",
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -722,8 +760,92 @@ class CallDistribution extends StatelessWidget {
         ],
       ),
     );
+  });
   }
 }
+//     final List<Map<String,dynamic>>callData=[
+//       {"label":"Incoming","value":55.0,"color":Colors.blue},
+//       {"label":"Outgoing","value":35.0,"color":Colors.green},
+//       {"label":"Missed","value":5.0,"color":Colors.red},
+//       {"label":"Voicemail","value":5.0,"color":Colors.yellow},
+//     ];
+//     double total = callData.fold(0,
+//           (sum,item)=>sum+(item["value"]as double),
+//     );
+//     return Container(
+//       height: 300,
+//       padding: const EdgeInsets.all(20),
+//       decoration: BoxDecoration(color: Colors.white,
+//           border: Border.all(color: Colors.black )),
+//       child: Row(
+//         children: [
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   "Call Distribution",
+//                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+//                 ),
+//                 SizedBox(height: 20),
+//                 Text(
+//                   "Today's Calls:1,245",
+//                   style: TextStyle(color: Colors.grey),
+//                 ),
+//                 SizedBox(height: 20),
+//                 // LegendItem(color: Colors.blue, text: "Incoming"),
+//                 // LegendItem(color: Colors.green, text: "Outgoing"),
+//                 // LegendItem(color: Colors.red, text: "Missed"),
+//                 // LegendItem(color: Colors.yellow, text: "Voicemail"),
+//                 ...callData.map((data){
+//                   final percent=((data["value"]/total)*100).toStringAsFixed(0);
+//                   return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
+//                 }).toList(),
+//               ],
+//             ),
+//           ),
+//           Expanded(
+//             child: Stack(
+//               alignment: Alignment.center,
+//               children: [
+//                 PieChart(
+//                   PieChartData(
+//                       sectionsSpace: 0,
+//                       centerSpaceRadius: 50,
+//                       sections: callData.map((data){
+//                         return PieChartSectionData(
+//                           value: data["value"],
+//                           color: data["color"],
+//                           showTitle: false,
+//                         );
+//                       }).toList()
+//                   ),
+//                 ),
+//                 Column(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Text(
+//                       "Today's Calls:",
+//                       style: TextStyle(fontSize: 12, color: Colors.grey),
+//                     ),
+//                     SizedBox(height: 4),
+//                     Text(
+//                       "1,245",
+//                       style: TextStyle(
+//                         fontSize: 18,
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class LegendItem extends StatelessWidget {
   final Color color;
