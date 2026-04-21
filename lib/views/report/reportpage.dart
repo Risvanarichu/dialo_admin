@@ -288,41 +288,59 @@ class LeadFunnelCard extends StatelessWidget {
     );
   }
 
-  Widget _funnelBar(BuildContext context, String label, double value, double maxValue) {
+  Widget _funnelBar(
+      BuildContext context,
+      String label,
+      double value,
+      double maxValue,
+      ) {
     double percent = maxValue == 0 ? 0 : value / maxValue;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label),
           const SizedBox(height: 6),
 
-          /// ✅ FIXED WIDTH CONTAINER (IMPORTANT)
-          Container(
-            width: double.infinity, // 🔥 gives bounded width
-            alignment: Alignment.center,
-            child: FractionallySizedBox(
-              widthFactor: percent,
-              child: Container(
+          /// ✅ FIXED WIDTH (VERY IMPORTANT)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Container(
                 height: 35,
+                width: constraints.maxWidth, // ✅ gives proper width
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
-                  ),
+                  color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  value.toInt().toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Stack(
+                  children: [
+                    /// BAR
+                    Container(
+                      width: constraints.maxWidth * percent,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    /// TEXT
+                    Center(
+                      child: Text(
+                        value.toInt().toString(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -417,11 +435,11 @@ class LeadsReportCard extends StatelessWidget {
                 items: ["All Status", "New", "Converted"],
                 onChanged: provider.updateStatusFilter,
               ),
-              _dropdown(
-                value: provider.selectedSource,
-                items: ["All Sources"],
-                onChanged: provider.updateSource,
-              ),
+              // _dropdown(
+              //   value: provider.selectedSource,
+              //   items: ["All Sources"],
+              //   onChanged: provider.updateSource,
+              // ),
               SizedBox(
                 width: 200,
                 child: TextField(
@@ -438,19 +456,16 @@ class LeadsReportCard extends StatelessWidget {
           const SizedBox(height: 15),
 
           /// 🔥 FIXED AREA + SCROLL
-          SizedBox(
-            height: 250,
+          Expanded(
             child: provider.leadsReport.isEmpty
-                ? const Center(
-              child: Text("No Data Available"),
-            )
+                ? const Center(child: Text("No Data Available"))
                 : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 child: DataTable(
                   columnSpacing: 80,
                   columns: const [
-                    DataColumn(label: Text("Lead ID")),
+                    // DataColumn(label: Text("Lead ID")),
                     DataColumn(label: Text("Lead Name")),
                     DataColumn(label: Text("Phone")),
                     DataColumn(label: Text("Source")),
@@ -459,7 +474,7 @@ class LeadsReportCard extends StatelessWidget {
                   ],
                   rows: provider.leadsReport.map((e) {
                     return DataRow(cells: [
-                      DataCell(Text(e["id"])),
+                      // DataCell(Text(e["id"])),
                       DataCell(Text(e["name"])),
                       DataCell(Text(e["phone"])),
                       DataCell(Text(e["source"])),
@@ -470,7 +485,7 @@ class LeadsReportCard extends StatelessWidget {
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );

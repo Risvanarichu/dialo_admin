@@ -23,10 +23,6 @@ class ReportProvider extends ChangeNotifier {
   }
 
 
-
-
-
-
   Future<void> fetchAgentPerformance() async {
     try {
       Query query = fbd.collection("LEADS");
@@ -53,12 +49,12 @@ class ReportProvider extends ChangeNotifier {
       for (var doc in snapshot.docs) {
         final lead = doc.data() as Map<String, dynamic>;
 
-        /// ✅ Agent Name (safe)
+
         String agent =
         (lead['AGENT_NAME'] ?? lead['ADDED_BY_ID'] ?? "Unassigned")
             .toString();
 
-        /// ✅ Status (safe)
+
         String status = (lead['STATUS'] ?? "").toString().toLowerCase();
 
         data.putIfAbsent(agent, () => {
@@ -93,42 +89,7 @@ class ReportProvider extends ChangeNotifier {
     }
   }
 
-  // Future<void> fetchFunnel() async {
-  //   Query query = fbd.collection("LEADS");
-  //   if (fromDate != null && toDate != null) {
-  //     query = query
-  //         .where("ADDED_TIME", isGreaterThanOrEqualTo: fromDate)
-  //         .where("ADDED_TIME", isLessThanOrEqualTo: toDate);
-  //   }
-  //
-  //   final snapshot = await query.get();
-  //
-  //   Map<String, int> counts = {
-  //     "total": 0,
-  //     "pending": 0,
-  //     "converted": 0,
-  //   };
-  //
-  //   for (var doc in snapshot.docs) {
-  //     final lead = doc.data() as Map<String, dynamic>;
-  //
-  //     String status = (lead['STATUS'] ?? "").toString().toLowerCase();
-  //
-  //     counts["total"] = counts["total"]! + 1;
-  //
-  //     if (status == "pending") {
-  //       counts["pending"] = counts["pending"]! + 1;
-  //     }
-  //
-  //     if (status == "converted") {
-  //       counts["converted"] = counts["converted"]! + 1;
-  //     }
-  //   }
-  //
-  //   funnelData = counts;
-  //
-  //   notifyListeners();
-  // }
+
   Future<void> fetchFunnel() async {
     try {
       Query query = fbd.collection("LEADS");
@@ -153,6 +114,7 @@ class ReportProvider extends ChangeNotifier {
       Map<String, int> counts = {
         "total": 0,
         "pending": 0,
+        "contacted": 0, // ✅ ADD THIS
         "converted": 0,
       };
 
@@ -165,6 +127,9 @@ class ReportProvider extends ChangeNotifier {
 
         if (status.contains("pending")) {
           counts["pending"] = counts["pending"]! + 1;
+        }
+        if (status.contains("contact")) {
+          counts["contacted"] = counts["contacted"]! + 1;
         }
 
         if (status.contains("convert")) {
@@ -193,6 +158,19 @@ class ReportProvider extends ChangeNotifier {
     try {
       Query query = fbd.collection("LEADS");
 
+      /// ✅ DATE FILTER (ADD THIS)
+      if (fromDate != null && toDate != null) {
+        query = query
+            .where(
+          "ADDED_TIME",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate!),
+        )
+            .where(
+          "ADDED_TIME",
+          isLessThanOrEqualTo: Timestamp.fromDate(toDate!),
+        );
+      }
+
       final snapshot = await query.get();
 
       List<Map<String, dynamic>> temp = [];
@@ -204,12 +182,19 @@ class ReportProvider extends ChangeNotifier {
         String phone = (data['PHONE'] ?? "").toString();
         String source = (data['SOURCE'] ?? "").toString();
         String status = (data['STATUS'] ?? "").toString();
-        String agent = (data['AGENT_NAME'] ?? data['ADDED_BY_ID'] ?? "").toString();
+        String agent =
+        (data['AGENT_NAME'] ?? data['ADDED_BY_ID'] ?? "").toString();
 
-        /// ✅ FILTERS
+
         if (selectedAgent != "All Agents" && agent != selectedAgent) continue;
-        if (selectedStatus != "All Status" && status != selectedStatus) continue;
+
+
+        if (selectedStatus != "All Status" &&
+            status.toLowerCase() != selectedStatus.toLowerCase()) continue;
+
+
         if (selectedSource != "All Sources" && source != selectedSource) continue;
+
 
         if (searchQuery.isNotEmpty &&
             !name.toLowerCase().contains(searchQuery.toLowerCase()) &&
