@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../models/addUserModel.dart';
+
 class DashboardProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -9,10 +11,10 @@ class DashboardProvider extends ChangeNotifier {
   int todaysCalls = 0;
   int upcoming = 0;
   int overdue = 0;
-  bool isLoading=false;
+  bool isLoading = false;
 
-  List<FlSpot>leadSpots=[];
-  List<FlSpot>callSpots=[];
+  List<FlSpot>leadSpots = [];
+  List<FlSpot>callSpots = [];
 
 //   Future<void> fetchLeads() async {
 //     final snapshot = await db.collection('LEADS').get();
@@ -37,12 +39,12 @@ class DashboardProvider extends ChangeNotifier {
 //
 //     notifyListeners();
 //   }
-  Future<void>fetchDashboardCounts()async{
-    isLoading=true;
+  Future<void> fetchDashboardCounts() async {
+    isLoading = true;
     notifyListeners();
-    try{
-      final leadSnapshot=await db.collection("LEADS").get();
-      totalLeads=leadSnapshot.docs.length;
+    try {
+      final leadSnapshot = await db.collection("LEADS").get();
+      totalLeads = leadSnapshot.docs.length;
       DateTime now = DateTime.now();
 
 // Start of today (00:00)
@@ -57,15 +59,15 @@ class DashboardProvider extends ChangeNotifier {
           .get();
 
       todaysCalls = todaysSnapshot.docs.length;
-      upcoming=0;
-      overdue=0;
+      upcoming = 0;
+      overdue = 0;
 
-      final today=DateTime(now.year,now.month,now.day);
-      for(var doc in leadSnapshot.docs){
-        final data=doc.data();
+      final today = DateTime(now.year, now.month, now.day);
+      for (var doc in leadSnapshot.docs) {
+        final data = doc.data();
         final value = data["ADDED_TIME"];
-        if (value ==null)continue;
-          DateTime? followUpDate;
+        if (value == null) continue;
+        DateTime? followUpDate;
         if (value is Timestamp) {
           followUpDate = value.toDate();
         } else if (value is String && value.isNotEmpty) {
@@ -73,27 +75,29 @@ class DashboardProvider extends ChangeNotifier {
         }
         if (followUpDate == null) continue;
 
-          final followDateOnly = DateTime(
-            followUpDate.year,
-            followUpDate.month,
-            followUpDate.day,
-          );
-          if (followDateOnly == today) {
-            todaysCalls++;
-          } else if (followDateOnly.isAfter(today)) {
-            upcoming++;
-          } else if (followDateOnly.isBefore(today)) {
-            overdue++;
-          }
-      }await fetchGraphData();
-       isLoading = false;
+        final followDateOnly = DateTime(
+          followUpDate.year,
+          followUpDate.month,
+          followUpDate.day,
+        );
+        if (followDateOnly == today) {
+          todaysCalls++;
+        } else if (followDateOnly.isAfter(today)) {
+          upcoming++;
+        } else if (followDateOnly.isBefore(today)) {
+          overdue++;
+        }
+      }
+      await fetchGraphData();
+      isLoading = false;
       notifyListeners();
-    }catch(e){
+    } catch (e) {
       debugPrint("Error fetching total leads:$e");
-      isLoading=false;
+      isLoading = false;
       notifyListeners();
     }
   }
+
   Future<void> fetchGraphData() async {
     try {
       final snapshot = await db.collection("LEADS").get();
@@ -174,4 +178,11 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint("Error fetching graph data: $e");
     }
   }
- }
+}
+// Stream<List<Agent_Add_Model>> getAgents() {
+//   return fbd.collection("AGENT").snapshots().map((snapshot) {
+//     return snapshot.docs.map((doc) {
+//       return Agent_Add_Model.fromMap(doc.id, doc.data());
+//     }).toList();
+//   });
+// }
