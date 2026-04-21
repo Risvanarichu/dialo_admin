@@ -671,11 +671,21 @@ class CallDistribution extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> callData = [
-      {"label": "Incoming", "value": 55.0, "color": Colors.blue},
-      {"label": "Outgoing", "value": 35.0, "color": Colors.green},
-      {"label": "Missed", "value": 5.0, "color": Colors.red},
-      {"label": "Voicemail", "value": 5.0, "color": Colors.yellow},
+    return Consumer<DashboardProvider>(
+  builder: (context, provider, child) {
+
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final  callData = [
+      {"label": "Incoming", "value": provider.incoming.toDouble(), "color": Colors.blue
+      },
+      {"label": "Outgoing", "value": provider.outgoing.toDouble(), "color": Colors.green},
+      {
+        "label": "Missed", "value": provider.missed.toDouble(), "color": Colors.red
+      },
+      {"label": "Voicemail", "value": provider.voicemail.toDouble(), "color": Colors.yellow},
     ];
 
     final double total = callData.fold(
@@ -703,21 +713,22 @@ class CallDistribution extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  "Today's Calls: 1,245",
-                  style: TextStyle(color: Colors.grey),
+                  "Today's Calls: ${provider.todaysCalls}",
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 20),
                 ...callData.map((data) {
                   final percent =
-                  ((data["value"] / total) * 100).toStringAsFixed(0);
+                  total == 0 ? "0" : (((data["value"] as double)/ total) * 100).toStringAsFixed(0);
                   return LegendItem(
-                    color: data["color"],
+                    color: data["color"]as Color,
                     text: "${data["label"]} - $percent%",
                   );
                 }).toList(),
               ],
             ),
           ),
+
           Expanded(
             child: Stack(
               alignment: Alignment.center,
@@ -728,8 +739,8 @@ class CallDistribution extends StatelessWidget {
                     centerSpaceRadius: 50,
                     sections: callData.map((data) {
                       return PieChartSectionData(
-                        value: data["value"],
-                        color: data["color"],
+                        value: data["value"] as double?,
+                        color: data["color"] as Color,
                         showTitle: false,
                       );
                     }).toList(),
@@ -738,14 +749,14 @@ class CallDistribution extends StatelessWidget {
                 const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       "Today's Calls:",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "1,245",
-                      style: TextStyle(
+                      "${provider.todaysCalls}",
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -758,8 +769,92 @@ class CallDistribution extends StatelessWidget {
         ],
       ),
     );
+  });
   }
 }
+//     final List<Map<String,dynamic>>callData=[
+//       {"label":"Incoming","value":55.0,"color":Colors.blue},
+//       {"label":"Outgoing","value":35.0,"color":Colors.green},
+//       {"label":"Missed","value":5.0,"color":Colors.red},
+//       {"label":"Voicemail","value":5.0,"color":Colors.yellow},
+//     ];
+//     double total = callData.fold(0,
+//           (sum,item)=>sum+(item["value"]as double),
+//     );
+//     return Container(
+//       height: 300,
+//       padding: const EdgeInsets.all(20),
+//       decoration: BoxDecoration(color: Colors.white,
+//           border: Border.all(color: Colors.black )),
+//       child: Row(
+//         children: [
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   "Call Distribution",
+//                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+//                 ),
+//                 SizedBox(height: 20),
+//                 Text(
+//                   "Today's Calls:1,245",
+//                   style: TextStyle(color: Colors.grey),
+//                 ),
+//                 SizedBox(height: 20),
+//                 // LegendItem(color: Colors.blue, text: "Incoming"),
+//                 // LegendItem(color: Colors.green, text: "Outgoing"),
+//                 // LegendItem(color: Colors.red, text: "Missed"),
+//                 // LegendItem(color: Colors.yellow, text: "Voicemail"),
+//                 ...callData.map((data){
+//                   final percent=((data["value"]/total)*100).toStringAsFixed(0);
+//                   return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
+//                 }).toList(),
+//               ],
+//             ),
+//           ),
+//           Expanded(
+//             child: Stack(
+//               alignment: Alignment.center,
+//               children: [
+//                 PieChart(
+//                   PieChartData(
+//                       sectionsSpace: 0,
+//                       centerSpaceRadius: 50,
+//                       sections: callData.map((data){
+//                         return PieChartSectionData(
+//                           value: data["value"],
+//                           color: data["color"],
+//                           showTitle: false,
+//                         );
+//                       }).toList()
+//                   ),
+//                 ),
+//                 Column(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Text(
+//                       "Today's Calls:",
+//                       style: TextStyle(fontSize: 12, color: Colors.grey),
+//                     ),
+//                     SizedBox(height: 4),
+//                     Text(
+//                       "1,245",
+//                       style: TextStyle(
+//                         fontSize: 18,
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class LegendItem extends StatelessWidget {
   final Color color;
