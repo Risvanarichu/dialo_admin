@@ -107,6 +107,7 @@ class _CallsState extends State<Calls> {
                       ),
                       color: Colors.grey.shade100,
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: const[
                           Expanded(child: Text("Caller Name")),
                           Expanded(child: Text("Phone Number")),
@@ -118,7 +119,9 @@ class _CallsState extends State<Calls> {
                           Expanded(child: Text("Actions")),
                         ],
                       ),
-                    ),
+
+                      ),
+
                     Expanded(
                         child: ListView(
                           shrinkWrap: true,
@@ -136,7 +139,7 @@ class _CallsState extends State<Calls> {
                         CallList(name: "Shibin", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
                         CallList(name: "Anshad", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
                         CallList(name: "Shifa", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Swabirinn", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
+                        CallList(name: "Swabirin", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
                         CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
                         CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
                         CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
@@ -145,6 +148,7 @@ class _CallsState extends State<Calls> {
                   ],
                 ),
               ))
+
         ],
       ),),
     );
@@ -178,10 +182,11 @@ class CallList extends StatelessWidget {
       ),
       child:  Row(
         children: [
-          Expanded(child: Text(name)),
-          Expanded(child: Text(phone)),
-          Expanded(child: Text(type)),
-          Expanded(child: Container(
+          Expanded(child: Text(name, textAlign: TextAlign.center,  )),
+          Expanded(child: Text(phone, textAlign: TextAlign.center,)),
+          Expanded(child: Text(type, textAlign: TextAlign.center,)),
+          Expanded(child: Center(
+          child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: 10,vertical: 5),
             decoration: BoxDecoration(
@@ -190,7 +195,8 @@ class CallList extends StatelessWidget {
                   :Colors.red.shade100,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(status,textAlign: TextAlign.center,
+            child: Text(status,
+              textAlign: TextAlign.center,
             style: TextStyle(
               color: status == "Answered"
                   ?Colors.green
@@ -200,17 +206,20 @@ class CallList extends StatelessWidget {
             ),
           ),
           ),
-          Expanded(child: Text(duration)),
-          Expanded(child: Text(date)),
-          Expanded(child: Text(agent)),
+    ),
+          Expanded(child: Text(duration, )),
+          Expanded(child: Text(date, )),
+          Expanded(child: Text(agent, )),
 
-          Expanded(child: Row(
+          Expanded(child: Center(
+          child: Row(
             children: [
               Icon(Icons.phone,size: 18,),
               SizedBox(width: 10,),
               Icon(Icons.edit,size: 18,),
             ],
           ))
+          ),
         ],
       ),
     );
