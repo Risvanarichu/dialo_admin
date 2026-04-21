@@ -1,6 +1,9 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+
+import '../models/addUserModel.dart';
 
 class DashboardProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -9,128 +12,108 @@ class DashboardProvider extends ChangeNotifier {
   int todaysCalls = 0;
   int upcoming = 0;
   int overdue = 0;
-  bool isLoading=false;
 
-  List<FlSpot>leadSpots=[];
-  List<FlSpot>callSpots=[];
+  // 🔥 Call distribution
+  int incoming = 0;
+  int outgoing = 0;
+  int missed = 0;
+  int voicemail = 0;
 
-//   Future<void> fetchLeads() async {
-//     final snapshot = await db.collection('LEADS').get();
-//
-//     totalLeads = snapshot.docs.length;
-//
-//     // Example calculation
-//     upcoming = 0;
-//     overdue = 0;
-//
-//     for (var doc in snapshot.docs) {
-//       final data = doc.data();
-//
-//       if (data['FOLLOW_UP_STATUS'] == 'pending') {
-//         upcoming++;
-//       }
-//
-//       if (data['FOLLOW_UP_STATUS'] == 'overdue') {
-//         overdue++;
-//       }
-//     }
-//
-//     notifyListeners();
-//   }
-  Future<void>fetchDashboardCounts()async{
-    isLoading=true;
+  bool isLoading = false;
+
+  List<FlSpot> leadSpots = [];
+  List<FlSpot> callSpots = [];
+
+  Future<void> fetchDashboardCounts() async {
+    isLoading = true;
     notifyListeners();
-    try{
-      final leadSnapshot=await db.collection("LEADS").get();
-      totalLeads=leadSnapshot.docs.length;
+
+    try {
+      final leadSnapshot = await db.collection("LEADS").get();
+
+      totalLeads = leadSnapshot.docs.length;
       DateTime now = DateTime.now();
+      DateTime today = DateTime(now.year, now.month, now.day);
 
-// Start of today (00:00)
-      DateTime startOfDay = DateTime(now.year, now.month, now.day);
+      // reset counters
+      todaysCalls = 0;
+      upcoming = 0;
+      overdue = 0;
 
-// End of today (23:59)
-      DateTime endOfDay = startOfDay.add(const Duration(days: 1));
-      final todaysSnapshot = await db
-          .collection("LEADS")
-          .where("FOLLOW_UP_DATE", isGreaterThanOrEqualTo: startOfDay)
-          .where("FOLLOW_UP_DATE", isLessThan: endOfDay)
-          .get();
+      incoming = 0;
+      outgoing = 0;
+      missed = 0;
+      voicemail = 0;
+      for (var doc in leadSnapshot.docs) {
+        final data = doc.data();
 
-      todaysCalls = todaysSnapshot.docs.length;
-      upcoming=0;
-      overdue=0;
-
-      final today=DateTime(now.year,now.month,now.day);
-      for(var doc in leadSnapshot.docs){
-        final data=doc.data();
-        final value = data["ADDED_TIME"];
-        if (value ==null)continue;
-          DateTime? followUpDate;
+        /// 🔹 DATE LOGIC
+        DateTime? followUpDate;final value = data["FOLLOW_UP_DATE"];
         if (value is Timestamp) {
           followUpDate = value.toDate();
         } else if (value is String && value.isNotEmpty) {
           followUpDate = DateTime.tryParse(value);
         }
-        if (followUpDate == null) continue;
 
-          final followDateOnly = DateTime(
-            followUpDate.year,
-            followUpDate.month,
-            followUpDate.day,
-          );
-          if (followDateOnly == today) {
-            todaysCalls++;
-          } else if (followDateOnly.isAfter(today)) {
-            upcoming++;
-          } else if (followDateOnly.isBefore(today)) {
-            overdue++;
-          }
-      }await fetchGraphData();
-       isLoading = false;
+        if (followUpDate != null) {final followDateOnly = DateTime(
+          followUpDate.year,
+          followUpDate.month,
+          followUpDate.day,);
+
+        if (followDateOnly == today) {
+          todaysCalls++;
+        } else if (followDateOnly.isAfter(today)) {
+          upcoming++;
+        } else  {
+          overdue++;
+        }}
+
+        /// 🔥 CALL TYPE LOGIC (IMPORTANT)
+        /// Firestore field name adjust cheyyanam (example: CALL_TYPE)
+        final callType = data["CALL_TYPE"];
+
+        switch (callType) {
+          case "incoming":
+            incoming++;
+            break;
+          case "outgoing":
+            outgoing++;
+            break;
+          case "missed":
+            missed++;
+            break;
+          case "voicemail":
+            voicemail++;
+            break;
+        }
+      }
+
+      /// 🔹 GRAPH DATA
+
+      await fetchGraphData();
+      isLoading = false;
       notifyListeners();
-    }catch(e){
-      debugPrint("Error fetching total leads:$e");
-      isLoading=false;
+    } catch (e) {
+      debugPrint("Error fetching dashboard: $e");
+      isLoading = false;
       notifyListeners();
     }
   }
+
   Future<void> fetchGraphData() async {
     try {
       final snapshot = await db.collection("LEADS").get();
 
       Map<int, int> monthlyLeads = {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0,
-        10: 0,
-        11: 0,
+        for (int i = 0; i < 12; i++) i: 0
       };
 
       Map<int, int> monthlyCalls = {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0,
-        10: 0,
-        11: 0,
+        for (int i = 0; i < 12; i++) i: 0
       };
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        debugPrint("Lead data: $data");
 
         DateTime? createdDate;
         DateTime? followUpDate;
@@ -174,4 +157,11 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint("Error fetching graph data: $e");
     }
   }
- }
+}
+// Stream<List<Agent_Add_Model>> getAgents() {
+//   return fbd.collection("AGENT").snapshots().map((snapshot) {
+//     return snapshot.docs.map((doc) {
+//       return Agent_Add_Model.fromMap(doc.id, doc.data());
+//     }).toList();
+//   });
+// }

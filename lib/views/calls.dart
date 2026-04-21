@@ -1,3 +1,4 @@
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/cupertino.dart';
@@ -74,22 +75,39 @@ class _CallsState extends State<Calls> {
                 ),
                 ),
                 const SizedBox(width: 15,),
-                Expanded(child: DropdownButtonFormField(
-                    decoration:InputDecoration(
-                      labelText: "Agent",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      )
-                    ),
-                    items: const[
-                      DropdownMenuItem(value:"all",
-                          child: Text("All Agent"),
-                      ),
-                      DropdownMenuItem(value:"agent1",
-                          child: Text("Agent 1"))
-                    ], onChanged: (value){}
-                ),
-                ),
+              Expanded(
+  child: Consumer<MainProvider>(
+    builder: (context, provider, child) {
+      print(provider?.userList);
+      return DropdownButtonFormField(
+        decoration: InputDecoration(
+          labelText: "Agent",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+
+        items: [
+          const DropdownMenuItem(
+            value: "all",
+            child: Text("All Agent"),
+          ),
+
+          ...?provider?.userList.map((user) {
+            return DropdownMenuItem(
+              value: user["ID"],                
+              child: Text(user["NAME"] ?? ""), 
+            );
+          }).toList(),
+        ],
+
+        onChanged: (value) {
+  context.read<LeadProvider>().setCallStatus(value.toString());
+},
+      );
+    },
+  ),
+)
               ],
             ),
           ),
@@ -125,7 +143,7 @@ class _CallsState extends State<Calls> {
                     Expanded(
                         child:Consumer<LeadProvider>(
   builder: (context, value, child) {
-    final leads = value.leads;
+   final leads = value.allLeads;
 
     return ListView.builder(
       itemCount: leads.length,
@@ -141,7 +159,7 @@ class _CallsState extends State<Calls> {
               : "Answered",
           duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
           date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
-          agent: lead.assignedAgentId, actions: '',
+         agent: lead.assignedAgentName, actions: '',
         );
       },
     );
@@ -165,7 +183,7 @@ class CallList extends StatelessWidget {
   final String date;
   final String agent;
   final String actions;
-
+    
   const CallList ({
     required this.name,
     required this.phone,
@@ -210,19 +228,19 @@ class CallList extends StatelessWidget {
           ),),
           ),
           Expanded(child: Center(child: Text(duration))),
-    Expanded(child: Center(child: Text(date))),
-    Expanded(child: Center(child: Text(agent))),
-    Expanded(child: Center(child: Text("Actions"))),
+Expanded(child: Center(child: Text(date))),
+Expanded(child: Center(child: Text(agent))),
 
-
-          Expanded(child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.phone,size: 18,),
-              SizedBox(width: 10,),
-              Icon(Icons.edit,size: 18,),
-            ],
-          ))
+Expanded(
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(Icons.phone, size: 18),
+      SizedBox(width: 10),
+      Icon(Icons.edit, size: 18),
+    ],
+  ),
+),
         ],
       ),
     );
