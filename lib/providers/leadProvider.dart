@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialo_admin/models/leadModel.dart';
-import 'package:dialo_admin/views/leads/leads_list.dart';
+
 import 'package:flutter/widgets.dart';
 import 'dart:async';
 
@@ -232,7 +232,7 @@ return LeadModel.fromMap(
       final matchesSource =
           selectedSources == "All Sources" ||
               source.toLowerCase() == selectedSources.toLowerCase();
-        final callStatus = (lead.followupstatus ?? "") == "pending"
+        final callStatus = (lead.followupstatus ) == "pending"
     ? "missed"
     : "answered";
     
