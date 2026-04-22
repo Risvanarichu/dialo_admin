@@ -171,7 +171,7 @@ class AgentPerformanceCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          Expanded( // ✅ FIXED
+          Expanded(
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
@@ -259,9 +259,9 @@ class AgentPerformanceCard extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
+
 /// FUNNEL CHART
-////////////////////////////////////////////////////////////
+
 
 class LeadFunnelCard extends StatelessWidget {
   const LeadFunnelCard({super.key});
@@ -387,7 +387,7 @@ class AgentTableCard extends StatelessWidget {
                  return DataRow(cells: [
                    DataCell(Text(e['agent'].toString().toUpperCase())),
                    DataCell(Text(total.toString())),
-                   DataCell(Text("_")),
+                   DataCell(Text((e['answered'] ?? 0).toString())),
                    DataCell(Text(converted.toString())),
                    DataCell(Text("${rate.toStringAsFixed(1)}%")),
                  ]);
@@ -578,7 +578,7 @@ class LeadsFilterSection extends StatelessWidget {
 
 Widget _card({required Widget child}) {
   return Container(
-    height: 420, // ✅ SAME HEIGHT FOR ALL
+    height: 420,
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: Colors.white,

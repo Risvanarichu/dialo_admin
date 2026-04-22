@@ -2,6 +2,8 @@ import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'leads_list.dart';
+
 class AddLead extends StatefulWidget {
   const AddLead({super.key});
 
@@ -449,9 +451,12 @@ class _AddLeadState extends State<AddLead> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        onPressed: () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Leads()),
+      );
+    },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           child: const Text(
             "Cancel",

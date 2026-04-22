@@ -712,7 +712,7 @@ class CallDistribution extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   "Today's Calls: ${provider.todaysCalls}",
                   style: const TextStyle(color: Colors.grey),
                 ),
@@ -746,7 +746,7 @@ class CallDistribution extends StatelessWidget {
                     }).toList(),
                   ),
                 ),
-                const Column(
+                Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
@@ -772,89 +772,7 @@ class CallDistribution extends StatelessWidget {
   });
   }
 }
-//     final List<Map<String,dynamic>>callData=[
-//       {"label":"Incoming","value":55.0,"color":Colors.blue},
-//       {"label":"Outgoing","value":35.0,"color":Colors.green},
-//       {"label":"Missed","value":5.0,"color":Colors.red},
-//       {"label":"Voicemail","value":5.0,"color":Colors.yellow},
-//     ];
-//     double total = callData.fold(0,
-//           (sum,item)=>sum+(item["value"]as double),
-//     );
-//     return Container(
-//       height: 300,
-//       padding: const EdgeInsets.all(20),
-//       decoration: BoxDecoration(color: Colors.white,
-//           border: Border.all(color: Colors.black )),
-//       child: Row(
-//         children: [
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   "Call Distribution",
-//                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-//                 ),
-//                 SizedBox(height: 20),
-//                 Text(
-//                   "Today's Calls:1,245",
-//                   style: TextStyle(color: Colors.grey),
-//                 ),
-//                 SizedBox(height: 20),
-//                 // LegendItem(color: Colors.blue, text: "Incoming"),
-//                 // LegendItem(color: Colors.green, text: "Outgoing"),
-//                 // LegendItem(color: Colors.red, text: "Missed"),
-//                 // LegendItem(color: Colors.yellow, text: "Voicemail"),
-//                 ...callData.map((data){
-//                   final percent=((data["value"]/total)*100).toStringAsFixed(0);
-//                   return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
-//                 }).toList(),
-//               ],
-//             ),
-//           ),
-//           Expanded(
-//             child: Stack(
-//               alignment: Alignment.center,
-//               children: [
-//                 PieChart(
-//                   PieChartData(
-//                       sectionsSpace: 0,
-//                       centerSpaceRadius: 50,
-//                       sections: callData.map((data){
-//                         return PieChartSectionData(
-//                           value: data["value"],
-//                           color: data["color"],
-//                           showTitle: false,
-//                         );
-//                       }).toList()
-//                   ),
-//                 ),
-//                 Column(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     Text(
-//                       "Today's Calls:",
-//                       style: TextStyle(fontSize: 12, color: Colors.grey),
-//                     ),
-//                     SizedBox(height: 4),
-//                     Text(
-//                       "1,245",
-//                       style: TextStyle(
-//                         fontSize: 18,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+
 
 class LegendItem extends StatelessWidget {
   final Color color;

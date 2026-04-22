@@ -49,23 +49,30 @@ class ReportProvider extends ChangeNotifier {
       for (var doc in snapshot.docs) {
         final lead = doc.data() as Map<String, dynamic>;
 
-
         String agent =
         (lead['AGENT_NAME'] ?? lead['ADDED_BY_ID'] ?? "Unassigned")
             .toString();
 
-
         String status = (lead['STATUS'] ?? "").toString().toLowerCase();
+        String followUpStatus =
+        (lead['FOLLOW_UP_STATUS'] ?? "").toString().toLowerCase();
 
         data.putIfAbsent(agent, () => {
           "total": 0,
           "converted": 0,
+          "answered": 0, // ✅ ADD THIS
         });
 
-        /// total count
+        /// total
         data[agent]!["total"] = data[agent]!["total"]! + 1;
 
-        /// converted count (flexible match)
+        /// answered (your logic)
+        if (status.contains("contact")) {
+          data[agent]!["answered"] =
+              data[agent]!["answered"]! + 1;
+        }
+
+        /// converted
         if (status.contains("convert")) {
           data[agent]!["converted"] =
               data[agent]!["converted"]! + 1;
@@ -77,6 +84,7 @@ class ReportProvider extends ChangeNotifier {
         return {
           "agent": e.key,
           "total": e.value["total"],
+          "answered":e.value["answered"],
           "converted": e.value["converted"],
         };
       }).toList();

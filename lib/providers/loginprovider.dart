@@ -23,12 +23,15 @@ class Loginprovider extends ChangeNotifier{
     final prefs = await SharedPreferences.getInstance();
 
     try {
+      print("Entered Email: ${emailController.text}");
+      print("Entered Password: ${passwordController.text}");
       final querySnapshot = await _firestore
           .collection('AGENT')
-          .where('EMAIL', isEqualTo: emailController.text.trim())
+          .where('EMAIL', isEqualTo: emailController.text.trim().toLowerCase())
           .where('PASSWORD', isEqualTo: passwordController.text.trim())
           .where('ROLE', isEqualTo: 'ADMIN')
           .get();
+      print("Docs found: ${querySnapshot.docs.length}");
 
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic> userMap =
@@ -40,6 +43,7 @@ class Loginprovider extends ChangeNotifier{
         await prefs.setString('email', userMap['EMAIL'] ?? '');
         await prefs.setString('password', userMap['PASSWORD'] ?? '');
         await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+        await prefs.setString('agentId', querySnapshot.docs.first.id);
         await prefs.setString('name', userMap['NAME'] ?? '');
         await prefs.setString('image', userMap['IMAGE'] ?? '');
 
@@ -146,27 +150,6 @@ class Loginprovider extends ChangeNotifier{
 }
 
 
-
-
-      //   final doc = await _firestore
-      //       .collection("USERS")
-      //       .doc(user.uid)
-      //       .get();
-      //
-      //   if (!doc.exists) {
-      //     await createUserInDatabase(user);
-      //   }
-      //   await fetchUsers();
-      //   return true;
-      // }
-
-  // Future<void> createUserInDatabase(User user) async{
-  //   await _firestore.collection("USERS").doc(user.uid).set({
-  //     'email': user.email,
-  //     'createdAt': Timestamp.now(),
-  //   });
-    // print('User created in database');
-  // }
 
 
 
