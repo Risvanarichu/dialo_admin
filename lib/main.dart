@@ -1,4 +1,3 @@
-
 // import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/dashboardProvider.dart';
@@ -21,9 +20,7 @@ import 'views/calls.dart';
 import 'views/followUpPage.dart';
 
 Future<void> main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -36,22 +33,17 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => Loginprovider()),
-        ChangeNotifierProvider(create: (_)=>SettingsProvider()),
-        ChangeNotifierProvider(create: (_)=> Agentprovider()),
-        ChangeNotifierProvider(create: (_)=> LeadProvider()),
-        ChangeNotifierProvider(
-          create: (_) => DashboardProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ReportProvider()..fetchReports(),
-        ),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => Agentprovider()),
+        ChangeNotifierProvider(create: (_) => LeadProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => ReportProvider()..fetchReports()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:SideMenu(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );
   }
 }
-
