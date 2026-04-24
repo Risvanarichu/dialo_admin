@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
-        ChangeNotifierProvider(create: (_)=> MainProvider()),
+        ChangeNotifierProvider(create: (_)=> Agentprovider()),
         ChangeNotifierProvider(create: (_)=> LeadProvider()),
         ChangeNotifierProvider(
           create: (_) => DashboardProvider(),
@@ -46,11 +46,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-<<<<<<< HEAD
-        home:Dashboard(),
-=======
-        home:ReportsPage(),
->>>>>>> ab06e2bedc20e2f238375112331876365af475f0
+        home:SideMenu(),
         debugShowCheckedModeBanner: false,
       ),
     );

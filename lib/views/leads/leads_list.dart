@@ -229,7 +229,7 @@ Widget tableHead(String text) {
 }
 
 Widget tableRowDynamic(LeadModel lead, BuildContext context) {
-  final mainProvider = context.read<MainProvider>();
+  final mainProvider = context.read<Agentprovider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
   return Container(

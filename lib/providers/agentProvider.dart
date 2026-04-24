@@ -6,8 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class MainProvider extends ChangeNotifier {
-  MainProvider(){
+class Agentprovider extends ChangeNotifier {
+  Agentprovider(){
     fetchUser();
   }
   bool isButtonLoading = false;

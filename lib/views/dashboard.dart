@@ -1,10 +1,10 @@
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/dashboardProvider.dart';
-import '../widget/sidemenu.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -19,6 +19,8 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     Future.microtask(() {
       context.read<DashboardProvider>().fetchDashboardCounts();
+     context.read<DashboardProvider>().fetchDashBoardAgentPerformance();
+    context.read<DashboardProvider>().fetchRecentCalls();
     });
   }
 
@@ -28,10 +30,8 @@ class _DashboardState extends State<Dashboard> {
 
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-      // drawer: isDesktop ? null : const SideMenu(),
       body: Row(
         children: [
-          // if (isDesktop) const SizedBox(width: 220, child: SideMenu()),
           const VerticalDivider(
             width: 1,
             thickness: 1,
@@ -91,18 +91,16 @@ class TopBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Flexible(
-                child: SizedBox(
-                  width: 250,
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: "Search",
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              SizedBox(
+                width: 250,
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
                 ),
               ),
@@ -237,86 +235,105 @@ class InfoCard extends StatelessWidget {
   }
 }
 
-class AgentPerformance extends StatelessWidget {
-  const AgentPerformance({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Agent Performance",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            SizedBox(height: 15),
-            AgentRow("John Smith", "52 calls", true),
-            AgentRow("Sara Johnson", "49 calls", false),
-            AgentRow("Michael Clark", "36 calls", true),
-            AgentRow("Emily Davis", "34 calls", false),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AgentRow extends StatelessWidget {
-  final String name;
-  final String calls;
-  final bool online;
-
-  const AgentRow(this.name, this.calls, this.online, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const CircleAvatar(
-        backgroundColor: Color(0xff3570CE),
-        child: Icon(Icons.person, color: Colors.white),
-      ),
-      title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.diamond,
-            size: 12,
-            color: online ? Colors.green : Colors.red,
-          ),
-          const SizedBox(width: 5),
-          Text(
-            online ? "online" : "offline",
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-      trailing: SizedBox(
-        width: 70,
-        child: Text(
-          calls,
-          textAlign: TextAlign.right,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-}
-
-class DashboardBottomSection extends StatelessWidget {
-  const DashboardBottomSection({super.key});
-
+// class AgentPerformance extends StatelessWidget {
+//   const AgentPerformance({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Consumer<DashboardProvider>(
+//       builder: (context,provider,child){
+//     return Container(
+//       height: 300,
+//       padding: const EdgeInsets.all(16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         border: Border.all(color: Colors.black12),
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: SingleChildScrollView(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Text(
+//               "Agent Performance",
+//               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+//             ),
+//             const SizedBox(height: 15),
+//            if(provider.isLoading)
+//              const Expanded(child: Center(
+//           child: CircularProgressIndicator(),
+//       ))
+//         else if(provider.agentPerformance.isEmpty)
+//           const Expanded(child: Center(
+//         child: Text("No agent data found"),
+//
+//         ),)
+//         else
+//           Expanded(
+//         child: ListView.builder(
+//         itemCount: provider.agentPerformance.length,
+//         itemBuilder:(context,index){
+//           final agent=provider.agentPerformance[index];
+//           return AgentRow(
+//           agent.name,
+//           "${agent.totalCalls}calls",
+//         agent.online,
+//           );
+//         })
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+// class AgentRow extends StatelessWidget {
+//   final String name;
+//   final String calls;
+//   final bool online;
+//
+//   const AgentRow(this.name, this.calls, this.online, {super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListTile(
+//       contentPadding: EdgeInsets.zero,
+//       leading: const CircleAvatar(
+//         backgroundColor: Color(0xff3570CE),
+//         child: Icon(Icons.person, color: Colors.white),
+//       ),
+//       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+//       subtitle: Row(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Icon(
+//             Icons.diamond,
+//             size: 12,
+//             color: online ? Colors.green : Colors.red,
+//           ),
+//           const SizedBox(width: 5),
+//           Text(online ? "online" : "offline",
+//   style: TextStyle(
+//   color: online ? Colors.green:Colors.red,
+//   ),
+//   ),
+//         ],
+//       ),
+//       trailing:
+//   SizedBox(
+//         width: 70,
+//         child: Text(
+//           calls,
+//           textAlign: TextAlign.right,
+//           maxLines: 1,
+//           overflow: TextOverflow.ellipsis,
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+ class DashboardBottomSection extends StatelessWidget {
+ const DashboardBottomSection({super.key});
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -324,10 +341,10 @@ class DashboardBottomSection extends StatelessWidget {
         final bool isWide = constraints.maxWidth > 800;
 
         if (isWide) {
-          return Column(
-            children: const [
+          return const Column(
+            children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(flex: 3, child: CallAnalytics()),
                   SizedBox(width: 20),
@@ -368,32 +385,58 @@ class RecentCalls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade400),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "Recent Call Activity",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Divider(),
-            CallRow("Sarah", "Outgoing", "5 min", "4 seconds ago", Colors.red),
-            CallRow("James", "Voicemail", "4 min", "1 minute ago", Colors.red),
-            CallRow("Rachel", "Outgoing", "3 min", "5 minutes ago", Colors.green),
-            CallRow("Michelle", "Incoming", "11 min", "11 minutes ago", Colors.red),
-            CallRow("Lucy", "Outgoing", "2 min", "25 minutes ago", Colors.red, showDivider: false),
-          ],
-        ),
-      ),
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade400),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Recent Call Activity",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              const Divider(),
+              if (provider.isLoading)
+                const Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (provider.recentCalls.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text("No recent calls"),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: provider.recentCalls.length,
+                    itemBuilder: (context, index) {
+                      final call = provider.recentCalls[index];
+                      return CallRow(
+                        call.name,
+                        call.type,
+                       // call.duration,
+                        call.timeAgo,
+                        call.callColor,
+                        showDivider: index != provider.recentCalls.length - 1,
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -401,7 +444,7 @@ class RecentCalls extends StatelessWidget {
 class CallRow extends StatelessWidget {
   final String name;
   final String type;
-  final String duration;
+ // final String duration;
   final String time;
   final Color callColor;
   final bool showDivider;
@@ -409,7 +452,7 @@ class CallRow extends StatelessWidget {
   const CallRow(
       this.name,
       this.type,
-      this.duration,
+     // this.duration,
       this.time,
       this.callColor, {
         this.showDivider = true,
@@ -434,7 +477,7 @@ class CallRow extends StatelessWidget {
                   children: [
                     Icon(Icons.call, color: callColor, size: 16),
                     const SizedBox(width: 6),
-                    Text(duration),
+                   // Text(duration),
                   ],
                 ),
               ),
@@ -487,7 +530,7 @@ class CallAnalytics extends StatelessWidget {
                 child: LineChart(
                   LineChartData(
                     minX: 0,
-                    maxX: 9,
+                    maxX: 11,
                     minY: 0,
                     maxY: 100,
                     gridData: FlGridData(
@@ -510,7 +553,7 @@ class CallAnalytics extends StatelessWidget {
                     ),
                     borderData: FlBorderData(
                       show: true,
-                      border: Border(
+                      border: const Border(
                         left: BorderSide(color: Colors.black54, width: 1),
                         bottom: BorderSide(color: Colors.black54, width: 1),
                         right: BorderSide(color: Colors.transparent),
@@ -577,7 +620,7 @@ class CallAnalytics extends StatelessWidget {
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: 25,
-                          reservedSize: 20,
+                          reservedSize: 28,
                           getTitlesWidget: (value, meta) {
                             return Text(
                               value.toInt().toString(),
@@ -602,6 +645,8 @@ class CallAnalytics extends StatelessWidget {
                           FlSpot(7, 72),
                           FlSpot(8, 22),
                           FlSpot(9, 27),
+                          FlSpot(10, 18),
+                          FlSpot(11, 30),
                         ],
                         isCurved: false,
                         color: const Color(0xFFA023F3),
@@ -614,8 +659,7 @@ class CallAnalytics extends StatelessWidget {
                               radius: 4,
                               color: Colors.white,
                               strokeWidth: 2,
-                              strokeColor:
-                              barData.color ?? const Color(0xFFA023F3),
+                              strokeColor: barData.color ?? const Color(0xFFA023F3),
                             );
                           },
                         ),
@@ -635,6 +679,8 @@ class CallAnalytics extends StatelessWidget {
                           FlSpot(7, 29),
                           FlSpot(8, 53),
                           FlSpot(9, 45),
+                          FlSpot(10, 34),
+                          FlSpot(11, 24),
                         ],
                         isCurved: false,
                         color: const Color(0xFFA17985),
@@ -647,8 +693,7 @@ class CallAnalytics extends StatelessWidget {
                               radius: 4,
                               color: Colors.white,
                               strokeWidth: 2,
-                              strokeColor:
-                              barData.color ?? const Color(0xFFA17985),
+                              strokeColor: barData.color ?? const Color(0xFFA17985),
                             );
                           },
                         ),
@@ -672,189 +717,143 @@ class CallDistribution extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DashboardProvider>(
-  builder: (context, provider, child) {
-
-    if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final  callData = [
-      {"label": "Incoming", "value": provider.incoming.toDouble(), "color": Colors.blue
-      },
-      {"label": "Outgoing", "value": provider.outgoing.toDouble(), "color": Colors.green},
-      {
-        "label": "Missed", "value": provider.missed.toDouble(), "color": Colors.red
-      },
-      {"label": "Voicemail", "value": provider.voicemail.toDouble(), "color": Colors.yellow},
-    ];
-
-    final double total = callData.fold(
-      0,
-          (sum, item) => sum + (item["value"] as double),
-    );
-
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Call Distribution",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Today's Calls: ${provider.todaysCalls}",
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 20),
-                ...callData.map((data) {
-                  final percent =
-                  total == 0 ? "0" : (((data["value"] as double)/ total) * 100).toStringAsFixed(0);
-                  return LegendItem(
-                    color: data["color"]as Color,
-                    text: "${data["label"]} - $percent%",
-                  );
-                }).toList(),
-              ],
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    sectionsSpace: 0,
-                    centerSpaceRadius: 50,
-                    sections: callData.map((data) {
-                      return PieChartSectionData(
-                        value: data["value"] as double?,
-                        color: data["color"] as Color,
-                        showTitle: false,
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const Column(
-                  mainAxisSize: MainAxisSize.min,
+        final callData = [
+          {
+            "label": "Answered",
+            "value": provider.answered.toDouble(),
+            "color": Colors.green,
+          },
+          {
+            "label": "Missed",
+            "value": provider.missed.toDouble(),
+            "color": Colors.red,
+          },
+          {
+            "label": "Voicemail",
+            "value": provider.voicemail.toDouble(),
+            "color": Colors.orange,
+          },
+          {
+            "label": "Other",
+            "value": provider.other.toDouble(),
+            "color": Colors.blue,
+          },
+        ];
+
+        final double total = callData.fold(
+          0.0,
+              (sum, item) => sum + (item["value"] as double),
+        );
+
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Today's Calls:",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${provider.todaysCalls}",
-                      style: const TextStyle(
-                        fontSize: 18,
+                      "Call Distribution",
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Today's Calls: ${provider.todaysCalls}",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    ...callData.map((data) {
+                      final percent = total == 0
+                          ? "0"
+                          : (((data["value"] as double) / total) * 100).toStringAsFixed(0);
+
+                      return LegendItem(
+                        color: data["color"] as Color,
+                        text: "${data["label"]} - $percent%",
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 50,
+                        sections: total == 0
+                            ? [
+                          PieChartSectionData(
+                            value: 100,
+                            color: Colors.grey.shade300,
+                            showTitle: false,
+                          ),
+                        ]
+                            : callData.map((data) {
+                          return PieChartSectionData(
+                            value: data["value"] as double,
+                            color: data["color"] as Color,
+                            showTitle: false,
+                            radius: 45,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          total == 0 ? "No Calls" : "Today's Calls:",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${provider.todaysCalls}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  });
   }
 }
-//     final List<Map<String,dynamic>>callData=[
-//       {"label":"Incoming","value":55.0,"color":Colors.blue},
-//       {"label":"Outgoing","value":35.0,"color":Colors.green},
-//       {"label":"Missed","value":5.0,"color":Colors.red},
-//       {"label":"Voicemail","value":5.0,"color":Colors.yellow},
-//     ];
-//     double total = callData.fold(0,
-//           (sum,item)=>sum+(item["value"]as double),
-//     );
-//     return Container(
-//       height: 300,
-//       padding: const EdgeInsets.all(20),
-//       decoration: BoxDecoration(color: Colors.white,
-//           border: Border.all(color: Colors.black )),
-//       child: Row(
-//         children: [
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   "Call Distribution",
-//                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-//                 ),
-//                 SizedBox(height: 20),
-//                 Text(
-//                   "Today's Calls:1,245",
-//                   style: TextStyle(color: Colors.grey),
-//                 ),
-//                 SizedBox(height: 20),
-//                 // LegendItem(color: Colors.blue, text: "Incoming"),
-//                 // LegendItem(color: Colors.green, text: "Outgoing"),
-//                 // LegendItem(color: Colors.red, text: "Missed"),
-//                 // LegendItem(color: Colors.yellow, text: "Voicemail"),
-//                 ...callData.map((data){
-//                   final percent=((data["value"]/total)*100).toStringAsFixed(0);
-//                   return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
-//                 }).toList(),
-//               ],
-//             ),
-//           ),
-//           Expanded(
-//             child: Stack(
-//               alignment: Alignment.center,
-//               children: [
-//                 PieChart(
-//                   PieChartData(
-//                       sectionsSpace: 0,
-//                       centerSpaceRadius: 50,
-//                       sections: callData.map((data){
-//                         return PieChartSectionData(
-//                           value: data["value"],
-//                           color: data["color"],
-//                           showTitle: false,
-//                         );
-//                       }).toList()
-//                   ),
-//                 ),
-//                 Column(
-//                   mainAxisSize: MainAxisSize.min,
-//                   children: [
-//                     Text(
-//                       "Today's Calls:",
-//                       style: TextStyle(fontSize: 12, color: Colors.grey),
-//                     ),
-//                     SizedBox(height: 4),
-//                     Text(
-//                       "1,245",
-//                       style: TextStyle(
-//                         fontSize: 18,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class LegendItem extends StatelessWidget {
   final Color color;
@@ -881,8 +880,114 @@ class LegendItem extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Text(text),
+          Expanded(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+class AgentPerformance extends StatelessWidget {
+  const AgentPerformance({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Agent Performance",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 15),
+              if (provider.isLoading)
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (provider.agentPerformance.isEmpty)
+                const Expanded(
+                  child: Center(child: Text("No agent data found")),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: provider.agentPerformance.length,
+                    itemBuilder: (context, index) {
+                      final agent = provider.agentPerformance[index];
+                       return AgentRow(
+                         agent.name,
+                        "${agent.totalCalls} calls",
+                        agent.online,
+                       );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+class AgentRow extends StatelessWidget {
+  final String name;
+  final String calls;
+  final bool online;
+
+  const AgentRow(this.name, this.calls, this.online, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const CircleAvatar(
+        backgroundColor: Color(0xff3570CE),
+        child: Icon(Icons.person, color: Colors.white),
+      ),
+      title: Text(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.circle,
+            size: 10,
+            color: online ? Colors.green : Colors.red,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            online ? "online" : "offline",
+            style: TextStyle(
+              color: online ? Colors.green : Colors.red,
+            ),
+          ),
+        ],
+      ),
+      trailing: SizedBox(
+        width: 80,
+        child: Text(
+          calls,
+          textAlign: TextAlign.right,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

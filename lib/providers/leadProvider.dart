@@ -347,9 +347,8 @@ Future<void> fetchLeadCategories() async {
     applyFilters();
   }
 
-<<<<<<< HEAD
   void updateStatus(String s) {}
-=======
+
   Future<void> completedLead(String leadId) async {
     await fbd.collection('LEADS').doc(leadId).update({
       "FOLLOW_UP_STATUS": "COMPLETED",
@@ -364,5 +363,4 @@ Future<void> fetchLeadCategories() async {
       "FOLLOW_UP_STATUS": "pending",
     });
   }
->>>>>>> ab06e2bedc20e2f238375112331876365af475f0
 }

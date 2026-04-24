@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
@@ -124,4 +126,20 @@ class LeadCategoryModel {
       sub: List<String>.from(map['sub'] ?? []),
     );
   }
+}
+class RecentCallModel{
+  final String name;
+  final String type;
+ // final String duration;
+  final String timeAgo;
+  final Color callColor;
+
+  RecentCallModel({
+    required this.name,
+    required this.type,
+   // required this.duration,
+    required this.timeAgo,
+    required this.callColor,
+
+});
 }

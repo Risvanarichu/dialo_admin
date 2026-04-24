@@ -283,7 +283,7 @@ Widget tableHeader(dynamic lead) {
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
-  final mainProvider = context.read<MainProvider>();
+  final mainProvider = context.read<Agentprovider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
   final priority = lead.autoPriority;
