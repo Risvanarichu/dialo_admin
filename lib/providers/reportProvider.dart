@@ -27,6 +27,7 @@ class ReportProvider extends ChangeNotifier {
     await Future.wait([
       fetchAgentPerformance(),
       fetchFunnel(),
+      fetchLeadsReport(),
     ]);
 
     notifyListeners();
@@ -132,10 +133,10 @@ class ReportProvider extends ChangeNotifier {
         final lead = doc.data() as Map<String, dynamic>;
 
         /// ✅ GET AGENT ID (FIX FIELD NAME HERE)
-        String agentId = (lead['ADDED_BY_ID'] ?? "").toString();
+        String agentId = (lead['ASSIGNED_AGENT_ID'] ?? lead['ADDED_BY_ID'] ?? lead['ADDED BY ID'] ?? "").toString();
 
         /// ✅ CONVERT TO NAME
-        String agentName = agentMap[agentId] ?? "Unknown";
+        String agentName = agentMap[agentId] ?? lead['ASSIGNED_AGENT_NAME']?.toString() ?? "Unknown";
 
         String status = (lead['STATUS'] ?? "").toString().toLowerCase();
 
@@ -234,6 +235,8 @@ class ReportProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> leadsReport = [];
 
+  List<String> availableAgents = ["All Agents"];
+
   String selectedAgent = "All Agents";
   String selectedStatus = "All Status";
   String selectedSource = "All Sources";
@@ -259,13 +262,16 @@ class ReportProvider extends ChangeNotifier {
       final snapshot = await query.get();
 
       List<Map<String, dynamic>> temp = [];
+      Set<String> dynamicAgents = {"All Agents"};
 
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
 
         /// ✅ ADD THIS (IMPORTANT)
-        String agentId = (data['ADDED_BY_ID'] ?? "").toString();
-        String agentName = agentMap[agentId] ?? "Unknown";
+        String agentId = (data['ASSIGNED_AGENT_ID'] ?? data['ADDED_BY_ID'] ?? data['ADDED BY ID'] ?? "").toString();
+        String agentName = agentMap[agentId] ?? data['ASSIGNED_AGENT_NAME']?.toString() ?? "Unknown";
+
+        dynamicAgents.add(agentName);
 
         String name = (data['NAME'] ?? "").toString();
         String phone = (data['PHONE'] ?? "").toString();
@@ -292,6 +298,11 @@ class ReportProvider extends ChangeNotifier {
           "agent": agentName, // ✅ NOW WORKS
           "status": status,
         });
+      }
+      
+      availableAgents = dynamicAgents.toList();
+      if (!availableAgents.contains(selectedAgent)) {
+        selectedAgent = "All Agents";
       }
 
       leadsReport = temp;

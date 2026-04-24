@@ -461,7 +461,7 @@ class LeadsReportCard extends StatelessWidget {
             children: [
               _dropdown(
                 value: provider.selectedAgent,
-                items: ["All Agents"],
+                items: provider.availableAgents,
                 onChanged: provider.updateAgent,
               ),
               _dropdown(
@@ -531,15 +531,23 @@ class LeadsReportCard extends StatelessWidget {
     required Function(String) onChanged,
   }) {
     return SizedBox(
-      width: 150,
+      width: 180, // थोड़ा increase
       child: DropdownButtonFormField<String>(
+        isExpanded: true, // 🔥 IMPORTANT FIX
         value: value,
         items: items
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .map((e) => DropdownMenuItem(
+          value: e,
+          child: Text(
+            e,
+            overflow: TextOverflow.ellipsis, // ✅ prevent overflow
+          ),
+        ))
             .toList(),
         onChanged: (val) => onChanged(val!),
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10),
         ),
       ),
     );
