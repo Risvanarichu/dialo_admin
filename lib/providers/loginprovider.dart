@@ -29,7 +29,6 @@ class Loginprovider extends ChangeNotifier{
           .collection('AGENT')
           .where('EMAIL', isEqualTo: emailController.text.trim().toLowerCase())
           .where('PASSWORD', isEqualTo: passwordController.text.trim())
-          .where('ROLE', isEqualTo: 'ADMIN')
           .get();
       print("Docs found: ${querySnapshot.docs.length}");
 
@@ -46,6 +45,7 @@ class Loginprovider extends ChangeNotifier{
         await prefs.setString('agentId', querySnapshot.docs.first.id);
         await prefs.setString('name', userMap['NAME'] ?? '');
         await prefs.setString('image', userMap['IMAGE'] ?? '');
+        await prefs.setString('role', userMap['ROLE'] ?? 'USER');
 
         await fetchUsers();
 

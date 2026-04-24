@@ -87,7 +87,7 @@ class DateFilterSection extends StatelessWidget {
               final provider = context.read<ReportProvider>();
               await provider.fetchReports();
             },
-            child: const Text("Apply"),
+            child: const Text("Apply",style: TextStyle(color: Colors.white),),
           ),
         )
       ],
@@ -186,6 +186,45 @@ class AgentPerformanceCard extends StatelessWidget {
                 borderData: FlBorderData(show: false),
 
                 titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 45, // enough space
+                      interval: 5,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 45,
+                      interval: 5,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -199,22 +238,17 @@ class AgentPerformanceCard extends StatelessWidget {
                         String agentName =
                         provider.agentPerformance[index]['agent'];
 
-                        agentName = agentName.length > 6
-                            ? agentName.substring(0, 6) + "..."
-                            : agentName;
-
                         return Padding(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            agentName,
+                            agentName.length > 6
+                                ? agentName.substring(0, 6) + "..."
+                                : agentName,
                             style: const TextStyle(fontSize: 10),
                           ),
                         );
                       },
                     ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
                   ),
                 ),
 
