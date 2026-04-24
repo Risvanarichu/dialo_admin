@@ -38,7 +38,7 @@ class UsersPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
-                      child:  Consumer<MainProvider>(
+                      child:  Consumer<Agentprovider>(
                         builder: (context,provider,child) {
                           return TextField(
                             controller: provider.searchController,
@@ -87,7 +87,7 @@ class UsersPage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () async {
-                      final provider = context.read<MainProvider>();
+                      final provider = context.read<Agentprovider>();
 
                       provider.clearFields();
 
@@ -114,7 +114,7 @@ class UsersPage extends StatelessWidget {
 
                 /// TABLE CONTAINER
                 Expanded(
-                  child: Consumer<MainProvider>(
+                  child: Consumer<Agentprovider>(
                      builder: (context,provider,child) {
                        // if(provider.isLoading){
                        //   return const Center(
@@ -166,7 +166,7 @@ class UsersPage extends StatelessWidget {
                                   user["STATUS"]?? true,
                                   imageUrl:user["IMAGE"]??"",
                                     onEdit: () async {
-                                      final provider = context.read<MainProvider>();
+                                      final provider = context.read<Agentprovider>();
 
                                       provider.setPageLoading(true);
 
@@ -224,7 +224,7 @@ class UsersPage extends StatelessWidget {
               ],
             ),
           ),
-          Consumer<MainProvider>(
+          Consumer<Agentprovider>(
               builder: (context,provider,child){
                 if(!provider.isLoading) return const SizedBox();
                   return fullScreenLoader();

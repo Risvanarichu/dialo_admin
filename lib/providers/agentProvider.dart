@@ -6,8 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class MainProvider extends ChangeNotifier {
-  MainProvider(){
+class Agentprovider extends ChangeNotifier {
+  Agentprovider(){
     fetchUser();
   }
   bool isButtonLoading = false;
@@ -194,7 +194,7 @@ class MainProvider extends ChangeNotifier {
         "PHONE":phoneController.text.trim(),
         "EMAIL":emailController.text.trim(),
         "EMPLOYEEID":employeeController.text.trim(),
-        "ROLE":roleController.text.trim(),
+        "ROLE":roleController.text.toUpperCase().trim(),
         "PASSWORD":passwordController.text.trim(),
         "STATUS":isActive,
       };
@@ -258,7 +258,6 @@ class MainProvider extends ChangeNotifier {
         final name = user["NAME"].toString().toLowerCase();
         final role = user["ROLE"].toString().toLowerCase();
         final email = user["EMAIL"].toString().toLowerCase();
-        final password = user["PASSWORD"].toString().toLowerCase();
         final status = user["STATUS"] == true ? "active":"inactive";
 
         return name.contains(search)||

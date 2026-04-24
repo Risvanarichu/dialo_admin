@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => Loginprovider()),
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
-        ChangeNotifierProvider(create: (_)=> MainProvider()),
+        ChangeNotifierProvider(create: (_)=> Agentprovider()),
         ChangeNotifierProvider(create: (_)=> LeadProvider()),
         ChangeNotifierProvider(
           create: (_) => DashboardProvider(),
@@ -47,7 +47,8 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        home:LoginPage(),
+        title: 'Flutter Demo',
+        home:SideMenu(),
         debugShowCheckedModeBanner: false,
       ),
     );
