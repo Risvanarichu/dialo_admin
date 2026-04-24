@@ -540,7 +540,7 @@ class LeadsReportCard extends StatelessWidget {
           value: e,
           child: Text(
             e,
-            overflow: TextOverflow.ellipsis, // ✅ prevent overflow
+            overflow: TextOverflow.ellipsis,
           ),
         ))
             .toList(),
