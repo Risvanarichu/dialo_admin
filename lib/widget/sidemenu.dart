@@ -1,4 +1,5 @@
 import 'package:dialo_admin/constants/appcolors.dart';
+import 'package:dialo_admin/loginpage.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,7 +10,6 @@ import '../views/calls.dart';
 import '../views/followUpPage.dart';
 import '../views/leads/addlead.dart';
 import '../views/leads/leads_list.dart';
-import '../views/logoutscreen.dart';
 import '../views/report/reportpage.dart';
 import '../views/settings/settscreen.dart';
 
@@ -48,7 +48,6 @@ class _SideMenuState extends State<SideMenu> {
     ReportsPage(),
     UsersPage(),
     SettingsPage(),
-    LogoutPage(),
     AddUserPage(),
   ];
 
@@ -109,7 +108,9 @@ class _SideMenuState extends State<SideMenu> {
                     "Logout",
                     style: TextStyle(color: AppColors.redColor),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    _showLogoutDialog(context);
+                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -140,5 +141,36 @@ class _SideMenuState extends State<SideMenu> {
         });
       },
     );
+  }
+
+  void _showLogoutDialog(BuildContext context){
+    showDialog(context: context,
+        barrierDismissible:false,
+        builder: (context){
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text("Logout",
+        style: TextStyle(color: Colors.black),),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(onPressed: (){
+            Navigator.pop(context);
+          }, child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+              style:ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: ()async{
+          final prefs=await SharedPreferences.getInstance();
+          await prefs.clear();
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=> LoginPage(),
+          ),
+          (route) => false,
+          );
+          }, child: const Text("Logout",style: TextStyle(color: Colors.white),))
+        ],
+      );
+        });
   }
 }
