@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
+import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +19,7 @@ class _LoginPageState extends State<LoginPage>{
   final _formKey = GlobalKey<FormState>();
 
   Widget build(BuildContext context){
-    final provider = Provider.of<Loginprovider>(context);
-    return Scaffold(
+    final provider = context.watch<Loginprovider>();    return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
@@ -193,7 +193,7 @@ class _LoginPageState extends State<LoginPage>{
                                                  bool success = await provider.login();
 
                                                  if(success){
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => UsersPage(),));
+                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  }
 
                                                 }

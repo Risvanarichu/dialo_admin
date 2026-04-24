@@ -94,7 +94,7 @@ class Leads extends StatelessWidget {
                                         value: provider.selectedStatus,
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Status", "New", "Converted", "Interested"]
+                                        items: ["All Status", "NEW", "CONVERTED", "INTERESTED"]
                                             .map((e) => DropdownMenuItem(
                                           value: e,
                                           child: Text(e),
@@ -126,7 +126,7 @@ class Leads extends StatelessWidget {
                                         value: provider.selectedSources,
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Sources", "Facebook", "Website", "Call"]
+                                        items: ["All Sources", "FACEBOOK", "WEBSITE", "CALL"]
                                             .map((e) => DropdownMenuItem(
                                           value: e,
                                           child: Text(e),

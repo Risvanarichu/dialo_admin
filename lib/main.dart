@@ -3,6 +3,7 @@
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/dashboardProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/providers/reportProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
@@ -15,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'loginpage.dart';
 import 'views/calls.dart';
 import 'views/followUpPage.dart';
 
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => Loginprovider()),
         ChangeNotifierProvider(create: (_)=>SettingsProvider()),
         ChangeNotifierProvider(create: (_)=> Agentprovider()),
         ChangeNotifierProvider(create: (_)=> LeadProvider()),
@@ -41,8 +44,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => ReportProvider()..fetchReports(),
-          child: ReportsPage(),
-        )
+        ),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

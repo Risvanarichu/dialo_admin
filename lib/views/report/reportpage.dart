@@ -87,7 +87,7 @@ class DateFilterSection extends StatelessWidget {
               final provider = context.read<ReportProvider>();
               await provider.fetchReports();
             },
-            child: const Text("Apply"),
+            child: const Text("Apply",style: TextStyle(color: Colors.white),),
           ),
         )
       ],
@@ -171,7 +171,7 @@ class AgentPerformanceCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          Expanded( // ✅ FIXED
+          Expanded(
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
@@ -186,6 +186,45 @@ class AgentPerformanceCard extends StatelessWidget {
                 borderData: FlBorderData(show: false),
 
                 titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 45, // enough space
+                      interval: 5,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 45,
+                      interval: 5,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -199,22 +238,17 @@ class AgentPerformanceCard extends StatelessWidget {
                         String agentName =
                         provider.agentPerformance[index]['agent'];
 
-                        agentName = agentName.length > 6
-                            ? agentName.substring(0, 6) + "..."
-                            : agentName;
-
                         return Padding(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            agentName,
+                            agentName.length > 6
+                                ? agentName.substring(0, 6) + "..."
+                                : agentName,
                             style: const TextStyle(fontSize: 10),
                           ),
                         );
                       },
                     ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
                   ),
                 ),
 
@@ -259,9 +293,9 @@ class AgentPerformanceCard extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
+
 /// FUNNEL CHART
-////////////////////////////////////////////////////////////
+
 
 class LeadFunnelCard extends StatelessWidget {
   const LeadFunnelCard({super.key});
@@ -288,41 +322,59 @@ class LeadFunnelCard extends StatelessWidget {
     );
   }
 
-  Widget _funnelBar(BuildContext context, String label, double value, double maxValue) {
+  Widget _funnelBar(
+      BuildContext context,
+      String label,
+      double value,
+      double maxValue,
+      ) {
     double percent = maxValue == 0 ? 0 : value / maxValue;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label),
           const SizedBox(height: 6),
 
-          /// ✅ FIXED WIDTH CONTAINER (IMPORTANT)
-          Container(
-            width: double.infinity, // 🔥 gives bounded width
-            alignment: Alignment.center,
-            child: FractionallySizedBox(
-              widthFactor: percent,
-              child: Container(
+          /// ✅ FIXED WIDTH (VERY IMPORTANT)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Container(
                 height: 35,
+                width: constraints.maxWidth, // ✅ gives proper width
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
-                  ),
+                  color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  value.toInt().toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Stack(
+                  children: [
+                    /// BAR
+                    Container(
+                      width: constraints.maxWidth * percent,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xff2f6fed), Color(0xff4f8cff)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    /// TEXT
+                    Center(
+                      child: Text(
+                        value.toInt().toString(),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -369,7 +421,7 @@ class AgentTableCard extends StatelessWidget {
                  return DataRow(cells: [
                    DataCell(Text(e['agent'].toString().toUpperCase())),
                    DataCell(Text(total.toString())),
-                   DataCell(Text("_")),
+                   DataCell(Text((e['answered'] ?? 0).toString())),
                    DataCell(Text(converted.toString())),
                    DataCell(Text("${rate.toStringAsFixed(1)}%")),
                  ]);
@@ -417,11 +469,11 @@ class LeadsReportCard extends StatelessWidget {
                 items: ["All Status", "New", "Converted"],
                 onChanged: provider.updateStatusFilter,
               ),
-              _dropdown(
-                value: provider.selectedSource,
-                items: ["All Sources"],
-                onChanged: provider.updateSource,
-              ),
+              // _dropdown(
+              //   value: provider.selectedSource,
+              //   items: ["All Sources"],
+              //   onChanged: provider.updateSource,
+              // ),
               SizedBox(
                 width: 200,
                 child: TextField(
@@ -438,19 +490,16 @@ class LeadsReportCard extends StatelessWidget {
           const SizedBox(height: 15),
 
           /// 🔥 FIXED AREA + SCROLL
-          SizedBox(
-            height: 250,
+          Expanded(
             child: provider.leadsReport.isEmpty
-                ? const Center(
-              child: Text("No Data Available"),
-            )
+                ? const Center(child: Text("No Data Available"))
                 : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 child: DataTable(
                   columnSpacing: 80,
                   columns: const [
-                    DataColumn(label: Text("Lead ID")),
+                    // DataColumn(label: Text("Lead ID")),
                     DataColumn(label: Text("Lead Name")),
                     DataColumn(label: Text("Phone")),
                     DataColumn(label: Text("Source")),
@@ -459,7 +508,7 @@ class LeadsReportCard extends StatelessWidget {
                   ],
                   rows: provider.leadsReport.map((e) {
                     return DataRow(cells: [
-                      DataCell(Text(e["id"])),
+                      // DataCell(Text(e["id"])),
                       DataCell(Text(e["name"])),
                       DataCell(Text(e["phone"])),
                       DataCell(Text(e["source"])),
@@ -470,7 +519,7 @@ class LeadsReportCard extends StatelessWidget {
                 ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
@@ -563,7 +612,7 @@ class LeadsFilterSection extends StatelessWidget {
 
 Widget _card({required Widget child}) {
   return Container(
-    height: 420, // ✅ SAME HEIGHT FOR ALL
+    height: 420,
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: Colors.white,
