@@ -1,7 +1,9 @@
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/agentProvider.dart';
 import 'leads_list.dart';
 
 class AddLead extends StatefulWidget {
@@ -24,11 +26,15 @@ class _AddLeadState extends State<AddLead> {
   final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   final phoneRegex = RegExp(r'^[6-9]\d{9}$');
 
+  String? selectedAgentId;
+  String? selectedAgentName;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       context.read<LeadProvider>().fetchLeadSettings();
+      context.read<Agentprovider>().fetchUser();
     });
   }
 
@@ -131,8 +137,65 @@ class _AddLeadState extends State<AddLead> {
             _leadStatusDropdown(),
             _calltypeDropdown(),
           ),
+          const SizedBox(height: 16,),
+          _agentDropdown()
         ],
       ),
+    );
+  }
+  Widget _agentDropdown() {
+    final agentProvider = context.watch<Agentprovider>();
+
+    // ✅ ADD THIS HERE
+    if (agentProvider.userList.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("ASSIGN TO AGENT"),
+        const SizedBox(height: 6),
+
+        DropdownButtonFormField<String>(
+          value: selectedAgentId != null &&
+              agentProvider.userList
+                  .map((e) => e["ID"])
+                  .contains(selectedAgentId)
+              ? selectedAgentId
+              : null,
+
+          hint: const Text("Select Agent"),
+
+          items: agentProvider.userList.map<DropdownMenuItem<String>>((agent) {
+            return DropdownMenuItem<String>(
+              value: agent["ID"],
+              child: Text(agent["NAME"]),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            setState(() {
+              selectedAgentId = value;
+
+              final selectedAgent = agentProvider.userList.firstWhere(
+                    (e) => e["ID"] == value,
+                orElse: () => {},
+              );
+
+              selectedAgentName = selectedAgent["NAME"]?.toString();
+            });
+          },
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -143,7 +206,7 @@ class _AddLeadState extends State<AddLead> {
         const Text("LEAD STATUS*"),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: leadStatusCtrl.text.isEmpty ? null : leadStatusCtrl.text,
+          value: leadStatusCtrl.text.isEmpty ? null : leadStatusCtrl.text.trim(),
           icon: const Icon(Icons.arrow_drop_down),
           decoration: InputDecoration(
             border: OutlineInputBorder(
@@ -170,8 +233,9 @@ class _AddLeadState extends State<AddLead> {
             DropdownMenuItem(value: "Joined", child: Text("Joined")),
           ],
           onChanged: (value) {
+
             setState(() {
-              leadStatusCtrl.text = value ?? "";
+              leadStatusCtrl.text = value?.trim() ?? "";
             });
           },
           validator: (value) {
@@ -192,7 +256,7 @@ class _AddLeadState extends State<AddLead> {
         const Text("CALL TYPE*"),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text,
+          value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
           icon: const Icon(Icons.arrow_drop_down),
           decoration: InputDecoration(
             border: OutlineInputBorder(
@@ -210,6 +274,7 @@ class _AddLeadState extends State<AddLead> {
               horizontal: 12,
               vertical: 14,
             ),
+
           ),
           items: const [
             DropdownMenuItem(value: "Incoming", child: Text("Incoming")),
@@ -217,7 +282,7 @@ class _AddLeadState extends State<AddLead> {
           ],
           onChanged: (value) {
             setState(() {
-              callTypeCtrl.text = value ?? "";
+              callTypeCtrl.text = value?.trim() ?? "";
             });
           },
         ),
@@ -264,24 +329,32 @@ class _AddLeadState extends State<AddLead> {
   Widget _buildDropdownField(String label, List subList) {
     final provider = context.watch<LeadProvider>();
 
+    final currentValue = provider.additionalDetails[label];
+
+    final validValue = subList.contains(currentValue) ? currentValue : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
         const SizedBox(height: 6),
+
         DropdownButtonFormField<String>(
-          value: provider.additionalDetails[label],
-          items: subList
-              .map<DropdownMenuItem<String>>(
-                (e) => DropdownMenuItem<String>(
+          value: validValue,
+
+          hint: const Text("Select"),
+
+          items: subList.toSet().map<DropdownMenuItem<String>>((e) {
+            return DropdownMenuItem<String>(
               value: e.toString(),
               child: Text(e.toString()),
-            ),
-          )
-              .toList(),
+            );
+          }).toList(),
+
           onChanged: (value) {
-            context.read<LeadProvider>().additionalDetails[label] = value;
+            context.read<LeadProvider>().updateAdditionalDetail(label, value);
           },
+
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -372,6 +445,12 @@ class _AddLeadState extends State<AddLead> {
         TextFormField(
           controller: controller,
           keyboardType: phone ? TextInputType.phone : TextInputType.text,
+          inputFormatters: phone
+              ? [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ]
+              : [],
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -451,12 +530,12 @@ class _AddLeadState extends State<AddLead> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         ElevatedButton(
-        onPressed: () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const Leads()),
-      );
-    },
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const Leads()),
+            );
+          },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           child: const Text(
             "Cancel",
@@ -476,6 +555,8 @@ class _AddLeadState extends State<AddLead> {
                   leadStatus: leadStatusCtrl.text,
                   notes: notesCtrl.text,
                   callType:callTypeCtrl.text,
+                  assignedAgentId: selectedAgentId,          // ✅ ADD
+                  assignedAgentName: selectedAgentName,
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(
