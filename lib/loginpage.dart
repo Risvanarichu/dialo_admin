@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
+import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -193,7 +194,14 @@ class _LoginPageState extends State<LoginPage>{
                                                  bool success = await provider.login();
 
                                                  if(success){
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => UsersPage(),));
+                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => Dashboard(),));
+                                                 } else {
+                                                   ScaffoldMessenger.of(context).showSnackBar(
+                                                     SnackBar(
+                                                       content: Text("This user not found"),
+                                                       backgroundColor: Colors.red,
+                                                     )
+                                                   );
                                                  }
 
                                                 }
@@ -216,16 +224,6 @@ class _LoginPageState extends State<LoginPage>{
                                               onPressed: () async {
                                                 final user = await provider.signInWithGoogle();
 
-                                                // if (user != null){
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Success")),
-                                                //   );
-                                                //
-                                                // }else{
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Failed")),
-                                                //   );
-                                                // }
 
                                               },
                                               style: ElevatedButton.styleFrom(
