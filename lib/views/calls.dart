@@ -1,6 +1,10 @@
+import 'package:dialo_admin/providers/agentProvider.dart';
+import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class Calls extends StatefulWidget {
   const Calls({super.key});
@@ -71,22 +75,39 @@ class _CallsState extends State<Calls> {
                 ),
                 ),
                 const SizedBox(width: 15,),
-                Expanded(child: DropdownButtonFormField(
-                    decoration:InputDecoration(
-                      labelText: "Agent",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      )
-                    ),
-                    items: const[
-                      DropdownMenuItem(value:"all",
-                          child: Text("All Agent"),
-                      ),
-                      DropdownMenuItem(value:"agent1",
-                          child: Text("Agent 1"))
-                    ], onChanged: (value){}
-                ),
-                ),
+              Expanded(
+  child: Consumer<Agentprovider>(
+    builder: (context, provider, child) {
+      print(provider?.userList);
+      return DropdownButtonFormField(
+        decoration: InputDecoration(
+          labelText: "Agent",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+
+        items: [
+          const DropdownMenuItem(
+            value: "all",
+            child: Text("All Agent"),
+          ),
+
+          ...?provider?.userList.map((user) {
+            return DropdownMenuItem(
+              value: user["ID"],
+              child: Text(user["NAME"] ?? ""),
+            );
+          }).toList(),
+        ],
+
+        onChanged: (value) {
+  context.read<LeadProvider>().setCallStatus(value.toString());
+},
+      );
+    },
+  ),
+)
               ],
             ),
           ),
@@ -106,45 +127,44 @@ class _CallsState extends State<Calls> {
                         horizontal: 10,vertical: 12
                       ),
                       color: Colors.grey.shade100,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const[
-                          Expanded(child: Text("Caller Name")),
-                          Expanded(child: Text("Phone Number")),
-                          Expanded(child: Text("Call Type")),
-                          Expanded(child: Text("Status")),
-                          Expanded(child: Text("Duration")),
-                          Expanded(child: Text("Date")),
-                          Expanded(child: Text("Assigned Agent")),
-                          Expanded(child: Text("Actions")),
-                        ],
-                      ),
-
-                      ),
-
+                     child: Row(
+  children: const[
+    Expanded(child: Center(child: Text("Caller Name"))),
+    Expanded(child: Center(child: Text("Phone Number"))),
+    Expanded(child: Center(child: Text("Call Type"))),
+    Expanded(child: Center(child: Text("Status"))),
+    Expanded(child: Center(child: Text("Time"))),
+    Expanded(child: Center(child: Text("Date"))),
+    Expanded(child: Center(child: Text("Assigned Agent"))),
+    Expanded(child: Center(child: Text("Actions"))),
+  ],
+),
+                    ),
                     Expanded(
-                        child: ListView(
-                          shrinkWrap: true,
-                      // physics: const NeverScrollableScrollPhysics(),
-                      children: const[
-                      CallList(name: "Finiya",
-                          phone: "+91 1234567891",
-                          type: "Inbound",
-                          status: "Answered",
-                          duration: "5:23",
-                          date: "06-01-2026",
-                          agent: "Shibina"),
-                        CallList(name: "Riswana", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Ayisha", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Shibin", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Anshad", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Shifa", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Swabirin", phone: "+91 6735428956", type: "outbound", status: "Missed", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                        CallList(name: "Nida", phone: "+91 6735428956", type: "outbound", status: "Answered", duration: "5:43", date: "12-01-2026", agent: "Shruthi"),
-                      ],
-                    ))
+                        child:Consumer<LeadProvider>(
+  builder: (context, value, child) {
+   final leads = value.allLeads;
+
+    return ListView.builder(
+      itemCount: leads.length,
+      itemBuilder: (context, index) {
+        final lead = leads[index];
+
+        return CallList(
+          name: lead.name,
+          phone: lead.phone,
+          type: lead.source, // inbound/outbound
+          status: lead.followupstatus == "pending"
+              ? "Missed"
+              : "Answered",
+          duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
+          date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
+         agent: lead.assignedAgentName, actions: '',
+        );
+      },
+    );
+  },
+))
                   ],
                 ),
               ))
@@ -163,6 +183,7 @@ class CallList extends StatelessWidget {
   final String duration;
   final String date;
   final String agent;
+  final String actions;
 
   const CallList ({
     required this.name,
@@ -172,6 +193,7 @@ class CallList extends StatelessWidget {
     required this.duration,
     required this.date,
     required this.agent,
+    required this.actions,
   });
   @override
   Widget build(BuildContext context){
@@ -182,11 +204,12 @@ class CallList extends StatelessWidget {
       ),
       child:  Row(
         children: [
-          Expanded(child: Text(name, textAlign: TextAlign.center,  )),
-          Expanded(child: Text(phone, textAlign: TextAlign.center,)),
-          Expanded(child: Text(type, textAlign: TextAlign.center,)),
-          Expanded(child: Center(
-          child: Container(
+          Expanded(child: Center(child: Text(name))),
+          Expanded(child: Center(child: Text(phone))),
+          Expanded(child: Center(child: Text(type))),
+          Expanded(child: Center(child: Container(
+            width: 100,
+
             padding: const EdgeInsets.symmetric(
               horizontal: 10,vertical: 5),
             decoration: BoxDecoration(
@@ -202,24 +225,24 @@ class CallList extends StatelessWidget {
                   ?Colors.green
                   :Colors.red,
               fontWeight: FontWeight.w600,
+              ),
             ),
-            ),
+          ),),
           ),
-          ),
-    ),
-          Expanded(child: Text(duration, )),
-          Expanded(child: Text(date, )),
-          Expanded(child: Text(agent, )),
+          Expanded(child: Center(child: Text(duration))),
+Expanded(child: Center(child: Text(date))),
+Expanded(child: Center(child: Text(agent))),
 
-          Expanded(child: Center(
-          child: Row(
-            children: [
-              Icon(Icons.phone,size: 18,),
-              SizedBox(width: 10,),
-              Icon(Icons.edit,size: 18,),
-            ],
-          ))
-          ),
+Expanded(
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(Icons.phone, size: 18),
+      SizedBox(width: 10),
+      Icon(Icons.edit, size: 18),
+    ],
+  ),
+),
         ],
       ),
     );

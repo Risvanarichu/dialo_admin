@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/agentProvider.dart';
+
 
 class FollowUpPage extends StatefulWidget {
   const FollowUpPage({super.key});
@@ -89,7 +91,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
       /// SEARCH
       bool matchesSearch =
           lead.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              lead.agent.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              lead.assignedAgentId.toLowerCase().contains(searchQuery.toLowerCase()) ||
               lead.priority.toLowerCase().contains(searchQuery.toLowerCase());
 
       return matchesFilter && matchesSearch;
@@ -221,7 +223,7 @@ class _FollowUpPageState extends State<FollowUpPage> {
                 )
                     : Column(
                   children: [
-                    tableHeader(),
+                    tableHeader(filteredLeads.first),
                     const Divider(height: 1),
 
                     ...filteredLeads.map((lead) {
@@ -263,25 +265,26 @@ Widget dashboardCard(String title, String value) {
 }
 
 /// ================= HEADER =================
-Widget tableHeader() {
+Widget tableHeader(dynamic lead) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 12),
     color: Colors.grey.shade300,
-    child: Row(
-      children: const [
-        tableCell("LEAD NAME", isHeader: true),
-        tableCell("FOLLOW_UP_DATE", isHeader: true),
-        tableCell("TIME", isHeader: true),
-        tableCell("PRIORITY", isHeader: true),
-        tableCell("AGENT", isHeader: true),
-        tableCell("ACTIONS", isHeader: true),
-      ],
-    ),
+    child:Row(
+  children: const [
+    tableCell("LEAD NAME", isHeader: true),
+    tableCell("FOLLOW UP DATE", isHeader: true),
+    tableCell("LAST CONTACTED DATE", isHeader: true),
+    tableCell("PRIORITY", isHeader: true),
+    tableCell("AGENT", isHeader: true),
+    tableCell("ACTIONS", isHeader: true),
+  ],)
   );
 }
 
 /// ================= ROW =================
 Widget tableRowDynamic(BuildContext context,LeadModel lead){
+  final mainProvider = context.read<Agentprovider>();
+  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
   final priority = lead.autoPriority;
   Color color(){
@@ -308,9 +311,12 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
           tableCell(lead.name),
 
           tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
-          tableCell(lead.time),
+         tableCell(
+        DateFormat('dd MMM yyyy, hh:mm a')
+      .format(lead.lastContactedDate),
+),
           tableCell(priority,color: getPrioritycolor(),),
-          tableCell(lead.agent),
+          tableCell(agentName),
 
           Expanded(child: Wrap(
             spacing: 5,

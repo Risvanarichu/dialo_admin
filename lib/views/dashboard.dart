@@ -1,21 +1,37 @@
+import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-import '../widget/sidemenu.dart';
+import '../providers/dashboardProvider.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
+
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<DashboardProvider>().fetchDashboardCounts();
+     context.read<DashboardProvider>().fetchDashBoardAgentPerformance();
+    context.read<DashboardProvider>().fetchRecentCalls();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-     // drawer: isDesktop ? null : const SideMenu(),
       body: Row(
         children: [
-         // if (isDesktop) SizedBox(width: 220, child: SideMenu()),
           const VerticalDivider(
             width: 1,
             thickness: 1,
@@ -31,16 +47,14 @@ class Dashboard extends StatelessWidget {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1200),
-
-                        child: Column(
+                        child: const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             DashboardContent(),
                             SizedBox(height: 20),
                             DashboardBottomSection(),
                           ],
                         ),
-                        // child: DashboardContent(isDesktop:isDesktop),
                       ),
                     ),
                   ),
@@ -53,44 +67,6 @@ class Dashboard extends StatelessWidget {
     );
   }
 }
-
-// class SideMenu extends StatelessWidget {
-//   const SideMenu({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: 220,
-//       color: Colors.white,
-//       child: Column(
-//         children: [
-//           const SizedBox(height: 40),
-//           _menuItem(Icons.dashboard_outlined, "Dashboard", false),
-//           _menuItem(Icons.phone_outlined, "Calls", false),
-//           _menuItem(Icons.people_outline, "Leads", false),
-//           _menuItem(Icons.person_add_alt_outlined, "Add lead", false),
-//           _menuItem(Icons.event_outlined, "Follow-Up", false),
-//           _menuItem(Icons.bar_chart_outlined, "Reports", false),
-//           _menuItem(Icons.group_outlined, "Users", false),
-//           _menuItem(Icons.settings_outlined, "Settings", false),
-//           const Spacer(),
-//           ListTile(
-//             leading: const Icon(Icons.logout, color: Colors.red),
-//             title: const Text("Logout", style: TextStyle(color: Colors.red)),
-//             onTap: () {},
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _menuItem(IconData icon, String title, bool active) {
-//     return ListTile(
-//       leading: Icon(icon, color: Color(0xff3570CE)),
-//       title: Text(title, style: TextStyle(color: Colors.black)),
-//     );
-//   }
-// }
 
 class TopBar extends StatelessWidget {
   final bool isDesktop;
@@ -115,17 +91,16 @@ class TopBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Flexible(
-                child: SizedBox(
-                  width: 250,
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: "Search",
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+              SizedBox(
+                width: 250,
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
                 ),
               ),
@@ -134,14 +109,14 @@ class TopBar extends StatelessWidget {
               const SizedBox(width: 20),
               const CircleAvatar(
                 backgroundColor: Color(0xff3570CE),
-                child: Icon(Icons.person_outline, color: Colors.black),
+                child: Icon(Icons.person_outline, color: Colors.white),
               ),
               const SizedBox(width: 8),
               const Text("Profile"),
             ],
           ),
         ),
-        Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
+        const Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
       ],
     );
   }
@@ -157,27 +132,47 @@ class DashboardContent extends StatelessWidget {
         alignment: WrapAlignment.center,
         spacing: 16,
         runSpacing: 25,
-        children: const [
-          InfoCard(title: "TOTAL LEADS",
-            value: "22",
-            color: Color(0xffFFF2E8),
-            icon: Icons.trending_up,),
-          InfoCard(
-            title: "TODAY'S CALLS",
-            value: "50",
-            color: Color(0xffF0FFDE),
-            icon: Icons.call,
+        children: [
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "TOTAL LEADS",
+                value: provider.totalLeads.toString(),
+                color: const Color(0xffFFF2E8),
+                icon: Icons.trending_up,
+              );
+            },
           ),
-          InfoCard(
-            title: "UPCOMING",
-            value: "10",
-            color: Color(0xffFFFCDD),
-            icon: Icons.calendar_today,),
-          InfoCard(
-            title: "OVERDUE",
-            value: "5",
-            color: Color(0xffF3ECFF),
-            icon: Icons.access_time,),
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "TODAY'S CALLS",
+                value: provider.todaysCalls.toString(),
+                color: const Color(0xffF0FFDE),
+                icon: Icons.call,
+              );
+            },
+          ),
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "UPCOMING",
+                value: provider.upcoming.toString(),
+                color: const Color(0xffFFFCDD),
+                icon: Icons.calendar_today,
+              );
+            },
+          ),
+          Consumer<DashboardProvider>(
+            builder: (context, provider, child) {
+              return InfoCard(
+                title: "OVERDUE",
+                value: provider.overdue.toString(),
+                color: const Color(0xffF3ECFF),
+                icon: Icons.access_time,
+              );
+            },
+          ),
         ],
       ),
     );
@@ -195,13 +190,13 @@ class InfoCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.color,
-    required this.icon
+    required this.icon,
   });
 
   @override
-  Widget build(BuildContext) {
+  Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(top: 12),
       width: 220,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -214,98 +209,131 @@ class InfoCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child:
-                  Text(title, style: const TextStyle(fontSize: 15, color: Colors.black,fontWeight: FontWeight.w600),
-                  )
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              Icon(icon,size: 22,color: Colors.black,)
+              Icon(icon, size: 22, color: Colors.black),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AgentPerformance extends StatelessWidget {
-  const AgentPerformance({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Agent Performance",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
             ),
-            SizedBox(height: 15),
-            AgentRow("John Smith", " 52 calls", true),
-            AgentRow("Sara Johnson", " 49 calls", false),
-            AgentRow("Michael clark", " 36 calls", true),
-            AgentRow("Emily Davis", " 34 calls", false),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AgentRow extends StatelessWidget {
-  final String name;
-  final String calls;
-  final bool online;
-
-  const AgentRow(this.name, this.calls, this.online, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const CircleAvatar(child: Icon(Icons.person)),
-      title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.circle,
-            size: 8,
-            color: online ? Colors.green : Colors.red,
           ),
-          const SizedBox(width: 5),
-          Text(online ? "online" : "offline", overflow: TextOverflow.ellipsis),
         ],
       ),
-      trailing: SizedBox(
-        width: 60,
-        child: Text(
-          calls,
-          textAlign: TextAlign.right,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
     );
   }
 }
 
-class DashboardBottomSection extends StatelessWidget {
-  const DashboardBottomSection();
-
+// class AgentPerformance extends StatelessWidget {
+//   const AgentPerformance({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Consumer<DashboardProvider>(
+//       builder: (context,provider,child){
+//     return Container(
+//       height: 300,
+//       padding: const EdgeInsets.all(16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         border: Border.all(color: Colors.black12),
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: SingleChildScrollView(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             const Text(
+//               "Agent Performance",
+//               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+//             ),
+//             const SizedBox(height: 15),
+//            if(provider.isLoading)
+//              const Expanded(child: Center(
+//           child: CircularProgressIndicator(),
+//       ))
+//         else if(provider.agentPerformance.isEmpty)
+//           const Expanded(child: Center(
+//         child: Text("No agent data found"),
+//
+//         ),)
+//         else
+//           Expanded(
+//         child: ListView.builder(
+//         itemCount: provider.agentPerformance.length,
+//         itemBuilder:(context,index){
+//           final agent=provider.agentPerformance[index];
+//           return AgentRow(
+//           agent.name,
+//           "${agent.totalCalls}calls",
+//         agent.online,
+//           );
+//         })
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+// class AgentRow extends StatelessWidget {
+//   final String name;
+//   final String calls;
+//   final bool online;
+//
+//   const AgentRow(this.name, this.calls, this.online, {super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListTile(
+//       contentPadding: EdgeInsets.zero,
+//       leading: const CircleAvatar(
+//         backgroundColor: Color(0xff3570CE),
+//         child: Icon(Icons.person, color: Colors.white),
+//       ),
+//       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+//       subtitle: Row(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Icon(
+//             Icons.diamond,
+//             size: 12,
+//             color: online ? Colors.green : Colors.red,
+//           ),
+//           const SizedBox(width: 5),
+//           Text(online ? "online" : "offline",
+//   style: TextStyle(
+//   color: online ? Colors.green:Colors.red,
+//   ),
+//   ),
+//         ],
+//       ),
+//       trailing:
+//   SizedBox(
+//         width: 70,
+//         child: Text(
+//           calls,
+//           textAlign: TextAlign.right,
+//           maxLines: 1,
+//           overflow: TextOverflow.ellipsis,
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+ class DashboardBottomSection extends StatelessWidget {
+ const DashboardBottomSection({super.key});
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -313,30 +341,31 @@ class DashboardBottomSection extends StatelessWidget {
         final bool isWide = constraints.maxWidth > 800;
 
         if (isWide) {
-          return Column(
+          return const Column(
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(flex: 3, child: CallAnalytics()),
                   SizedBox(width: 20),
-                  Expanded(flex:2,child: AgentPerformance()),
+                  Expanded(flex: 2, child: AgentPerformance()),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(flex:2,child: CallDistribution()),
+                  Expanded(flex: 2, child: CallDistribution()),
                   SizedBox(width: 20),
-                  Expanded(flex:3,child: RecentCalls()),
+                  Expanded(flex: 3, child: RecentCalls()),
                 ],
               ),
             ],
           );
         }
-        return Column(
-          children: const [
+
+        return const Column(
+          children: [
             CallAnalytics(),
             SizedBox(height: 20),
             AgentPerformance(),
@@ -351,57 +380,63 @@ class DashboardBottomSection extends StatelessWidget {
   }
 }
 
-
 class RecentCalls extends StatelessWidget {
   const RecentCalls({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade400),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Recent Call Activity",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            const Divider(),
-            CallRow("Sarah", "Outgoing", "5 min", "4 Seconds ago", Colors.red),
-            CallRow("James", "Voicemail", "4 min", "5 minutes ago", Colors.red),
-            CallRow(
-              "Rachel",
-              "Outgoing",
-              "3 min",
-              "3 minutes ago",
-              Colors.green,
-            ),
-            CallRow(
-              "Michelle",
-              "Incoming",
-              "11 min",
-              "11 minutes ago",
-              Colors.red,
-            ),
-            CallRow(
-              "Lucy",
-              "Outgoing",
-              "2 min",
-              "25 minutes ago",
-              Colors.red,
-              showDivider: false,
-            ),
-          ],
-        ),
-      ),
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade400),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Recent Call Activity",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              const Divider(),
+              if (provider.isLoading)
+                const Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (provider.recentCalls.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text("No recent calls"),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: provider.recentCalls.length,
+                    itemBuilder: (context, index) {
+                      final call = provider.recentCalls[index];
+                      return CallRow(
+                        call.name,
+                        call.type,
+                       // call.duration,
+                        call.timeAgo,
+                        call.callColor,
+                        showDivider: index != provider.recentCalls.length - 1,
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -409,7 +444,7 @@ class RecentCalls extends StatelessWidget {
 class CallRow extends StatelessWidget {
   final String name;
   final String type;
-  final String duration;
+ // final String duration;
   final String time;
   final Color callColor;
   final bool showDivider;
@@ -417,7 +452,7 @@ class CallRow extends StatelessWidget {
   const CallRow(
       this.name,
       this.type,
-      this.duration,
+     // this.duration,
       this.time,
       this.callColor, {
         this.showDivider = true,
@@ -434,7 +469,6 @@ class CallRow extends StatelessWidget {
             children: [
               const Icon(Icons.call, color: Colors.blue, size: 18),
               const SizedBox(width: 12),
-
               Expanded(flex: 2, child: Text(name)),
               Expanded(flex: 2, child: Text(type)),
               Expanded(
@@ -443,7 +477,7 @@ class CallRow extends StatelessWidget {
                   children: [
                     Icon(Icons.call, color: callColor, size: 16),
                     const SizedBox(width: 6),
-                    Text(duration),
+                   // Text(duration),
                   ],
                 ),
               ),
@@ -469,131 +503,210 @@ class CallAnalytics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Color(0xFFEFF1F3), width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // const Text("Call Analyst",style: TextStyle(fontWeight: FontWeight.bold),),
-          const SizedBox(height: 16),
-          Expanded(
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: 9,
-                minY: 0,
-                maxY: 100,
-
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                  getDrawingVerticalLine: (value) {
-                    return FlLine(color: Colors.grey.shade300, strokeWidth: 1);
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 25,
-                      getTitlesWidget: (value, _) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: [
-                      FlSpot(0, 15),
-                      FlSpot(1, 5),
-                      FlSpot(2, 25),
-                      FlSpot(3, 65),
-                      FlSpot(4, 50),
-                      FlSpot(5, 25),
-                      FlSpot(6, 35),
-                      FlSpot(7, 75),
-                      FlSpot(8, 25),
-                      FlSpot(9, 30),
-                    ],
-                    isCurved: false,
-                    barWidth: 1,
-                    color: Color(0xFFA023F3),
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA023F3)
-                          );
-                        }),
-                  ),
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 85),
-                      FlSpot(1, 88),
-                      FlSpot(2, 0),
-                      FlSpot(3, 55),
-                      FlSpot(4, 78),
-                      FlSpot(5, 48),
-                      FlSpot(6, 30),
-                      FlSpot(7, 28),
-                      FlSpot(8, 55),
-                      FlSpot(9, 45),
-                    ],
-                    isCurved: false,
-                    color: Color(0xFFA17985),
-                    barWidth: 1,
-                    dotData: FlDotData(show: true,
-                        getDotPainter: (spot,percent,barData,index){
-                          return FlDotCirclePainter(
-                              radius: 4,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: barData.color??Color(0xFFA17985)
-                          );
-                        }
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: const Color(0xFFEFF1F3), width: 2),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
+          child: provider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Daily Calls vs Converted Leads",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: 11,
+                    minY: 0,
+                    maxY: 100,
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: true,
+                      horizontalInterval: 25,
+                      verticalInterval: 1,
+                      getDrawingHorizontalLine: (value) {
+                        return FlLine(
+                          color: Colors.grey.shade300,
+                          strokeWidth: 1,
+                        );
+                      },
+                      getDrawingVerticalLine: (value) {
+                        return FlLine(
+                          color: Colors.grey.shade300,
+                          strokeWidth: 1,
+                        );
+                      },
+                    ),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: const Border(
+                        left: BorderSide(color: Colors.black54, width: 1),
+                        bottom: BorderSide(color: Colors.black54, width: 1),
+                        right: BorderSide(color: Colors.transparent),
+                        top: BorderSide(color: Colors.transparent),
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      bottomTitles: AxisTitles(
+                        axisNameWidget: const Padding(
+                          padding: EdgeInsets.only(top: 8),
+                          child: Text(
+                            "Dates",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 1,
+                          reservedSize: 26,
+                          getTitlesWidget: (value, meta) {
+                            const dates = [
+                              "Jan",
+                              "Feb",
+                              "Mar",
+                              "Apr",
+                              "May",
+                              "Jun",
+                              "Jul",
+                              "Aug",
+                              "Sep",
+                              "Oct",
+                              "Nov",
+                              "Dec",
+                            ];
+
+                            if (value.toInt() < 0 || value.toInt() >= dates.length) {
+                              return const SizedBox();
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                dates[value.toInt()],
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        axisNameWidget: const Padding(
+                          padding: EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            "Number of Calls",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 25,
+                          reservedSize: 28,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(fontSize: 11),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: provider.leadSpots.isNotEmpty
+                            ? provider.leadSpots
+                            : const [
+                          FlSpot(0, 15),
+                          FlSpot(1, 2),
+                          FlSpot(2, 22),
+                          FlSpot(3, 63),
+                          FlSpot(4, 50),
+                          FlSpot(5, 26),
+                          FlSpot(6, 35),
+                          FlSpot(7, 72),
+                          FlSpot(8, 22),
+                          FlSpot(9, 27),
+                          FlSpot(10, 18),
+                          FlSpot(11, 30),
+                        ],
+                        isCurved: false,
+                        color: const Color(0xFFA023F3),
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: barData.color ?? const Color(0xFFA023F3),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                      LineChartBarData(
+                        spots: provider.callSpots.isNotEmpty
+                            ? provider.callSpots
+                            : const [
+                          FlSpot(0, 86),
+                          FlSpot(1, 88),
+                          FlSpot(2, 0),
+                          FlSpot(3, 56),
+                          FlSpot(4, 78),
+                          FlSpot(5, 48),
+                          FlSpot(6, 31),
+                          FlSpot(7, 29),
+                          FlSpot(8, 53),
+                          FlSpot(9, 45),
+                          FlSpot(10, 34),
+                          FlSpot(11, 24),
+                        ],
+                        isCurved: false,
+                        color: const Color(0xFFA17985),
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: barData.color ?? const Color(0xFFA17985),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -603,86 +716,141 @@ class CallDistribution extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String,dynamic>>callData=[
-      {"label":"Incoming","value":55.0,"color":Colors.blue},
-      {"label":"Outgoing","value":35.0,"color":Colors.green},
-      {"label":"Missed","value":5.0,"color":Colors.red},
-      {"label":"Voicemail","value":5.0,"color":Colors.yellow},
-    ];
-    double total = callData.fold(0,
-          (sum,item)=>sum+(item["value"]as double),
-    );
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white,
-          border: Border.all(color: Colors.black )),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Call Distribution",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "Today's Calls:1,245",
-                  style: TextStyle(color: Colors.grey),
-                ),
-                SizedBox(height: 20),
-                // LegendItem(color: Colors.blue, text: "Incoming"),
-                // LegendItem(color: Colors.green, text: "Outgoing"),
-                // LegendItem(color: Colors.red, text: "Missed"),
-                // LegendItem(color: Colors.yellow, text: "Voicemail"),
-                ...callData.map((data){
-                  final percent=((data["value"]/total)*100).toStringAsFixed(0);
-                  return LegendItem(color: data["color"], text: "${data["label"]}-$percent%",);
-                }).toList(),
-              ],
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final callData = [
+          {
+            "label": "Answered",
+            "value": provider.answered.toDouble(),
+            "color": Colors.green,
+          },
+          {
+            "label": "Missed",
+            "value": provider.missed.toDouble(),
+            "color": Colors.red,
+          },
+          {
+            "label": "Voicemail",
+            "value": provider.voicemail.toDouble(),
+            "color": Colors.orange,
+          },
+          {
+            "label": "Other",
+            "value": provider.other.toDouble(),
+            "color": Colors.blue,
+          },
+        ];
+
+        final double total = callData.fold(
+          0.0,
+              (sum, item) => sum + (item["value"] as double),
+        );
+
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(12),
           ),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                      sectionsSpace: 0,
-                      centerSpaceRadius: 50,
-                      sections: callData.map((data){
-                        return PieChartSectionData(
-                          value: data["value"],
-                          color: data["color"],
-                          showTitle: false,
-                        );
-                      }).toList()
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Today's Calls:",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "1,245",
+                    const Text(
+                      "Call Distribution",
                       style: TextStyle(
-                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Today's Calls: ${provider.todaysCalls}",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    ...callData.map((data) {
+                      final percent = total == 0
+                          ? "0"
+                          : (((data["value"] as double) / total) * 100).toStringAsFixed(0);
+
+                      return LegendItem(
+                        color: data["color"] as Color,
+                        text: "${data["label"]} - $percent%",
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 50,
+                        sections: total == 0
+                            ? [
+                          PieChartSectionData(
+                            value: 100,
+                            color: Colors.grey.shade300,
+                            showTitle: false,
+                          ),
+                        ]
+                            : callData.map((data) {
+                          return PieChartSectionData(
+                            value: data["value"] as double,
+                            color: data["color"] as Color,
+                            showTitle: false,
+                            radius: 45,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          total == 0 ? "No Calls" : "Today's Calls:",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${provider.todaysCalls}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -691,7 +859,11 @@ class LegendItem extends StatelessWidget {
   final Color color;
   final String text;
 
-  const LegendItem({super.key, required this.color, required this.text});
+  const LegendItem({
+    super.key,
+    required this.color,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -702,11 +874,120 @@ class LegendItem extends StatelessWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
           const SizedBox(width: 10),
-          Text(text),
+          Expanded(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+class AgentPerformance extends StatelessWidget {
+  const AgentPerformance({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DashboardProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Agent Performance",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 15),
+              if (provider.isLoading)
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (provider.agentPerformance.isEmpty)
+                const Expanded(
+                  child: Center(child: Text("No agent data found")),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: provider.agentPerformance.length,
+                    itemBuilder: (context, index) {
+                      final agent = provider.agentPerformance[index];
+                       return AgentRow(
+                         agent.name,
+                        "${agent.totalCalls} calls",
+                        agent.online,
+                       );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+class AgentRow extends StatelessWidget {
+  final String name;
+  final String calls;
+  final bool online;
+
+  const AgentRow(this.name, this.calls, this.online, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const CircleAvatar(
+        backgroundColor: Color(0xff3570CE),
+        child: Icon(Icons.person, color: Colors.white),
+      ),
+      title: Text(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.circle,
+            size: 10,
+            color: online ? Colors.green : Colors.red,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            online ? "online" : "offline",
+            style: TextStyle(
+              color: online ? Colors.green : Colors.red,
+            ),
+          ),
+        ],
+      ),
+      trailing: SizedBox(
+        width: 80,
+        child: Text(
+          calls,
+          textAlign: TextAlign.right,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

@@ -1,14 +1,13 @@
 
 import 'dart:typed_data';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class MainProvider extends ChangeNotifier {
-  MainProvider(){
+class Agentprovider extends ChangeNotifier {
+  Agentprovider(){
     fetchUser();
   }
   bool isButtonLoading = false;
@@ -195,7 +194,7 @@ class MainProvider extends ChangeNotifier {
         "PHONE":phoneController.text.trim(),
         "EMAIL":emailController.text.trim(),
         "EMPLOYEEID":employeeController.text.trim(),
-        "ROLE":roleController.text.trim(),
+        "ROLE":roleController.text.toUpperCase().trim(),
         "PASSWORD":passwordController.text.trim(),
         "STATUS":isActive,
       };
@@ -259,7 +258,6 @@ class MainProvider extends ChangeNotifier {
         final name = user["NAME"].toString().toLowerCase();
         final role = user["ROLE"].toString().toLowerCase();
         final email = user["EMAIL"].toString().toLowerCase();
-        final password = user["PASSWORD"].toString().toLowerCase();
         final status = user["STATUS"] == true ? "active":"inactive";
 
         return name.contains(search)||
@@ -301,6 +299,19 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  String getAgentName(String? agentId) {
+    if (agentId == null || agentId.isEmpty) return "Unassigned";
+
+    try {
+      final agent =
+      userList.firstWhere((e) => e["ID"] == agentId);
+      return agent["NAME"] ?? "Unknown";
+    } catch (e) {
+      return "Unassigned";
+    }
+  }
+
   ///---------------DELETE USER---------------
 
   Future<void> deleteUser(String id) async{
@@ -318,6 +329,7 @@ class MainProvider extends ChangeNotifier {
     emailController.clear();
     employeeController.clear();
     roleController.clear();
+    passwordController.clear();
 
     editingId = null;
     isEdit = false;

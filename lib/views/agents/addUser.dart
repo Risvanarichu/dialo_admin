@@ -17,7 +17,7 @@ class AddUserPage extends StatefulWidget {
 
 class _AddUserPageState extends State<AddUserPage> {
   final _formKey = GlobalKey<FormState>();
-  late final provider = context.read<MainProvider>();
+  late final provider = context.read<Agentprovider>();
 
 
   @override
@@ -26,7 +26,7 @@ class _AddUserPageState extends State<AddUserPage> {
       backgroundColor: const Color(0xffF5F6FA),
 
       appBar: AppBar(
-        title:  Text(context.watch<MainProvider>().isEdit
+        title:  Text(context.watch<Agentprovider>().isEdit
             ?"Edit User"
             :"Add User"),
         backgroundColor: Colors.white,
@@ -90,7 +90,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                     ),
 
                               TextFormField(
-                                controller: context.read<MainProvider>().nameController,
+                                controller: context.read<Agentprovider>().nameController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
                                     RegExp(r'[a-zA-Z\s]'),
@@ -158,7 +158,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                     ),
 
                               TextFormField(
-                                controller: context.read<MainProvider>().emailController,
+                                controller: context.read<Agentprovider>().emailController,
 
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
@@ -229,7 +229,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                   FilteringTextInputFormatter.digitsOnly,
                                   LengthLimitingTextInputFormatter(10)
                                 ],
-                                controller: context.read<MainProvider>().phoneController,
+                                controller: context.read<Agentprovider>().phoneController,
 
                                 keyboardType: TextInputType.phone,
                                 decoration: InputDecoration(
@@ -290,7 +290,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                     ),
 
                               TextFormField(
-                                controller: context.read<MainProvider>().employeeController,
+                                controller: context.read<Agentprovider>().employeeController,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
                                     RegExp(r'[a-zA-Z0-9]'),
@@ -361,7 +361,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                                                ),
 
                           TextFormField(
-                            controller: context.read<MainProvider>().roleController,
+                            controller: context.read<Agentprovider>().roleController,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(
                                 RegExp(r'[a-zA-Z\s]'),
@@ -423,7 +423,7 @@ class _AddUserPageState extends State<AddUserPage> {
                                        ),
 
                                        TextFormField(
-                                         controller: context.read<MainProvider>().passwordController,
+                                         controller: context.read<Agentprovider>().passwordController,
                                          inputFormatters: [
                                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
                                          ],
@@ -513,7 +513,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
                                     const SizedBox(height: 10),
 
-                                    Consumer<MainProvider>(
+                                    Consumer<Agentprovider>(
                                       builder: (context, provider, child) {
                                         return GestureDetector(
                                           onTap: () {
@@ -563,7 +563,7 @@ class _AddUserPageState extends State<AddUserPage> {
                               /// -------- Status Right --------
                               Align(
                                 alignment: Alignment.centerRight,
-                                child: Consumer<MainProvider>(
+                                child: Consumer<Agentprovider>(
                                   builder: (context, provider, child) {
                                     if (!provider.isEdit) return const SizedBox();
 
@@ -644,11 +644,11 @@ class _AddUserPageState extends State<AddUserPage> {
                                 borderRadius: BorderRadius.circular(25),
                               ),
                             ),
-                            onPressed:context.watch<MainProvider>().isLoading
+                            onPressed:context.watch<Agentprovider>().isLoading
                                 ? null
                             :()async {
                               if (_formKey.currentState!.validate()) {
-                                final provider = context.read<MainProvider>();
+                                final provider = context.read<Agentprovider>();
                                 bool isUpdating = provider.isEdit;
 
                                 if (!provider.isEdit && provider.imageBytes == null) {
@@ -686,7 +686,7 @@ class _AddUserPageState extends State<AddUserPage> {
                               child: CircularProgressIndicator(color: AppColors.themeColor,strokeWidth: 2,),
                             )
                                 :Text(
-                              context.watch<MainProvider>().isEdit
+                              context.watch<Agentprovider>().isEdit
                                   ? "Update User"
                                   : "Save & Invite",
                               style: TextStyle(color: AppColors.whitetext),
@@ -705,7 +705,7 @@ class _AddUserPageState extends State<AddUserPage> {
               ),
             ),
           ),
-          Consumer<MainProvider>(
+          Consumer<Agentprovider>(
               builder: (context,provider,child){
                 if(!provider.isLoading)return const SizedBox();
                 return fullScreenLoader();

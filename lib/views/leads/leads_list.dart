@@ -2,6 +2,7 @@ import 'package:dialo_admin/models/leadModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/agentProvider.dart';
 import '../../providers/leadProvider.dart';
 
 class Leads extends StatelessWidget {
@@ -93,7 +94,7 @@ class Leads extends StatelessWidget {
                                         value: provider.selectedStatus,
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Status", "New", "Converted", "Interested"]
+                                        items: ["All Status", "NEW", "CONVERTED", "INTERESTED"]
                                             .map((e) => DropdownMenuItem(
                                           value: e,
                                           child: Text(e),
@@ -125,7 +126,7 @@ class Leads extends StatelessWidget {
                                         value: provider.selectedSources,
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Sources", "Facebook", "Website", "Call"]
+                                        items: ["All Sources", "FACEBOOK", "WEBSITE", "CALL"]
                                             .map((e) => DropdownMenuItem(
                                           value: e,
                                           child: Text(e),
@@ -175,7 +176,7 @@ class Leads extends StatelessWidget {
                           )
                               : Column(
                             children: provider.allLeads
-                                .map((e) => tableRow(e))
+                                .map((e) => tableRowDynamic(e,context))
                                 .toList(),
                           ),
                         ],
@@ -227,7 +228,10 @@ Widget tableHead(String text) {
   );
 }
 
-Widget tableRow(LeadModel lead) {
+Widget tableRowDynamic(LeadModel lead, BuildContext context) {
+  final mainProvider = context.read<Agentprovider>();
+  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
+
   return Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
@@ -244,7 +248,7 @@ Widget tableRow(LeadModel lead) {
         Expanded(child: alignCenter(lead.email)),
         Expanded(child: Center(child: statusChip(lead.status))),
         Expanded(child: alignCenter(lead.source)),
-        Expanded(child: alignCenter(lead.agent)),
+        Expanded(child: alignCenter(agentName)),
       ],
     ),
   );
@@ -276,12 +280,6 @@ Widget statusChip(String status) {
     textAlign: TextAlign.center),
   );
 }
-
-class Lead {
-  final String name, phone, email, status, source, agent;
-  Lead(this.name, this.phone, this.email, this.status, this.source, this.agent);
-}
-
 Widget alignCenter(String text) {
   return Align(
     alignment: Alignment.center,
