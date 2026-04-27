@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
+import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,12 +28,9 @@ class _LoginPageState extends State<LoginPage>{
     });
   }
 
-
-
-
-
   Widget build(BuildContext context){
-    final provider = context.watch<Loginprovider>();    return Scaffold(
+    final provider = context.watch<Loginprovider>();
+    return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
@@ -266,16 +264,7 @@ class _LoginPageState extends State<LoginPage>{
                                               onPressed: () async {
                                                 final user = await provider.signInWithGoogle();
 
-                                                // if (user != null){
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Success")),
-                                                //   );
-                                                //
-                                                // }else{
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Failed")),
-                                                //   );
-                                                // }
+
 
                                               },
                                               style: ElevatedButton.styleFrom(
