@@ -133,7 +133,6 @@ class Loginprovider extends ChangeNotifier{
     if(remember){
       isChecked = true;
       emailController.text = prefs.getString('email') ??'';
-      // passwordController.text = prefs.getString("password") ?? '';
     }
     notifyListeners ();
   }
