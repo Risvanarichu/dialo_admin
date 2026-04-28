@@ -137,7 +137,7 @@ class Loginprovider extends ChangeNotifier{
     if(remember){
       isChecked = true;
       emailController.text = prefs.getString('email') ??'';
-      // passwordController.text = prefs.getString("password") ?? '';
+
     }
     notifyListeners ();
   }
@@ -152,25 +152,6 @@ class Loginprovider extends ChangeNotifier{
 
 
 
-      //   final doc = await _firestore
-      //       .collection("USERS")
-      //       .doc(user.uid)
-      //       .get();
-      //
-      //   if (!doc.exists) {
-      //     await createUserInDatabase(user);
-      //   }
-      //   await fetchUsers();
-      //   return true;
-      // }
-
-  // Future<void> createUserInDatabase(User user) async{
-  //   await _firestore.collection("USERS").doc(user.uid).set({
-  //     'email': user.email,
-  //     'createdAt': Timestamp.now(),
-  //   });
-    // print('User created in database');
-  // }
 
 
 
