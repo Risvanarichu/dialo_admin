@@ -13,6 +13,7 @@ class LeadProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
   String currentPage = "leads";
   List<LeadModel> leads = [];
+  DateTime now = DateTime.now();
 
   List<LeadModel> get leadsList => leads;
   List<LeadModel> allLeads = [];
@@ -123,7 +124,7 @@ class LeadProvider extends ChangeNotifier {
         "ADDED BY ID": agentId,
         "ASSIGNED_AGENT_ID": assignedAgentId ?? agentId,
         "ASSIGNED_AGENT_NAME": assignedAgentName ?? agentName,
-        "FOLLOW UP DATE": null,
+        "FOLLOW UP DATE": now.add(Duration(days: 3)),
         "FOLLOW UP TIME": "",
         "PLACE": "",
         "PRIORITY": "Medium",
@@ -372,9 +373,10 @@ class LeadProvider extends ChangeNotifier {
   }
 
   Future<void> rescheduleLead(
+
       String leadId, DateTime date, String time) async {
     await fbd.collection('LEADS').doc(leadId).update({
-      "FOLLOW UP DATE": date,
+      "FOLLOW UP DATE":  now.add(const Duration(days: 3)),
       "FOLLOW UP TIME": time,
       "FOLLOW_UP_STATUS": "pending",
     });

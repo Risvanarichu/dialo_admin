@@ -16,19 +16,25 @@ class FollowUpPage extends StatefulWidget {
 
 class _FollowUpPageState extends State<FollowUpPage> {
 
+  late Agentprovider provider;
+  late LeadProvider leadProvider;
+
   String selectedFilter = "All";
   String searchQuery = "";
 
   @override
   void initState() {
     super.initState();
+
+    leadProvider = context.read<LeadProvider>();
+
     Future.microtask(() {
-      context.read<LeadProvider>().listenLeads();
+      leadProvider.listenLeads();
     });
   }
   @override
   void dispose() {
-    context.read<LeadProvider>().leadSubscription?.cancel();
+    leadProvider.leadSubscription?.cancel();
     super.dispose();
   }
 

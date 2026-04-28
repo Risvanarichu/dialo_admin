@@ -217,7 +217,7 @@ class _LoginPageState extends State<LoginPage>{
                                                  }
 
                                                  if(success){
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => Dashboard(),));
+                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
                                                    showDialog(
                                                        context: context,
