@@ -1,4 +1,4 @@
-// import 'package:dialo_admin/providers/mainProvider.dart';
+import 'package:dialo_admin/providers/mainProvider.dart';
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/dashboardProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
@@ -27,7 +27,6 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(

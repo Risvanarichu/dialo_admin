@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
+import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,8 +19,18 @@ class _LoginPageState extends State<LoginPage>{
 
   final _formKey = GlobalKey<FormState>();
 
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask((){
+      Provider.of<Loginprovider>(context, listen: false).loadUserData();
+    });
+  }
+
   Widget build(BuildContext context){
-    final provider = context.watch<Loginprovider>();    return Scaffold(
+    final provider = context.watch<Loginprovider>();
+    return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
@@ -192,7 +203,44 @@ class _LoginPageState extends State<LoginPage>{
                                                 if(_formKey.currentState!.validate()){
                                                  bool success = await provider.login();
 
+                                                 if (success){
+                                                   final prefs = await SharedPreferences.getInstance();
+
+                                                   if(provider.isChecked){
+                                                     await prefs.setString('email', provider.emailController.text);
+                                                     await prefs.setString('remember', 'true');
+                                                   } else {
+                                                     await prefs.clear();
+                                                   }
+                                                 }
+
                                                  if(success){
+                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
+                                                 } else {
+                                                   showDialog(
+                                                       context: context,
+                                                       builder: (context) => AlertDialog(
+                                                         shape: RoundedRectangleBorder(
+                                                           borderRadius: BorderRadius.circular(15),
+                                                         ),
+                                                         title: Row(
+                                                           children: [
+                                                             Icon(Icons.error, color: Colors.red,),
+                                                         SizedBox(width: 10,),
+                                                         Text("Login Failed"),
+                                                         ],
+                                                         ),
+                                                         content: Text("This user not found"),
+                                                         actions: [
+                                                           TextButton(
+                                                             onPressed: (){
+                                                               Navigator.of(context).pop();
+                                                             },
+                                                             child: Text("OK"),
+                                                           ),
+                                                         ],
+                                                       )
+                                                   );
                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  }
 
@@ -216,16 +264,7 @@ class _LoginPageState extends State<LoginPage>{
                                               onPressed: () async {
                                                 final user = await provider.signInWithGoogle();
 
-                                                // if (user != null){
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Success")),
-                                                //   );
-                                                //
-                                                // }else{
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(content: Text("Google Login Failed")),
-                                                //   );
-                                                // }
+
 
                                               },
                                               style: ElevatedButton.styleFrom(

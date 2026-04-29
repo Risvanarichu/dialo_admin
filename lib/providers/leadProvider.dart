@@ -8,11 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 
-  
+
 class LeadProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
   String currentPage = "leads";
   List<LeadModel> leads = [];
+  DateTime now = DateTime.now();
 
   List<LeadModel> get leadsList => leads;
   List<LeadModel> allLeads = [];
@@ -35,15 +36,15 @@ class LeadProvider extends ChangeNotifier {
 
   var userList;
 
-  LeadProvider() {         
-  init();
-}
+  LeadProvider() {
+    init();
+  }
 
-Future<void>init()async{
+  Future<void>init()async{
     await loadAgentData();
     await loadAgents();
     listenLeads();
-}
+  }
 
   Future<void> loadAgentData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -55,19 +56,20 @@ Future<void>init()async{
     print("Agent Name: $agentName");
   }
 
-Future<void>loadAgents()async{
+  Future<void>loadAgents()async{
     final snapshot = await fbd.collection('AGENT').get();
 
     agentMap={
       for(var doc in snapshot.docs)
         doc.id: doc.data()["NAME"]?? "Unknown"
     };
-}
+    notifyListeners();
+  }
 
-void setCallStatus(String status) {
-  selectedCallStatus = status;
-  notifyListeners();
-}
+  void setCallStatus(String status) {
+    selectedCallStatus = status;
+    notifyListeners();
+  }
 
   void changePage(String page) {
     currentPage = page;
@@ -93,43 +95,45 @@ void setCallStatus(String status) {
     print("Fixed old leads ✅");
   }
 
-    Future<void> addLead({
-      required String name,
-      required String phone,
-      required String email,
-      required String source,
-      required String leadStatus,
-      required String callType,
-      required String notes,
-    }) async {
-      try {
-        final docRef = fbd.collection("LEADS").doc();
+  Future<void> addLead({
+    required String name,
+    required String phone,
+    required String email,
+    required String source,
+    required String leadStatus,
+    required String callType,
+    required String notes,
+    String? assignedAgentId,
+    String? assignedAgentName,
+  }) async {
+    try {
+      final docRef = fbd.collection("LEADS").doc();
 
-        await docRef.set({
-          "LEAD_ID": docRef.id,
-          "NAME": name.trim(),
-          "PHONE": phone.trim(),
-          "EMAIL": email.trim(),
-          "SOURCE": source.trim(),
-          "STATUS": leadStatus.trim(),
-          "CALL TYPE": callType.trim(),
-          "FOLLOW_UP_STATUS": "pending",
-          "NOTES": notes.trim(),
-          "ADDITIONAL DETAILS": additionalDetails,
-          "ADDED TIME": FieldValue.serverTimestamp(),
-          "ADDED BY ID": agentId,
-          "ASSIGNED_AGENT_ID": agentId,
-          "ASSIGNED_AGENT_NAME":agentName,
-          "FOLLOW UP DATE": null,
-          "FOLLOW UP TIME": "",
-          "PLACE": "",
-          "PRIORITY": "Medium",
-        });
-      } catch (e) {
-        debugPrint("Error adding lead: $e");
-        rethrow;
-      }
+      await docRef.set({
+        "LEAD_ID": docRef.id,
+        "NAME": name.trim(),
+        "PHONE": phone.trim(),
+        "EMAIL": email.trim(),
+        "SOURCE": source.trim(),
+        "STATUS": leadStatus.trim(),
+        "CALL TYPE": callType.trim(),
+        "FOLLOW_UP_STATUS": "pending",
+        "NOTES": notes.trim(),
+        "ADDITIONAL DETAILS": additionalDetails,
+        "ADDED TIME": FieldValue.serverTimestamp(),
+        "ADDED BY ID": agentId,
+        "ASSIGNED_AGENT_ID": assignedAgentId ?? agentId,
+        "ASSIGNED_AGENT_NAME": assignedAgentName ?? agentName,
+        "FOLLOW UP DATE": now.add(Duration(days: 3)),
+        "FOLLOW UP TIME": "",
+        "PLACE": "",
+        "PRIORITY": "Medium",
+      });
+    } catch (e) {
+      debugPrint("Error adding lead: $e");
+      rethrow;
     }
+  }
 
 
 
@@ -139,28 +143,30 @@ void setCallStatus(String status) {
 
     leadSubscription?.cancel();
 
-leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
-  leads = snapshot.docs.map((doc) {
-    final data = doc.data();
+    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+      leads = snapshot.docs.map((doc) {
+        final data = doc.data();
 
-    String assignedAgentId  = data["ASSIGNED_AGENT_ID"] ?? "";
+        String assignedAgentId  = data["ASSIGNED_AGENT_ID"] ?? "";
 
-    if (assignedAgentId .toString().isEmpty) {
-      doc.reference.update({
-        "ASSIGNED_AGENT_ID": agentId ,
-        "ASSIGNED_AGENT_NAME": agentName,
-        "ADDED_BY_ID": agentId ,
-      });
-    }
+        if (assignedAgentId .toString().isEmpty) {
+          doc.reference.update({
+            "ASSIGNED_AGENT_ID": agentId ,
+            "ASSIGNED_AGENT_NAME": agentName,
+            "ADDED_BY_ID": agentId ,
+          });
+        }
 
-return LeadModel.fromMap(
-  doc.id,
-  {
-    ...data,
-    "ASSIGNED_AGENT_NAME":
-    agentMap[assignedAgentId] ?? agentName ?? "Unknown",
-  },
-);
+        return LeadModel.fromMap(
+          doc.id,
+          {
+            ...data,
+            "ASSIGNED_AGENT_NAME":
+            agentMap.containsKey(assignedAgentId)
+                ? agentMap[assignedAgentId]
+                : data["ASSIGNED_AGENT_NAME"] ?? "Unassigned",
+          },
+        );
       }).toList();
 
       applyFilters();
@@ -182,14 +188,14 @@ return LeadModel.fromMap(
       leads = snapshot.docs.map((doc) {
         final data = doc.data();
 
-      
+
         if (data["ASSIGNED_AGENT_ID"] == null ||
             data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
           doc.reference.update({
-  "ASSIGNED_AGENT_ID": agentId,
-  "ASSIGNED_AGENT_NAME": agentName, // ✅ add
-  "ADDED_BY_ID": agentId,
-});
+            "ASSIGNED_AGENT_ID": agentId,
+            "ASSIGNED_AGENT_NAME": agentName, // ✅ add
+            "ADDED_BY_ID": agentId,
+          });
         }
 
         return LeadModel.fromMap(doc.id, data);
@@ -221,9 +227,9 @@ return LeadModel.fromMap(
 
       final matchesSearch =
           query.isEmpty ||
-          name.contains(query) ||
-          phone.contains(query) ||
-          email.contains(query);
+              name.contains(query) ||
+              phone.contains(query) ||
+              email.contains(query);
 
       final matchesStatus =
           selectedStatus == "All Status" ||
@@ -232,19 +238,19 @@ return LeadModel.fromMap(
       final matchesSource =
           selectedSources == "All Sources" ||
               source.toLowerCase() == selectedSources.toLowerCase();
-        final callStatus = (lead.followupstatus ) == "pending"
-    ? "missed"
-    : "answered";
-    
-final matchesCallStatus =
-    selectedCallStatus == "all" ||
-    callStatus == selectedCallStatus;
+      final callStatus = (lead.followupstatus ) == "pending"
+          ? "missed"
+          : "answered";
 
-return matchesSearch &&
-       matchesStatus &&
-       matchesSource &&
-       matchesCallStatus;    
-       }).toList();
+      final matchesCallStatus =
+          selectedCallStatus == "all" ||
+              callStatus == selectedCallStatus;
+
+      return matchesSearch &&
+          matchesStatus &&
+          matchesSource &&
+          matchesCallStatus;
+    }).toList();
 
     notifyListeners();
   }
@@ -273,14 +279,14 @@ return matchesSearch &&
       callStatusList = [];
       debugPrint("fetchCallStatuses error: $e");
     } finally {
-      
+
       isLoading = false;
       notifyListeners();
     }
   }
 
 
-Future<void> fetchLeadCategories() async {
+  Future<void> fetchLeadCategories() async {
     try {
       final snapshot = await fbd.collection("LEAD_SETTINGS").doc("categories").get();
 
@@ -339,15 +345,15 @@ Future<void> fetchLeadCategories() async {
   }
 
   Future<void> assignAgent(String leadId, String agentId, String agentName) async {
-  try {
-    await fbd.collection('LEADS').doc(leadId).update({
-      "ASSIGNED_AGENT_ID": agentId,
-      "ASSIGNED_AGENT_NAME": agentName,
-    });
-  } catch (e) {
-    print("Assign Error: $e");
+    try {
+      await fbd.collection('LEADS').doc(leadId).update({
+        "ASSIGNED_AGENT_ID": agentId,
+        "ASSIGNED_AGENT_NAME": agentName,
+      });
+    } catch (e) {
+      print("Assign Error: $e");
+    }
   }
-}
 
 
 
@@ -359,7 +365,7 @@ Future<void> fetchLeadCategories() async {
 
   void updateStatus(String s) {
     selectedStatus = s;
-  applyFilters();}
+    applyFilters();}
   Future<void> completedLead(String leadId) async {
     await fbd.collection('LEADS').doc(leadId).update({
       "FOLLOW_UP_STATUS": "COMPLETED",
@@ -367,9 +373,10 @@ Future<void> fetchLeadCategories() async {
   }
 
   Future<void> rescheduleLead(
+
       String leadId, DateTime date, String time) async {
     await fbd.collection('LEADS').doc(leadId).update({
-      "FOLLOW UP DATE": date,
+      "FOLLOW UP DATE":  now.add(const Duration(days: 3)),
       "FOLLOW UP TIME": time,
       "FOLLOW_UP_STATUS": "pending",
     });

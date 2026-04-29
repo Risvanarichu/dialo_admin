@@ -95,8 +95,8 @@ class _CallsState extends State<Calls> {
 
           ...?provider?.userList.map((user) {
             return DropdownMenuItem(
-              value: user["ID"],                
-              child: Text(user["NAME"] ?? ""), 
+              value: user["ID"],
+              child: Text(user["NAME"] ?? ""),
             );
           }).toList(),
         ],
@@ -168,6 +168,7 @@ class _CallsState extends State<Calls> {
                   ],
                 ),
               ))
+
         ],
       ),),
     );
@@ -183,7 +184,7 @@ class CallList extends StatelessWidget {
   final String date;
   final String agent;
   final String actions;
-    
+
   const CallList ({
     required this.name,
     required this.phone,
@@ -206,9 +207,9 @@ class CallList extends StatelessWidget {
           Expanded(child: Center(child: Text(name))),
           Expanded(child: Center(child: Text(phone))),
           Expanded(child: Center(child: Text(type))),
-          Expanded(child: Center(child: Container( 
+          Expanded(child: Center(child: Container(
             width: 100,
-            
+
             padding: const EdgeInsets.symmetric(
               horizontal: 10,vertical: 5),
             decoration: BoxDecoration(
@@ -217,7 +218,8 @@ class CallList extends StatelessWidget {
                   :Colors.red.shade100,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(status,textAlign: TextAlign.center,
+            child: Text(status,
+              textAlign: TextAlign.center,
             style: TextStyle(
               color: status == "Answered"
                   ?Colors.green
