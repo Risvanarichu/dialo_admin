@@ -19,16 +19,15 @@ class _AddUserPageState extends State<AddUserPage> {
   final _formKey = GlobalKey<FormState>();
   late final provider = context.read<Agentprovider>();
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F6FA),
 
       appBar: AppBar(
-        title:  Text(context.watch<Agentprovider>().isEdit
-            ?"Edit User"
-            :"Add User"),
+        title: Text(
+          context.watch<Agentprovider>().isEdit ? "Edit User" : "Add User",
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -67,17 +66,12 @@ class _AddUserPageState extends State<AddUserPage> {
 
                           const SizedBox(height: 20),
 
-
                           Row(
                             children: [
-
-
                               ///-------------NAME--------------------
-
-
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Full Name',
@@ -89,63 +83,67 @@ class _AddUserPageState extends State<AddUserPage> {
                                       ),
                                     ),
 
-                              TextFormField(
-                                controller: context.read<Agentprovider>().nameController,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z\s]'),
-                                  ),
-                                ],
-                                keyboardType: TextInputType.name,
-                                decoration: InputDecoration(
-                                    hintText: "Enter name",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    // errorStyle: TextStyle(color: Colors.red),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
+                                    TextFormField(
+                                      controller: context
+                                          .read<Agentprovider>()
+                                          .nameController,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'[a-zA-Z\s]'),
+                                        ),
+                                      ],
+                                      keyboardType: TextInputType.name,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter name",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        // errorStyle: TextStyle(color: Colors.red),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
 
-                                    errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.red,width: 2)
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please enter your Name";
+                                        }
+                                        if (value.length < 3) {
+                                          return 'Name must be at least 3 Character';
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red,
-                                          width: 1),
-                                    )
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Please enter your Name";
-                                  }
-                                  if (value.length < 3) {
-                                    return 'Name must be at least 3 Character';
-                                  }
-                                  return null;
-                                },
-                              ),
                                   ],
                                 ),
                               ),
 
-
-
-
                               ///-----------------EMAIL-----------------------
-
-
-                              const SizedBox(width: 20,),
+                              const SizedBox(width: 20),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Email',
@@ -157,62 +155,69 @@ class _AddUserPageState extends State<AddUserPage> {
                                       ),
                                     ),
 
-                              TextFormField(
-                                controller: context.read<Agentprovider>().emailController,
+                                    TextFormField(
+                                      controller: context
+                                          .read<Agentprovider>()
+                                          .emailController,
 
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: InputDecoration(
-                                    hintText: "Enter Email",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    // errorStyle: TextStyle(color: Colors.red),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
+                                      keyboardType: TextInputType.emailAddress,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter Email",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        // errorStyle: TextStyle(color: Colors.red),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
 
-                                    errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.red,width: 2)
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please enter Email Address";
+                                        }
+                                        if (!RegExp(
+                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                        ).hasMatch(value)) {
+                                          return "Enter a valid Email";
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red,
-                                          width: 1),
-                                    )
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Please enter Email Address";
-                                  }
-                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                    return "Enter a valid Email";
-                                  }
-                                  return null;
-                                },
-                              ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
 
-                          const SizedBox( height: 15,),
+                          const SizedBox(height: 15),
                           Row(
                             children: [
-
                               ///----------------------------PHONE---------------------
-
-
-
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Phone Number',
@@ -224,60 +229,67 @@ class _AddUserPageState extends State<AddUserPage> {
                                       ),
                                     ),
 
-                              TextFormField(
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(10)
-                                ],
-                                controller: context.read<Agentprovider>().phoneController,
+                                    TextFormField(
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                        LengthLimitingTextInputFormatter(10),
+                                      ],
+                                      controller: context
+                                          .read<Agentprovider>()
+                                          .phoneController,
 
-                                keyboardType: TextInputType.phone,
-                                decoration: InputDecoration(
-                                    hintText: "Enter Phone No.",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    // errorStyle: TextStyle(color: Colors.red),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
+                                      keyboardType: TextInputType.phone,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter Phone No.",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        // errorStyle: TextStyle(color: Colors.red),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
                                       ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please enter Phone No.";
+                                        }
+                                        if (value.length < 10) {
+                                          return "Phone Number must be 10 digits";
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
-
-                                    errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.red,width: 2)
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red,
-                                          width: 1),
-                                    )
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Please enter Phone No.";
-                                  }
-                                  if (value.length<10) {
-                                    return "Phone Number must be 10 digits";
-                                  }
-                                  return null;
-                                },
-
-                              ),
                                   ],
                                 ),
                               ),
 
-
                               ///------------EMPLOYEE ID--------------------
-                              SizedBox(width: 20,),
+                              SizedBox(width: 20),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Employee ID',
@@ -289,219 +301,295 @@ class _AddUserPageState extends State<AddUserPage> {
                                       ),
                                     ),
 
-                              TextFormField(
-                                controller: context.read<Agentprovider>().employeeController,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z0-9]'),
-                                  ),
-                                ],
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                    hintText: "Enter ID",
-                                    hintStyle: TextStyle(color: Colors.grey),
-                                    // errorStyle: TextStyle(color: Colors.red),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.black,
-                                        width: 1,
-                                      ),
-                                    ),
+                                    TextFormField(
+                                      controller: context
+                                          .read<Agentprovider>()
+                                          .employeeController,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'[a-zA-Z0-9]'),
+                                        ),
+                                      ],
+                                      keyboardType: TextInputType.text,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter ID",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        // errorStyle: TextStyle(color: Colors.red),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
 
-                                    errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.red,width: 2)
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please enter the ID";
+                                        }
+                                        if (value.length < 3) {
+                                          return 'ID must be at least 3 Character';
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red,
-                                          width: 1),
-                                    )
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Please enter the ID";
-                                  }
-                                  if (value.length < 3) {
-                                    return 'ID must be at least 3 Character';
-                                  }
-                                  return null;
-                                },
-                              ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
 
-
                           ///-----------------ROLE---------------------
+                          const SizedBox(height: 15),
 
+                          Row(
+                            children: [
+                              Expanded(
+                                 child:
+                     Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                     const Text("ROLE*",
+                     style: TextStyle(
+                       fontWeight: FontWeight.bold,
+                       fontSize: 14,
+                     ),),
+                     const SizedBox(height: 6),
+                          Consumer<Agentprovider>(builder: (context,provider,child) {
+                            return
+                              DropdownButtonFormField<String>(
+                                value: provider.roleController.text.isEmpty
+                                    ? null
+                                    : provider.roleController.text,
+                                icon: const Icon(Icons.arrow_drop_down),
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        color: Colors.black, width: 1),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        color: Colors.black, width: 1),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                      value: "ADMIN", child: Text("ADMIN")),
+                                  DropdownMenuItem(
+                                      value: "AGENT", child: Text("AGENT")),
+                                ],
+                                onChanged: (value) {
+                                  provider.roleController.text = value ?? "";
+                                  provider.notifyListeners();
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Please select the role";
+                                  }
+                                  return null;
+                                },
 
-                          const SizedBox(height: 15,),
+                                // Column(
+                                //   crossAxisAlignment: CrossAxisAlignment.start,
+                                //   children: [
+                                //     Text(
+                                //       'Role',
+                                //       textAlign: TextAlign.center,
+                                //       style: TextStyle(
+                                //         color: Colors.black,
+                                //         fontWeight: FontWeight.bold,
+                                //         fontSize: 14,
+                                //       ),
+                                //     ),
+                                //
+                                //     TextFormField(
+                                //       controller: context
+                                //           .read<Agentprovider>()
+                                //           .roleController,
+                                //       inputFormatters: [
+                                //         FilteringTextInputFormatter.allow(
+                                //           RegExp(r'[a-zA-Z\s]'),
+                                //         ),
+                                //       ],
+                                //       keyboardType: TextInputType.name,
+                                //       decoration: InputDecoration(
+                                //         hintText: "Enter Role",
+                                //         hintStyle: TextStyle(
+                                //           color: Colors.grey,
+                                //         ),
+                                //         // errorStyle: TextStyle(color: Colors.red),
+                                //         enabledBorder: OutlineInputBorder(
+                                //           borderSide: BorderSide(
+                                //             color: Colors.black,
+                                //             width: 1,
+                                //           ),
+                                //         ),
+                                //         focusedBorder: OutlineInputBorder(
+                                //           borderSide: BorderSide(
+                                //             color: Colors.black,
+                                //             width: 1,
+                                //           ),
+                                //         ),
+                                //
+                                //         errorBorder: OutlineInputBorder(
+                                //           borderSide: BorderSide(
+                                //             color: Colors.red,
+                                //             width: 2,
+                                //           ),
+                                //         ),
+                                //         focusedErrorBorder: OutlineInputBorder(
+                                //           borderSide: BorderSide(
+                                //             color: Colors.red,
+                                //             width: 1,
+                                //           ),
+                                //         ),
+                                //       ),
+                                //       validator: (value) {
+                                //         if (value == null || value.isEmpty) {
+                                //           return "Please enter the role";
+                                //         }
+                                //         if (value.length < 3) {
+                                //           return 'role must be at least 3 characters ';
+                                //         }
+                                //         return null;
+                                //       },
+                                //     ),
+                                //   ],
+                                // ),
+                              );
+                          },
+                          ),
+                              ],
+                     ),
+                              ),
 
-                             Row(
-                               children: [
-                                 Expanded(
-                                   child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       Text(
-                                       'Role',
-                                       textAlign: TextAlign.center,
-                                       style: TextStyle(
-                                         color: Colors.black,
-                                         fontWeight: FontWeight.bold,
-                                         fontSize: 14,
-                                       ),
-                                                               ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Password',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
 
-                          TextFormField(
-                            controller: context.read<Agentprovider>().roleController,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-Z\s]'),
+                                    TextFormField(
+                                      controller: context
+                                          .read<Agentprovider>()
+                                          .passwordController,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.deny(
+                                          RegExp(r'\s'),
+                                        ),
+                                      ],
+                                      keyboardType: TextInputType.name,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter Passsword",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        // errorStyle: TextStyle(color: Colors.red),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 1,
+                                          ),
+                                        ),
+
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.red,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please enter password";
+                                        }
+
+                                        if (value.length < 6) {
+                                          return "Password must be at least 6 characters";
+                                        }
+
+                                        if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                          return "Must contain at least 1 uppercase letter";
+                                        }
+
+                                        if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                          return "Must contain at least 1 lowercase letter";
+                                        }
+
+                                        if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                          return "Must contain at least 1 number";
+                                        }
+
+                                        if (!RegExp(
+                                          r'[!@#$%^&*(),.?":{}|<>]',
+                                        ).hasMatch(value)) {
+                                          return "Must contain at least 1 special character";
+                                        }
+
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
-                            keyboardType: TextInputType.name,
-                            decoration: InputDecoration(
-                                hintText: "Enter Role",
-                                hintStyle: TextStyle(color: Colors.grey),
-                                // errorStyle: TextStyle(color: Colors.red),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.black,
-                                    width: 1,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.black,
-                                    width: 1,
-                                  ),
-                                ),
-
-                                errorBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.red,width: 2)
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.red,
-                                      width: 1 ),
-                                )
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Please enter the role";
-                              }
-                              if (value.length < 3) {
-                                return 'role must be at least 3 characters ';
-                              }
-                              return null;
-                            },
                           ),
-                                     ],
-                                   ),
-                                 ),
-
-                                 SizedBox(width: 20,),
-                                 Expanded(
-                                   child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       Text(
-                                         'Password',
-                                         textAlign: TextAlign.center,
-                                         style: TextStyle(
-                                           color: Colors.black,
-                                           fontWeight: FontWeight.bold,
-                                           fontSize: 14,
-                                         ),
-                                       ),
-
-                                       TextFormField(
-                                         controller: context.read<Agentprovider>().passwordController,
-                                         inputFormatters: [
-                                           FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                                         ],
-                                         keyboardType: TextInputType.name,
-                                         decoration: InputDecoration(
-                                             hintText: "Enter Passsword",
-                                             hintStyle: TextStyle(color: Colors.grey),
-                                             // errorStyle: TextStyle(color: Colors.red),
-                                             enabledBorder: OutlineInputBorder(
-                                               borderSide: BorderSide(
-                                                 color: Colors.black,
-                                                 width: 1,
-                                               ),
-                                             ),
-                                             focusedBorder: OutlineInputBorder(
-                                               borderSide: BorderSide(
-                                                 color: Colors.black,
-                                                 width: 1,
-                                               ),
-                                             ),
-
-                                             errorBorder: OutlineInputBorder(
-                                                 borderSide: BorderSide(color: Colors.red,width: 2)
-                                             ),
-                                             focusedErrorBorder: OutlineInputBorder(
-                                               borderSide: BorderSide(color: Colors.red,
-                                                   width: 1 ),
-                                             )
-                                         ),
-                                         validator: (value) {
-                                           if (value == null || value.isEmpty) {
-                                             return "Please enter password";
-                                           }
-
-                                           if (value.length < 6) {
-                                             return "Password must be at least 6 characters";
-                                           }
-
-                                           if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                                             return "Must contain at least 1 uppercase letter";
-                                           }
-
-                                           if (!RegExp(r'[a-z]').hasMatch(value)) {
-                                             return "Must contain at least 1 lowercase letter";
-                                           }
-
-                                           if (!RegExp(r'[0-9]').hasMatch(value)) {
-                                             return "Must contain at least 1 number";
-                                           }
-
-                                           if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-                                             return "Must contain at least 1 special character";
-                                           }
-
-                                           return null;
-                                         },
-                                       ),
-
-                                     ],
-                                   )
-                                   ),
-                               ],
-                             ),
-
-
-
-
 
                           ///----------------PROFILE IMAGE--------------------
-
-
-
                           const SizedBox(height: 25),
-
 
                           Column(
                             children: [
-
                               /// -------- Upload Center --------
                               Center(
                                 child: Column(
@@ -526,24 +614,44 @@ class _AddUserPageState extends State<AddUserPage> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xffE9E9ED),
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 CircleAvatar(
                                                   radius: 25,
-                                                  backgroundImage: provider.imageBytes != null
-                                                      ? MemoryImage(provider.imageBytes!)
-                                                      :(provider.existingImage != null &&
-                                                  provider.existingImage!.isNotEmpty)
-                                                  ?NetworkImage(provider.existingImage!)
-                                                  :null,
-                                                  backgroundColor:AppColors.themeColor,
-                                                  child: provider.imageBytes == null&&
-                                                      (provider.existingImage == null ||
-                                                      provider.existingImage!.isEmpty)
-                                                      ? const Icon(Icons.person, color: Colors.white)
+                                                  backgroundImage:
+                                                      provider.imageBytes !=
+                                                          null
+                                                      ? MemoryImage(
+                                                          provider.imageBytes!,
+                                                        )
+                                                      : (provider.existingImage !=
+                                                                null &&
+                                                            provider
+                                                                .existingImage!
+                                                                .isNotEmpty)
+                                                      ? NetworkImage(
+                                                          provider
+                                                              .existingImage!,
+                                                        )
+                                                      : null,
+                                                  backgroundColor:
+                                                      AppColors.themeColor,
+                                                  child:
+                                                      provider.imageBytes ==
+                                                              null &&
+                                                          (provider.existingImage ==
+                                                                  null ||
+                                                              provider
+                                                                  .existingImage!
+                                                                  .isEmpty)
+                                                      ? const Icon(
+                                                          Icons.person,
+                                                          color: Colors.white,
+                                                        )
                                                       : null,
                                                 ),
                                                 const SizedBox(width: 10),
@@ -565,28 +673,40 @@ class _AddUserPageState extends State<AddUserPage> {
                                 alignment: Alignment.centerRight,
                                 child: Consumer<Agentprovider>(
                                   builder: (context, provider, child) {
-                                    if (!provider.isEdit) return const SizedBox();
+                                    if (!provider.isEdit)
+                                      return const SizedBox();
 
                                     return Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Text("Inactive", style: TextStyle(fontWeight: FontWeight.bold)),
+                                        const Text(
+                                          "Inactive",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
 
                                         const SizedBox(width: 8),
 
                                         GestureDetector(
                                           onTap: () {
-                                            provider.isActive = !provider.isActive;
+                                            provider.isActive =
+                                                !provider.isActive;
                                             provider.notifyListeners();
                                           },
                                           child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 200),
+                                            duration: const Duration(
+                                              milliseconds: 200,
+                                            ),
                                             width: 55,
                                             height: 28,
                                             padding: const EdgeInsets.all(3),
                                             decoration: BoxDecoration(
-                                              color: provider.isActive ? Colors.green : Colors.grey,
-                                              borderRadius: BorderRadius.circular(20),
+                                              color: provider.isActive
+                                                  ? Colors.green
+                                                  : Colors.grey,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
                                             ),
                                             child: Align(
                                               alignment: provider.isActive
@@ -606,28 +726,29 @@ class _AddUserPageState extends State<AddUserPage> {
 
                                         const SizedBox(width: 8),
 
-                                        const Text("Active", style: TextStyle(fontWeight: FontWeight.bold)),
+                                        const Text(
+                                          "Active",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ],
                                     );
                                   },
                                 ),
                               ),
                             ],
-                          )
-
-
+                          ),
                         ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 30,),
+                  const SizedBox(height: 30),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
-
                       const SizedBox(width: 20),
 
                       Row(
@@ -644,61 +765,70 @@ class _AddUserPageState extends State<AddUserPage> {
                                 borderRadius: BorderRadius.circular(25),
                               ),
                             ),
-                            onPressed:context.watch<Agentprovider>().isLoading
+                            onPressed: context.watch<Agentprovider>().isLoading
                                 ? null
-                            :()async {
-                              if (_formKey.currentState!.validate()) {
-                                final provider = context.read<Agentprovider>();
-                                bool isUpdating = provider.isEdit;
+                                : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      final provider = context
+                                          .read<Agentprovider>();
+                                      bool isUpdating = provider.isEdit;
 
-                                if (!provider.isEdit && provider.imageBytes == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Please select image")),
-                                  );
-                                  return;
-                                }
+                                      if (!provider.isEdit &&
+                                          provider.imageBytes == null) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Please select image",
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
 
-                                if (isUpdating) {
-                                  await provider.updateUser();
-                                } else {
-                                  await provider.addUser();
-                                }
+                                      if (isUpdating) {
+                                        await provider.updateUser();
+                                      } else {
+                                        await provider.addUser();
+                                      }
 
-                                Navigator.pop(context);
+                                      Navigator.pop(context);
 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                     isUpdating
-                                          ? "User Updated Successfully"
-                                          : "User Saved Successfully",
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            isUpdating
+                                                ? "User Updated Successfully"
+                                                : "User Saved Successfully",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+
+                            child: provider.isButtonLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.themeColor,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    context.watch<Agentprovider>().isEdit
+                                        ? "Update User"
+                                        : "Save & Invite",
+                                    style: TextStyle(
+                                      color: AppColors.whitetext,
                                     ),
                                   ),
-                                );
-                              }
-                            },
-
-
-                            child:provider.isButtonLoading
-                              ?const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(color: AppColors.themeColor,strokeWidth: 2,),
-                            )
-                                :Text(
-                              context.watch<Agentprovider>().isEdit
-                                  ? "Update User"
-                                  : "Save & Invite",
-                              style: TextStyle(color: AppColors.whitetext),
-                            ),
                           ),
                         ],
-                      )
-
-
-
-
-
+                      ),
                     ],
                   ),
                 ],
@@ -706,10 +836,11 @@ class _AddUserPageState extends State<AddUserPage> {
             ),
           ),
           Consumer<Agentprovider>(
-              builder: (context,provider,child){
-                if(!provider.isLoading)return const SizedBox();
-                return fullScreenLoader();
-          })
+            builder: (context, provider, child) {
+              if (!provider.isLoading) return const SizedBox();
+              return fullScreenLoader();
+            },
+          ),
         ],
       ),
     );

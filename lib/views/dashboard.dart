@@ -91,19 +91,19 @@ class TopBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              SizedBox(
-                width: 250,
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: "Search",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  ),
-                ),
-              ),
+              // SizedBox(
+              //   width: 250,
+              //   child: TextField(
+              //     decoration: InputDecoration(
+              //       hintText: "Search",
+              //       prefixIcon: const Icon(Icons.search),
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(20),
+              //       ),
+              //       contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(width: 20),
               const Icon(Icons.notifications_none),
               const SizedBox(width: 20),
