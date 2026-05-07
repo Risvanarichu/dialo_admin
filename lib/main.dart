@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:SettingsPage(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

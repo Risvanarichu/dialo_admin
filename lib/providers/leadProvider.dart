@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:flutter/widgets.dart';
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LeadProvider extends ChangeNotifier {
@@ -32,7 +33,10 @@ class LeadProvider extends ChangeNotifier {
 
   String? agentId;
   String? agentName;
-
+  String? editingId;
+  bool isEdit = false;
+  bool isButtonLoading=false;
+  bool isPageLoading = false;
   bool isLoading = false;
   bool isCategoryLoading = false;
 
@@ -40,8 +44,19 @@ class LeadProvider extends ChangeNotifier {
 
   final TextEditingController searchController = TextEditingController();
 
+
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final sourceController = TextEditingController();
+
   LeadProvider() {
     init();
+  }
+
+  void setLoading(bool value){
+    isLoading = value;
+    notifyListeners();
   }
 
   Future<void> init() async {
@@ -415,6 +430,67 @@ class LeadProvider extends ChangeNotifier {
         "ADDED_BY_ID": lead.data()["ADDED_BY_ID"] ?? defaultAgentId,
       });
     }
+
+  void editData(Map<String,dynamic>user){
+    nameController.text = user["NAME"]??"";
+    phoneController.text = user["PHONE"]??"";
+    emailController.text = user["EMAIL"]??"";
+    sourceController.text = user["SOURCE"]??"";
+
+    editingId = user["ID"];
+    isEdit = true;
+    notifyListeners();
+  }
+
+  Future<void>updateUser() async{
+    try{
+      setLoading(true);
+      if(editingId == null)return;
+      final updateUser ={
+        "NAME":nameController.text.trim(),
+        "PHONE":phoneController.text.trim(),
+        "EMAIL":emailController.text.trim(),
+        "SOURCE":sourceController.text.trim(),
+      };
+      await fbd.collection('LEADS').doc(editingId).update(updateUser);
+      await fetchLeads();
+      clearFields();
+    }catch(e){
+      print("Update Error: $e");
+    }finally{
+      setLoading(false);
+    }
+  }
+
+  Future<void> deleteUser(String id) async{
+    try{
+      await fbd.collection('LEADS').doc(id).delete();
+      await fetchLeads();
+    }catch(e){
+      print("Delete Error:$e");
+    }
+  }
+
+  void setPageLoading(bool value){
+    isPageLoading = value;
+    notifyListeners();
+  }
+
+  void setButtonLoading(bool value){
+    isButtonLoading = value;
+    notifyListeners();
+  }
+
+  void clearFields(){
+    nameController.clear();
+    phoneController.clear();
+    emailController.clear();
+    sourceController.clear();
+
+    editingId = null;
+    isEdit = false;
+  }
+}
 
     debugPrint("Fixed old leads ✅");
   }

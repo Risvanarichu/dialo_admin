@@ -1,7 +1,7 @@
+import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../providers/agentProvider.dart';
 import '../../providers/leadProvider.dart';
 
@@ -159,6 +159,7 @@ class Leads extends StatelessWidget {
                                 tableHead("Status"),
                                 tableHead("Source"),
                                 tableHead("Assigned Agent"),
+                                tableHead("Actions")
                               ],
                             ),
                           ),
@@ -249,6 +250,28 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
         Expanded(child: Center(child: statusChip(lead.status))),
         Expanded(child: alignCenter(lead.source)),
         Expanded(child: alignCenter(agentName)),
+        Expanded(child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap:(){
+                context.read<LeadProvider>().editData({
+                  "ID":lead.id,
+  "NAME": lead.name,
+  "PHONE":lead.phone,
+  "EMAIL":lead.email,
+  "SOURCE":lead.source
+  });
+  },
+
+              child: Icon(Icons.edit,color: AppColors.themeColor,),
+            ),
+            SizedBox(width: 10,),
+            GestureDetector(
+              child: Icon(Icons.delete,color: AppColors.redColor,),
+            )
+          ],
+        ))
       ],
     ),
   );
