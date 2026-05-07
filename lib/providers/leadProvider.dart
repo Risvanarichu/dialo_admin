@@ -36,6 +36,12 @@ class LeadProvider extends ChangeNotifier {
   bool isButtonLoading=false;
   bool isPageLoading = false;
   var userList;
+  String leadStatusValue = "";
+  String callTypeValue = "";
+  String notesValue = "";
+
+  String? selectedAgentId;
+  String? selectedAgentName;
 
 
   final nameController = TextEditingController();
@@ -128,7 +134,7 @@ class LeadProvider extends ChangeNotifier {
         "EMAIL": email.trim(),
         "SOURCE": source.trim(),
         "STATUS": leadStatus.trim(),
-        "CALL TYPE": callType.trim(),
+        "CALLTYPE": callType.trim(),
         "FOLLOW_UP_STATUS": "pending",
         "NOTES": notes.trim(),
         "ADDITIONAL DETAILS": additionalDetails,
@@ -163,8 +169,8 @@ class LeadProvider extends ChangeNotifier {
 
         if (assignedAgentId .toString().isEmpty) {
           doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId ,
-            "ASSIGNED_AGENT_NAME": agentName,
+            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
             "ADDED_BY_ID": agentId ,
           });
         }
@@ -204,8 +210,8 @@ class LeadProvider extends ChangeNotifier {
         if (data["ASSIGNED_AGENT_ID"] == null ||
             data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
           doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId,
-            "ASSIGNED_AGENT_NAME": agentName, // ✅ add
+            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName, // ✅ add
             "ADDED_BY_ID": agentId,
           });
         }
@@ -266,9 +272,14 @@ class LeadProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+  @override
   void dispose() {
     leadSubscription?.cancel();
     searchController.dispose();
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    sourceController.dispose();
     super.dispose();
   }
   Future<void> fetchCategories() async {
@@ -399,28 +410,53 @@ class LeadProvider extends ChangeNotifier {
     phoneController.text = user["PHONE"]??"";
     emailController.text = user["EMAIL"]??"";
     sourceController.text = user["SOURCE"]??"";
+    leadStatusValue = user["STATUS"] ?? "";
+    callTypeValue = user["CALLTYPE"] ?? "";
+    notesValue = user["NOTES"] ?? "";
+
+    selectedAgentId = user["AGENT_ID"];
+    selectedAgentName = user["AGENT_NAME"];
+
 
     editingId = user["ID"];
     isEdit = true;
     notifyListeners();
   }
 
-  Future<void>updateUser() async{
-    try{
+  Future<void> updateUser({
+    required String leadStatus,
+    required String callType,
+    required String notes,
+    String? agentId,
+    String? agentName,
+  }) async {
+    try {
       setLoading(true);
-      if(editingId == null)return;
-      final updateUser ={
-        "NAME":nameController.text.trim(),
-        "PHONE":phoneController.text.trim(),
-        "EMAIL":emailController.text.trim(),
-        "SOURCE":sourceController.text.trim(),
-      };
-      await fbd.collection('LEADS').doc(editingId).update(updateUser);
+
+      if (editingId == null) return;
+
+
+      await fbd.collection('LEADS').doc(editingId).update(
+          {
+            "NAME": nameController.text.trim(),
+            "PHONE": phoneController.text.trim(),
+            "EMAIL": emailController.text.trim(),
+            "SOURCE": sourceController.text.trim(),
+
+            // ✅ ADD THESE
+            "STATUS": leadStatus,
+            "CALLTYPE": callType,
+            "NOTES": notes,
+            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
+          });
+
       await fetchLeads();
       clearFields();
-    }catch(e){
+
+    } catch (e) {
       print("Update Error: $e");
-    }finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -450,7 +486,18 @@ class LeadProvider extends ChangeNotifier {
     emailController.clear();
     sourceController.clear();
 
+    leadStatusValue = "";
+    callTypeValue = "";
+    notesValue = "";
+
+    selectedAgentId = null;
+    selectedAgentName = null;
+
     editingId = null;
     isEdit = false;
+
+    notifyListeners();
   }
+
+
 }

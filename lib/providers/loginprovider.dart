@@ -17,45 +17,57 @@ class Loginprovider extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
+
   List<Usermodel> userList = [];
+
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String? agentId = prefs.getString('agentId');
+    String? role = prefs.getString('role');
+
+    return agentId != null &&
+        agentId.isNotEmpty &&
+        role != null &&
+        role.isNotEmpty;
+  }
 
   Future<bool> login() async {
     final prefs = await SharedPreferences.getInstance();
 
     try {
-      print("Entered Email: ${emailController.text}");
-      print("Entered Password: ${passwordController.text}");
       final querySnapshot = await _firestore
           .collection('AGENT')
           .where('EMAIL', isEqualTo: emailController.text.trim().toLowerCase())
           .where('PASSWORD', isEqualTo: passwordController.text.trim())
           .get();
-      print("Docs found: ${querySnapshot.docs.length}");
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userMap =
+        final userMap =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
 
-        print("Login Success: ${emailController.text}");
-
-        await prefs.setBool('remember', isChecked);
-        await prefs.setString('email', userMap['EMAIL'] ?? '');
-        await prefs.setString('password', userMap['PASSWORD'] ?? '');
-        await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+        // SAVE ALL DATA HERE ONLY
         await prefs.setString('agentId', querySnapshot.docs.first.id);
+        await prefs.setString('role', (userMap['ROLE'] ?? 'agent').toString().toLowerCase());
         await prefs.setString('name', userMap['NAME'] ?? '');
         await prefs.setString('image', userMap['IMAGE'] ?? '');
-        await prefs.setString('role', userMap['ROLE'] ?? 'USER');
+        await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+
+        if (isChecked) {
+          await prefs.setBool('remember', true);
+          await prefs.setString('email', userMap['EMAIL'] ?? '');
+        } else {
+          await prefs.clear();
+        }
 
         await fetchUsers();
-
         return true;
       } else {
-        print("Login Failed: Invalid credentials");
         return false;
       }
     } catch (e) {
-      print("Unexpected Error: $e");
+      print("Login Error: $e");
       return false;
     }
   }

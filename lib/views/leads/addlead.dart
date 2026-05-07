@@ -16,10 +16,7 @@ class AddLead extends StatefulWidget {
 class _AddLeadState extends State<AddLead> {
   final _formKey = GlobalKey<FormState>();
 
-  final fullNameCtrl = TextEditingController();
-  final phoneCtrl = TextEditingController();
-  final emailCtrl = TextEditingController();
-  final sourceCtrl = TextEditingController();
+
   final leadStatusCtrl = TextEditingController();
   final callTypeCtrl = TextEditingController();
   final notesCtrl = TextEditingController();
@@ -33,25 +30,25 @@ class _AddLeadState extends State<AddLead> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<LeadProvider>().fetchLeadSettings();
-      context.read<Agentprovider>().fetchUser();
+      final provider = context.read<LeadProvider>();
+
+      if (provider.isEdit) {
+        leadStatusCtrl.text = provider.leadStatusValue;
+        callTypeCtrl.text = provider.callTypeValue;
+        notesCtrl.text = provider.notesValue;
+
+        selectedAgentId = provider.selectedAgentId;
+        selectedAgentName = provider.selectedAgentName;
+      }
     });
   }
 
-  @override
-  void dispose() {
-    fullNameCtrl.dispose();
-    phoneCtrl.dispose();
-    emailCtrl.dispose();
-    sourceCtrl.dispose();
-    leadStatusCtrl.dispose();
-    callTypeCtrl.dispose();
-    notesCtrl.dispose();
-    super.dispose();
-  }
+
+  late final provider = context.watch<LeadProvider>();
 
   @override
   Widget build(BuildContext context) {
+
     final isMobile = MediaQuery.of(context).size.width < 900;
 
     return Scaffold(
@@ -90,6 +87,7 @@ class _AddLeadState extends State<AddLead> {
   }
 
   Widget _topBar() {
+    final provider = context.watch<LeadProvider>();
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -98,19 +96,20 @@ class _AddLeadState extends State<AddLead> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
-            "ADD NEW LEAD",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            provider.isEdit ? "EDIT LEAD" : "ADD NEW LEAD",
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          SizedBox(height: 6),
-          Divider(height: 1),
+          const SizedBox(height: 6),
+          const Divider(height: 1),
         ],
       ),
     );
   }
 
   Widget _formCard(bool isMobile) {
+    final provider = context.watch<LeadProvider>();
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -122,14 +121,14 @@ class _AddLeadState extends State<AddLead> {
         children: [
           _rowFields(
             isMobile,
-            _input("FULL NAME*", fullNameCtrl),
-            _input("PHONE NUMBER*", phoneCtrl, phone: true),
+            _input("FULL NAME*",provider.nameController ),
+            _input("PHONE NUMBER*", provider.phoneController, phone: true),
           ),
           const SizedBox(height: 16),
           _rowFields(
             isMobile,
-            _input("EMAIL ADDRESS*", emailCtrl,),
-            _input("SOURCES*", sourceCtrl),
+            _input("EMAIL ADDRESS*", provider.emailController,),
+            _input("SOURCES*", provider.sourceController),
           ),
           const SizedBox(height: 16),
           _rowFields(
@@ -546,32 +545,42 @@ class _AddLeadState extends State<AddLead> {
         ElevatedButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
+              final provider = context.read<LeadProvider>();
               try {
-                await context.read<LeadProvider>().addLead(
-                  name: fullNameCtrl.text,
-                  phone: phoneCtrl.text,
-                  email: emailCtrl.text,
-                  source: sourceCtrl.text,
-                  leadStatus: leadStatusCtrl.text,
-                  notes: notesCtrl.text,
-                  callType:callTypeCtrl.text,
-                  assignedAgentId: selectedAgentId,          // ✅ ADD
-                  assignedAgentName: selectedAgentName,
-                );
+                if(provider.isEdit){
+                  await provider.updateUser(
+                    leadStatus: leadStatusCtrl.text,
+                    callType: callTypeCtrl.text,
+                    notes: notesCtrl.text,
+                    agentId: selectedAgentId,
+                    agentName: selectedAgentName,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lead Updated Successfully "))
+                  );
+                }else {
+                  await context.read<LeadProvider>().addLead(
+                    name: provider.nameController.text,
+                    phone: provider.phoneController.text,
+                    email: provider.emailController.text,
+                    source: provider.sourceController.text,
+                    leadStatus: leadStatusCtrl.text,
+                    notes: notesCtrl.text,
+                    callType: callTypeCtrl.text,
+                    assignedAgentId: selectedAgentId,
+                    // ✅ ADD
+                    assignedAgentName: selectedAgentName,
+                  );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Lead Added Successfully")),
-                );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lead Added Successfully")),
+                  );
+                }
 
-                fullNameCtrl.clear();
-                phoneCtrl.clear();
-                emailCtrl.clear();
-                sourceCtrl.clear();
-                leadStatusCtrl.clear();
-                callTypeCtrl.clear();
-                notesCtrl.clear();
-                context.read<LeadProvider>().additionalDetails.clear();
-                setState(() {});
+                provider.clearFields();
+                Navigator.pop(context);
+
+
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Failed to save lead: $e")),
