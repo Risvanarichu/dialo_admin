@@ -10,6 +10,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 class Loginprovider extends ChangeNotifier{
   bool isChecked = false;
   bool isPasswordHidden = true;
+  String userRole = 'USER';
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -47,6 +48,9 @@ class Loginprovider extends ChangeNotifier{
         await prefs.setString('image', userMap['IMAGE'] ?? '');
         await prefs.setString('role', userMap['ROLE'] ?? 'USER');
 
+
+        print("database user role ${userMap['ROLE']}");
+
         await fetchUsers();
 
         return true;
@@ -58,6 +62,15 @@ class Loginprovider extends ChangeNotifier{
       print("Unexpected Error: $e");
       return false;
     }
+  }
+
+  Future<void> loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+
+      userRole = prefs.getString('role') ?? 'USER';
+
+    print("user role is $userRole");
+    notifyListeners();
   }
 
   Future<User?> signInWithGoogle()async{

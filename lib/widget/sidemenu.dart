@@ -2,8 +2,10 @@ import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/loginpage.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/loginprovider.dart';
 import '../views/agents/addUser.dart';
 import '../views/agents/web_users.dart';
 import '../views/calls.dart';
@@ -24,20 +26,14 @@ class SideMenu extends StatefulWidget {
 class _SideMenuState extends State<SideMenu> {
 
   int selectedIndex = 0;
-  String userRole = 'USER';
+
 
   @override
   void initState() {
     super.initState();
-    _loadUserRole();
   }
 
-  Future<void> _loadUserRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userRole = prefs.getString('role') ?? 'USER';
-    });
-  }
+
 
   final List<Widget> pages = [
     Dashboard(),
@@ -53,6 +49,7 @@ class _SideMenuState extends State<SideMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final prov = context.watch<Loginprovider>();
     return Scaffold(
       body: Row(
         children: [
@@ -96,8 +93,8 @@ class _SideMenuState extends State<SideMenu> {
                 _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
                 _menuItem(Icons.event_outlined, "Follow-Up", 4),
                 _menuItem(Icons.bar_chart_outlined, "Reports", 5),
-                if (userRole == 'ADMIN') _menuItem(Icons.group_outlined, "Users", 6),
-                if (userRole == 'ADMIN') _menuItem(Icons.settings_outlined, "Settings", 7),
+                if (prov.userRole == 'ADMIN') _menuItem(Icons.group_outlined, "Users", 6),
+                if (prov.userRole == 'ADMIN') _menuItem(Icons.settings_outlined, "Settings", 7),
 
                 const Spacer(),
 

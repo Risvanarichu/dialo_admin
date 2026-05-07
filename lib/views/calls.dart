@@ -102,7 +102,7 @@ class _CallsState extends State<Calls> {
         ],
 
         onChanged: (value) {
-  context.read<LeadProvider>().setCallStatus(value.toString());
+  context.read<LeadProvider>().setleadCallStatus(value.toString());
 },
       );
     },

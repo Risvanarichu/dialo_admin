@@ -5,210 +5,369 @@ class SettingsProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
   List<Map<String, dynamic>> categories = [];
+
+  List<String> leadStatus = [];
   List<String> callStatus = [];
-final TextEditingController categoryController = TextEditingController();
-  final TextEditingController statusController = TextEditingController();
+  List<String> leadCategory = [];
+
   SettingsProvider() {
-    fetchCategories();
+    fetchAllSettings();
   }
 
-  // Future<void> saveCategories() async {
-  //   List<Map<String, dynamic>> clearCategories =
-  //   categories.map((e) {
-  //     return {
-  //       "title": e["title"],
-  //       "sub": e["sub"],
-  //     };
-  //   }).toList();
-  //
-  //   // await db.collection("LEAD_SETTINGS").doc("categories").set({
-  //   //   "categoryList": clearCategories,
-  //   //   "callStatus": callStatus,
-  //   // });
-  // }
-
-  Future<void> saveCategories() async {
-    final docRef = db.collection("LEAD_SETTINGS").doc("categories");
-    final doc = await docRef.get();
-
-    List<Map<String, dynamic>> existingCategories = [];
-
-    if (doc.exists) {
-      final data = doc.data();
-      existingCategories = List<Map<String, dynamic>>.from(
-          data?["categoryList"] ?? []);
-    }
-
-    List<Map<String, dynamic>> newCategories =
-    categories.map((e) {
-      return {
-        "title": e["title"],
-        "sub": e["sub"],
-      };
-    }).toList();
-
-    // ✅ MERGE old + new
-    existingCategories.addAll(newCategories);
-
-    // ✅ Remove duplicates (optional)
-    existingCategories = existingCategories.toSet().toList();
-
-    await docRef.set({
-      "categoryList": existingCategories,
-    });
+  Future<void> fetchAllSettings() async {
+    await fetchCategories();
+    await fetchLeadStatus();
+    await fetchCallStatus();
+    await fetchLeadCategory();
   }
+
+  // ================= CATEGORIES =================
 
   void addCategory() {
     categories.add({
       "title": "",
-      "controller":TextEditingController(),
+      "controller": TextEditingController(),
       "sub": [],
       "subcontrollers": [],
     });
     notifyListeners();
   }
-  void addCallStatus(String value) {
-    value = value.trim();
 
-    if (value.isEmpty || callStatus.contains(value)) return;
-
-    callStatus.add(value);
+  void updateCategory(int index, String value) {
+    categories[index]["title"] = value;
     notifyListeners();
   }
 
   void deleteCategory(int index) {
-    categories[index]["controller"].dispose();
-    for(var c in categories[index]["subcontrollers"]){
+    categories[index]["controller"]?.dispose();
+
+    for (var c in categories[index]["subcontrollers"]) {
       c.dispose();
     }
-    categories.removeAt(index);
-    notifyListeners();
-  }
-  void deleteCallStatus(String value){
-    value=value.trim();
-    if(value.isEmpty)return;
-    callStatus.remove(value);
-    notifyListeners();
-  }
 
-  void updateCategory(int index, String value) {
-    categories[index]["title"] = value;
+    categories.removeAt(index);
+
+    if (categories.isEmpty) {
+      addCategory();
+    }
+
+    notifyListeners();
   }
 
   void addSubCategory(int index) {
-    if (categories[index]["sub"] != null && categories[index]["sub"].isNotEmpty) {
-      String lastSub = categories[index]["sub"].last.toString().trim();
-      if (lastSub.isEmpty) return;
+    final title = categories[index]["title"].toString().trim();
+
+    if (title.isEmpty) {
+      return;
+    }
+
+    if (categories[index]["sub"].isNotEmpty) {
+      final last = categories[index]["sub"].last.toString().trim();
+      if (last.isEmpty) return;
     }
 
     categories[index]["sub"].add("");
     categories[index]["subcontrollers"].add(TextEditingController());
+
     notifyListeners();
   }
 
   void updateSubCategory(int index, int subIndex, String value) {
     categories[index]["sub"][subIndex] = value;
+    notifyListeners();
   }
 
   void deleteSubCategory(int index, int subIndex) {
+    categories[index]["subcontrollers"][subIndex].dispose();
+    categories[index]["subcontrollers"].removeAt(subIndex);
     categories[index]["sub"].removeAt(subIndex);
     notifyListeners();
   }
+
+  void clearCategories() {
+    for (var cat in categories) {
+      cat["controller"]?.dispose();
+
+      for (var c in cat["subcontrollers"]) {
+        c.dispose();
+      }
+    }
+
+    categories.clear();
+
+    categories.add({
+      "title": "",
+      "controller": TextEditingController(),
+      "sub": [],
+      "subcontrollers": [],
+    });
+
+    notifyListeners();
+  }
+
+  Future<void> saveCategories() async {
+    final cleanList = categories
+        .where((e) => e["title"].toString().trim().isNotEmpty)
+        .map((e) {
+      return {
+        "title": e["title"].toString().trim(),
+        "sub": List<String>.from(e["sub"])
+            .where((s) => s.toString().trim().isNotEmpty)
+            .toList(),
+      };
+    }).toList();
+
+    await db.collection("LEAD_SETTINGS").doc("categories").set({
+      "categoryList": cleanList,
+    });
+  }
+
   Future<void> fetchCategories() async {
     final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
-    if (doc.exists) {
-      final data = doc.data();
-
-      categories = List<Map<String, dynamic>>.from(
-        (data?["categoryList"] ?? []).map((e) {
-          List<String> subList = List<String>.from(e["sub"] ?? []);
-
-          return {
-            "title": e["title"] ?? "",
-            "controller": TextEditingController(text: e["title"] ?? ""),
-            "sub": subList,
-            "subcontrollers": subList
-                .map((sub) => TextEditingController(text: sub))
-                .toList(),
-          };
-        }),
-      );
-
-      callStatus = List<String>.from(data?["callStatus"] ?? []);
-
-      notifyListeners();
+    if (!doc.exists) {
+      clearCategories();
+      return;
     }
-  }
 
-  // Future<void> fetchCategories() async {
-  //   final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
-  //
-  //   if (doc.exists) {
-  //     final data = doc.data();
-  //
-  //     categories = List<Map<String, dynamic>>.from(
-  //       (data?["categoryList"] ?? []).map((e) => {
-  //         "title": e["title"],
-  //         "sub": List<String>.from(e["sub"] ?? []),
-  //       }),
-  //     );
-  //
-  //     callStatus = List<String>.from(data?["callStatus"] ?? []);
-  //
-  //     notifyListeners();
-  //   }
-  // }
-  Future<void>fetchCallStatus()async{
-    final doc=await db.collection("LEAD SETTINGS").doc("CALL STATUS").get();
-    if(doc.exists){
-      final data=doc.data();
-    }
-  }
+    final data = doc.data();
+    final rawList = data?["categoryList"] ?? [];
 
-  void clearCategories() {
-    categories = [
-      {
-        "title": "",
-        "controller":TextEditingController(),
-        "sub": [],
-        "subcontrollers":[],
+    for (var cat in categories) {
+      cat["controller"]?.dispose();
+
+      for (var c in cat["subcontrollers"]) {
+        c.dispose();
       }
-    ];
+    }
+
+    categories = List<Map<String, dynamic>>.from(
+      rawList.map((e) {
+        final subList = List<String>.from(e["sub"] ?? []);
+
+        return {
+          "title": e["title"] ?? "",
+          "controller": TextEditingController(text: e["title"] ?? ""),
+          "sub": subList,
+          "subcontrollers": subList
+              .map((sub) => TextEditingController(text: sub))
+              .toList(),
+        };
+      }),
+    );
+
+    if (categories.isEmpty) {
+      categories.add({
+        "title": "",
+        "controller": TextEditingController(),
+        "sub": [],
+        "subcontrollers": [],
+      });
+    }
+
     notifyListeners();
   }
-  void clearCallStatus(){
+
+  // ================= LEAD STATUS =================
+
+  void addLeadStatus(String value) {
+    value = value.trim();
+    if (value.isEmpty) return;
+    if (leadStatus.contains(value)) return;
+
+    leadStatus.add(value);
+    notifyListeners();
+  }
+
+  void deleteLeadStatus(int index) {
+    leadStatus.removeAt(index);
+    notifyListeners();
+  }
+
+  void clearLeadStatus() {
+    leadStatus.clear();
+    notifyListeners();
+  }
+
+  Future<void> saveLeadStatus() async {
+    final cleanList = leadStatus
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    await db.collection("LEAD_SETTINGS").doc("lead_status").set({
+      "leadStatusList": cleanList,
+    });
+  }
+
+  Future<void> fetchLeadStatus() async {
+    final doc = await db.collection("LEAD_SETTINGS").doc("lead_status").get();
+
+    if (doc.exists) {
+      leadStatus = List<String>.from(doc.data()?["leadStatusList"] ?? []);
+    } else {
+      leadStatus = [];
+    }
+
+    notifyListeners();
+  }
+
+  // ================= CALL STATUS =================
+
+  void addCallStatus(String value) {
+    value = value.trim();
+    if (value.isEmpty) return;
+    if (callStatus.contains(value)) return;
+
+    callStatus.add(value);
+    notifyListeners();
+  }
+
+  void deleteCallStatus(int index) {
+    callStatus.removeAt(index);
+    notifyListeners();
+  }
+
+  void clearCallStatus() {
     callStatus.clear();
     notifyListeners();
   }
-  void dispose() {
-    categoryController.dispose();
-    super.dispose();
-  }
- // Future<void> saveCallStatus() async {
- //    await db.collection("LEAD_SETTINGS").doc("call_status").set({
- //      "callStatus": callStatus,
- //    });
- //  }
 
   Future<void> saveCallStatus() async {
-    final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
+    final cleanList = callStatus
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
-    final doc = await docRef.get();
+    await db.collection("LEAD_SETTINGS").doc("call_status").set({
+      "callStatusList": cleanList,
+    });
+  }
 
-    List<String> existing = [];
+  Future<void> fetchCallStatus() async {
+    final doc = await db.collection("LEAD_SETTINGS").doc("call_status").get();
 
     if (doc.exists) {
-      existing = List<String>.from(doc.data()?["callStatus"] ?? []);
+      callStatus = List<String>.from(doc.data()?["callStatusList"] ?? []);
+    } else {
+      callStatus = [];
     }
 
-    existing.addAll(callStatus);
+    notifyListeners();
+  }
 
-    // remove duplicates
-    existing = existing.toSet().toList();
+  // ================= CALL CATEGORY =================
 
-    await docRef.set({
-      "callStatus": existing,
+  void addLeadCategory(String value) {
+    value = value.trim();
+    if (value.isEmpty) return;
+    if (leadCategory.contains(value)) return;
+
+    leadCategory.add(value);
+    notifyListeners();
+  }
+
+  void deleteLeadCategory(int index) {
+    leadCategory.removeAt(index);
+    notifyListeners();
+  }
+
+  void clearLeadCategory() {
+    leadCategory.clear();
+    notifyListeners();
+  }
+
+  Future<void> saveLeadCategory() async {
+    final cleanList = leadCategory
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    await db.collection("LEAD_SETTINGS").doc("lead_category").set({
+      "leadCategoryList": cleanList,
     });
+  }
+
+  Future<void> fetchLeadCategory() async {
+    final doc = await db.collection("LEAD_SETTINGS").doc("lead_category").get();
+
+    if (doc.exists) {
+      leadCategory = List<String>.from(doc.data()?["leadCategoryList"] ?? []);
+    } else {
+      leadCategory = [];
+    }
+
+    notifyListeners();
+  }
+
+  // ================= SAVE ALL =================
+
+  Future<void> saveAllSettings() async {
+    await saveCategories();
+    await saveLeadStatus();
+    await saveCallStatus();
+    await saveLeadCategory();
+  }
+
+  // ================= CLEAR ALL =================
+
+  void clearAllFields() {
+    for (var cat in categories) {
+      cat["controller"]?.dispose();
+
+      for (var c in cat["subcontrollers"]) {
+        c.dispose();
+      }
+    }
+
+    categories.clear();
+
+    categories.add({
+      "title": "",
+      "controller": TextEditingController(),
+      "sub": [],
+      "subcontrollers": [],
+    });
+
+    leadStatus.clear();
+    callStatus.clear();
+    leadCategory.clear();
+
+    notifyListeners();
+  }
+
+  // ================= DELETE FIRESTORE ALSO =================
+
+  Future<void> clearAllFromFirebaseAndScreen() async {
+    await db.collection("LEAD_SETTINGS").doc("categories").set({
+      "categoryList": [],
+    });
+
+    await db.collection("LEAD_SETTINGS").doc("lead_status").set({
+      "leadStatusList": [],
+    });
+
+    await db.collection("LEAD_SETTINGS").doc("call_status").set({
+      "callStatusList": [],
+    });
+
+    await db.collection("LEAD_SETTINGS").doc("lead_category").set({
+      "leadCategoryList": [],
+    });
+
+    clearAllFields();
+  }
+
+  @override
+  void dispose() {
+    for (var cat in categories) {
+      cat["controller"]?.dispose();
+
+      for (var c in cat["subcontrollers"]) {
+        c.dispose();
+      }
+    }
+
+    super.dispose();
   }
 }

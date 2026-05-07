@@ -10,6 +10,7 @@ import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
 import 'package:dialo_admin/views/report/reportpage.dart';
+import 'package:dialo_admin/views/settings/settscreen.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        home:LoginPage(),
+        home:SettingsPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

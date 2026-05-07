@@ -215,6 +215,7 @@ class _LoginPageState extends State<LoginPage>{
                                                  }
 
                                                  if(success){
+                                                   provider.loadUserRole();
                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
                                                    showDialog(
