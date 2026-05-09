@@ -34,8 +34,13 @@ class _SideMenuState extends State<SideMenu> {
 
   Future<void> _loadUserRole() async {
     final prefs = await SharedPreferences.getInstance();
+
+    String? role = prefs.getString('role');
+
+    print("Loaded Role: $role"); // 👈 ADD HERE
+
     setState(() {
-      userRole = prefs.getString('role') ?? 'USER';
+      userRole = role ?? 'USER';
     });
   }
 

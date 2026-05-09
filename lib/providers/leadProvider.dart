@@ -22,6 +22,7 @@ class LeadProvider extends ChangeNotifier {
   Map<String, String> agentMap = {};
   String selectedCallStatus = "all";
   List<String> callStatusList = [];
+  String selectedAgentFilter = "all";
 
   bool isLoading = false;
   StreamSubscription? leadSubscription;
@@ -39,6 +40,8 @@ class LeadProvider extends ChangeNotifier {
   String leadStatusValue = "";
   String callTypeValue = "";
   String notesValue = "";
+  DateTime? startDate;
+  DateTime? endDate;
 
   String? selectedAgentId;
   String? selectedAgentName;
@@ -56,6 +59,12 @@ class LeadProvider extends ChangeNotifier {
   void setLoading(bool value){
     isLoading = value;
     notifyListeners();
+  }
+
+  void setDateRange(DateTime start, DateTime end) {
+    startDate = start;
+    endDate = end;
+    applyFilters();
   }
 
   Future<void>init()async{
@@ -264,10 +273,22 @@ class LeadProvider extends ChangeNotifier {
           selectedCallStatus == "all" ||
               callStatus == selectedCallStatus;
 
+      final matchesAgent =
+          selectedAgentFilter == "all" ||
+              lead.assignedAgentId == selectedAgentFilter;
+
+      final matchesDate =
+          startDate == null ||
+              endDate == null ||
+              (lead.lastContactedDate.isAfter(startDate!) &&
+                  lead.lastContactedDate.isBefore(endDate!));
+
       return matchesSearch &&
           matchesStatus &&
           matchesSource &&
-          matchesCallStatus;
+          matchesCallStatus &&
+          matchesAgent &&
+          matchesDate;
     }).toList();
 
     notifyListeners();
@@ -459,6 +480,11 @@ class LeadProvider extends ChangeNotifier {
     } finally {
       setLoading(false);
     }
+  }
+
+  void setAgentFilter(String agentId) {
+    selectedAgentFilter = agentId;
+    applyFilters();
   }
 
   Future<void> deleteUser(String id) async{

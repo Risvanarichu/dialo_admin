@@ -76,6 +76,7 @@ class _CallsState extends State<Calls> {
                 ),
                 const SizedBox(width: 15,),
               Expanded(
+
   child: Consumer<Agentprovider>(
     builder: (context, provider, child) {
       print(provider?.userList);
@@ -102,8 +103,8 @@ class _CallsState extends State<Calls> {
         ],
 
         onChanged: (value) {
-  context.read<LeadProvider>().setCallStatus(value.toString());
-},
+          context.read<LeadProvider>().setAgentFilter(value.toString());
+        },
       );
     },
   ),

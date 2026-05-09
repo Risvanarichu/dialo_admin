@@ -8,6 +8,14 @@ class SettingsProvider extends ChangeNotifier {
   List<String> callStatus = [];
 final TextEditingController categoryController = TextEditingController();
   final TextEditingController statusController = TextEditingController();
+
+  bool isLoading = false;
+
+  void setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
+
   SettingsProvider() {
     fetchCategories();
   }
@@ -28,10 +36,12 @@ final TextEditingController categoryController = TextEditingController();
   // }
 
   Future<void> saveCategories() async {
-    final docRef = db.collection("LEAD_SETTINGS").doc("categories");
-    final doc = await docRef.get();
+    try {
+      setLoading(true);
+      final docRef = db.collection("LEAD_SETTINGS").doc("categories");
+      final doc = await docRef.get();
 
-    List<Map<String, dynamic>> existingCategories = [];
+      List<Map<String, dynamic>> existingCategories = [];
 
     if (doc.exists) {
       final data = doc.data();
@@ -56,6 +66,11 @@ final TextEditingController categoryController = TextEditingController();
     await docRef.set({
       "categoryList": existingCategories,
     });
+    setLoading(false);
+    } catch (e) {
+      print("Error saving categories: $e");
+      setLoading(false);
+    }
   }
 
   void addCategory() {
@@ -115,9 +130,11 @@ final TextEditingController categoryController = TextEditingController();
     notifyListeners();
   }
   Future<void> fetchCategories() async {
-    final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
+    try {
+      setLoading(true);
+      final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
-    if (doc.exists) {
+      if (doc.exists) {
       final data = doc.data();
 
       categories = List<Map<String, dynamic>>.from(
@@ -138,6 +155,11 @@ final TextEditingController categoryController = TextEditingController();
       callStatus = List<String>.from(data?["callStatus"] ?? []);
 
       notifyListeners();
+      }
+      setLoading(false);
+    } catch (e) {
+      print("Error fetching categories: $e");
+      setLoading(false);
     }
   }
 
@@ -160,9 +182,16 @@ final TextEditingController categoryController = TextEditingController();
   //   }
   // }
   Future<void>fetchCallStatus()async{
-    final doc=await db.collection("LEAD SETTINGS").doc("CALL STATUS").get();
-    if(doc.exists){
+    try {
+      setLoading(true);
+      final doc=await db.collection("LEAD SETTINGS").doc("CALL STATUS").get();
+      if(doc.exists){
       final data=doc.data();
+      }
+      setLoading(false);
+    } catch (e) {
+      print("Error fetching call status: $e");
+      setLoading(false);
     }
   }
 
@@ -192,9 +221,11 @@ final TextEditingController categoryController = TextEditingController();
  //  }
 
   Future<void> saveCallStatus() async {
-    final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
+    try {
+      setLoading(true);
+      final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
 
-    final doc = await docRef.get();
+      final doc = await docRef.get();
 
     List<String> existing = [];
 
@@ -210,5 +241,10 @@ final TextEditingController categoryController = TextEditingController();
     await docRef.set({
       "callStatus": existing,
     });
+    setLoading(false);
+    } catch (e) {
+      print("Error saving call status: $e");
+      setLoading(false);
+    }
   }
 }

@@ -12,6 +12,13 @@ class ReportProvider extends ChangeNotifier {
 
   Map<String, String> agentMap = {};
 
+  bool isLoading = false;
+
+  void setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
+
   Future<void> loadAgents() async {
     final snapshot = await fbd.collection('AGENT').get();
 
@@ -22,6 +29,7 @@ class ReportProvider extends ChangeNotifier {
   }
 
   Future<void> fetchReports() async {
+    setLoading(true);
     await loadAgents(); // ✅ MUST
 
     await Future.wait([
@@ -30,7 +38,7 @@ class ReportProvider extends ChangeNotifier {
       fetchLeadsReport(),
     ]);
 
-    notifyListeners();
+    setLoading(false);
   }
 
   // Future<void> fetchAgentPerformance() async {
@@ -110,6 +118,7 @@ class ReportProvider extends ChangeNotifier {
 
   Future<void> fetchAgentPerformance() async {
     try {
+      setLoading(true);
       Query query = fbd.collection("LEADS");
 
       /// ✅ DATE FILTER
@@ -169,15 +178,17 @@ class ReportProvider extends ChangeNotifier {
         };
       }).toList();
 
-      notifyListeners();
+      setLoading(false);
     } catch (e) {
       print("ERROR fetchAgentPerformance: $e");
+      setLoading(false);
     }
   }
 
 
   Future<void> fetchFunnel() async {
     try {
+      setLoading(true);
       Query query = fbd.collection("LEADS");
 
       // ✅ Date filter
@@ -227,9 +238,10 @@ class ReportProvider extends ChangeNotifier {
 
       print("Funnel Data: $funnelData");
 
-      notifyListeners();
+      setLoading(false);
     } catch (e) {
       print("ERROR fetchFunnel: $e");
+      setLoading(false);
     }
   }
 
@@ -245,6 +257,7 @@ class ReportProvider extends ChangeNotifier {
 
   Future<void> fetchLeadsReport() async {
     try {
+      setLoading(true);
       Query query = fbd.collection("LEADS");
 
       if (fromDate != null && toDate != null) {
@@ -307,9 +320,10 @@ class ReportProvider extends ChangeNotifier {
 
       leadsReport = temp;
 
-      notifyListeners();
+      setLoading(false);
     } catch (e) {
       print("ERROR fetchLeadsReport: $e");
+      setLoading(false);
     }
   }
 

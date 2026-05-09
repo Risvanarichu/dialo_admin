@@ -227,9 +227,8 @@ class _LoginPageState extends State<LoginPage>{
                                                      await prefs.remove('email');
                                                      await prefs.remove('remember');
                                                    }
-                                                 }
 
-                                                 if(success){
+
                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
                                                    showDialog(
@@ -256,7 +255,6 @@ class _LoginPageState extends State<LoginPage>{
                                                          ],
                                                        )
                                                    );
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  }
 
                                                 }

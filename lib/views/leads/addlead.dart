@@ -2,6 +2,7 @@ import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/agentProvider.dart';
 import 'leads_list.dart';
@@ -25,11 +26,13 @@ class _AddLeadState extends State<AddLead> {
 
   String? selectedAgentId;
   String? selectedAgentName;
+  String userRole = '';
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+
+    Future.microtask(() async {
       final provider = context.read<LeadProvider>();
 
       if (provider.isEdit) {
@@ -40,6 +43,12 @@ class _AddLeadState extends State<AddLead> {
         selectedAgentId = provider.selectedAgentId;
         selectedAgentName = provider.selectedAgentName;
       }
+
+      final prefs = await SharedPreferences.getInstance();
+
+      setState(() {
+        userRole = (prefs.getString('role') ?? '').toUpperCase();
+      });
     });
   }
 
@@ -67,8 +76,8 @@ class _AddLeadState extends State<AddLead> {
                       child: Column(
                         children: [
                           _formCard(isMobile),
-                          const SizedBox(height: 24),
-                          _additionaldetailsCard(isMobile),
+                          // const SizedBox(height: 24),
+                          // _additionaldetailsCard(isMobile),
                           const SizedBox(height: 24),
                           _notesSection(),
                           const SizedBox(height: 24),
@@ -137,7 +146,7 @@ class _AddLeadState extends State<AddLead> {
             _calltypeDropdown(),
           ),
           const SizedBox(height: 16,),
-          _agentDropdown()
+          if (userRole == 'ADMIN') _agentDropdown()
         ],
       ),
     );
@@ -289,41 +298,41 @@ class _AddLeadState extends State<AddLead> {
     );
   }
 
-  Widget _additionaldetailsCard(bool isMobile) {
-    final provider = context.watch<LeadProvider>();
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            "Additional Details",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          if (provider.categories.isEmpty)
-            const Text("No additional details found")
-          else
-            ...provider.categories.map((cat) {
-              final String title = cat["title"] ?? "";
-              final List subList = cat["sub"] ?? [];
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: subList.isNotEmpty
-                    ? _buildDropdownField(title, subList)
-                    : _buildTextField(title),
-              );
-            }).toList(),
-        ],
-      ),
-    );
-  }
+  // Widget _additionaldetailsCard(bool isMobile) {
+  //   final provider = context.watch<LeadProvider>();
+  //
+  //   return Container(
+  //     padding: const EdgeInsets.all(24),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(20),
+  //       border: Border.all(color: Colors.grey),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         const Text(
+  //           "Additional Details",
+  //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //         ),
+  //         const SizedBox(height: 16),
+  //         if (provider.categories.isEmpty)
+  //           const Text("No additional details found")
+  //         else
+  //           ...provider.categories.map((cat) {
+  //             final String title = cat["title"] ?? "";
+  //             final List subList = cat["sub"] ?? [];
+  //
+  //             return Padding(
+  //               padding: const EdgeInsets.only(bottom: 16),
+  //               child: subList.isNotEmpty
+  //                   ? _buildDropdownField(title, subList)
+  //                   : _buildTextField(title),
+  //             );
+  //           }).toList(),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildDropdownField(String label, List subList) {
     final provider = context.watch<LeadProvider>();
