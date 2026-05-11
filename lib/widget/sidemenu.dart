@@ -26,7 +26,7 @@ class SideMenu extends StatefulWidget {
 class _SideMenuState extends State<SideMenu> {
 
   int selectedIndex = 0;
-
+String userRole='USER';
 
   @override
   void initState() {

@@ -1,5 +1,3 @@
-// import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -13,41 +11,9 @@ class SettingsProvider extends ChangeNotifier {
   List<String> leadCategory = [];
   List<String> leadSource = [];
 
-final TextEditingController categoryController = TextEditingController();
-  final TextEditingController statusController = TextEditingController();
-
-  bool isLoading = false;
-
-  void setLoading(bool value) {
-    isLoading = value;
-    notifyListeners();
-  }
-
   SettingsProvider() {
     fetchAllSettings();
   }
-
-  String get value => '';
-  // Future<void> saveCategories() async {
-  //   List<Map<String, dynamic>> clearCategories =
-  //   categories.map((e) {
-  //     return {
-  //       "title": e["title"],
-  //       "sub": e["sub"],
-  //     };
-  //   }).toList();
-  //
-  //   // await db.collection("LEAD_SETTINGS").doc("categories").set({
-  //   //   "categoryList": clearCategories,
-  //   //   "callStatus": callStatus,
-  //   // });
-  // }
-
-  Future<void> saveCategories() async {
-    try {
-      setLoading(true);
-      final docRef = db.collection("LEAD_SETTINGS").doc("categories");
-      final doc = await docRef.get();
 
   Future<void> fetchAllSettings() async {
     await fetchCategories();
@@ -57,29 +23,7 @@ final TextEditingController categoryController = TextEditingController();
     await fetchLeadSource();
   }
 
-    List<Map<String, dynamic>> newCategories =
-    categories.map((e) {
-      return {
-        "title": e["title"],
-        "sub": e["sub"],
-      };
-    }).toList();
-
-    // ✅ MERGE old + new
-    existingCategories.addAll(newCategories);
-
-    // ✅ Remove duplicates (optional)
-    existingCategories = existingCategories.toSet().toList();
-
-    await docRef.set({
-      "categoryList": existingCategories,
-    });
-    setLoading(false);
-    } catch (e) {
-      print("Error saving categories: $e");
-      setLoading(false);
-    }
-  }
+  // ================= CATEGORIES =================
 
   void addCategory() {
     categories.add({
@@ -225,11 +169,9 @@ final TextEditingController categoryController = TextEditingController();
   }
 
   Future<void> fetchCategories() async {
-    try {
-      setLoading(true);
-      final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
+    final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
-      if (!doc.exists) {
+    if (!doc.exists) {
       clearCategories();
       return;
     }
@@ -297,7 +239,7 @@ final TextEditingController categoryController = TextEditingController();
     final cleanList = leadStatus
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
-    .toSet()
+        .toSet()
         .toList();
 
     await db.collection("LEAD_SETTINGS").doc("lead_status").set({
@@ -344,13 +286,13 @@ final TextEditingController categoryController = TextEditingController();
     final cleanList = callStatus
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
-    .toSet()
+        .toSet()
         .toList();
 
     await db.collection("LEAD_SETTINGS").doc("call_status").set({
       "callStatusList":FieldValue.arrayUnion(cleanList),
     },
-      SetOptions(merge: true)
+        SetOptions(merge: true)
     );
   }
 
@@ -391,28 +333,22 @@ final TextEditingController categoryController = TextEditingController();
     final cleanList = leadCategory
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
-    .toSet()
+        .toSet()
         .toList();
 
     await db.collection("LEAD_SETTINGS").doc("lead_category").set({
       "leadCategoryList":FieldValue.arrayUnion(cleanList),
     },
-    SetOptions(merge: true));
+        SetOptions(merge: true));
   }
 
   Future<void> fetchLeadCategory() async {
-    try {
-      setLoading(true);final doc = await db.collection("LEAD_SETTINGS").doc("lead_category").get();
+    final doc = await db.collection("LEAD_SETTINGS").doc("lead_category").get();
 
     if (doc.exists) {
       leadCategory = List<String>.from(doc.data()?["leadCategoryList"] ?? []);
     } else {
       leadCategory = [];
-      }
-      setLoading(false);
-    } catch (e) {
-      print("Error fetching call status: $e");
-      setLoading(false);
     }
 
     notifyListeners();
@@ -429,31 +365,31 @@ final TextEditingController categoryController = TextEditingController();
 
   // ================= CLEAR ALL =================
 
-  void clearAllFields() {
-    for (var cat in categories) {
-      cat["controller"]?.dispose();
-
-      for (var c in cat["subcontrollers"]) {
-        c.dispose();
-      }
-    }
-
-    categories.clear();
-
-    categories.add({
-      "title": "",
-      "controller": TextEditingController(),
-      "sub": [],
-      "subcontrollers": [],
-    });
-
-    leadStatus.clear();
-    callStatus.clear();
-    leadCategory.clear();
-    leadSource.clear();
-
-    notifyListeners();
-  }
+  // void clearAllFields() {
+  //   for (var cat in categories) {
+  //     cat["controller"]?.dispose();
+  //
+  //     for (var c in cat["subcontrollers"]) {
+  //       c.dispose();
+  //     }
+  //   }
+  //
+  //   categories.clear();
+  //
+  //   categories.add({
+  //     "title": "",
+  //     "controller": TextEditingController(),
+  //     "sub": [],
+  //     "subcontrollers": [],
+  //   });
+  //
+  //   leadStatus.clear();
+  //   callStatus.clear();
+  //   leadCategory.clear();
+  //   leadSource.clear();
+  //
+  //   notifyListeners();
+  // }
 
   // ================= DELETE FIRESTORE ALSO =================
 
@@ -477,7 +413,7 @@ final TextEditingController categoryController = TextEditingController();
       "leadSourceList": [],
     });
 
-    clearAllFields();
+   // clearAllFields();
   }
 
   @override
@@ -493,36 +429,39 @@ final TextEditingController categoryController = TextEditingController();
     super.dispose();
   }
 
-  Future<void> saveCallStatus() async {
-    try {
-      setLoading(true);
-      final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
+ void addleadSource(String value)async {
+   value = value.trim();
 
-  addleadSource(String value) {
-    value=value.trim();
-    if(value.isEmpty)return;
-    if (leadSource.contains(value))return;
-    leadSource.add(value);
-    notifyListeners();
+   if (value.isEmpty) return;
+
+   if (leadSource.contains(value)) return;
+
+   leadSource.add(value);
+
+   await db.collection("LEAD_SETTINGS").doc("lead_source").set({
+     "sourceList": leadSource,
+   });
+
+   notifyListeners();
   }
 
+  void deleteleadSource(int value) {
+  }
 
   Future<void> saveleadSource() async {
-    await db.collection("LEAD SETTINGS").doc("Lead_Source").set({
-      "leadSourceList":leadSource,
-    });
-    setLoading(false);
-    } catch (e) {
-      print("Error saving call status: $e");
-      setLoading(false);
-    }
   }
-  void deleteleadSource(int index) {
-    leadSource.removeAt(index);
+
+  Future<void> fetchLeadSource() async {
+    final doc = await db.collection("LEAD_SETTINGS").doc("lead_source").get();
+
+    if (doc.exists) {
+      leadSource = List<String>.from(doc.data()?["leadSourceList"] ?? []);
+    } else {
+      leadSource = [];
+    }
+
     notifyListeners();
   }
-
-
-  Future<void> fetchLeadSource() async {}
 }
+
 

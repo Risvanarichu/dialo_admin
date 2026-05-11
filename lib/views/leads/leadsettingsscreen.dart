@@ -146,7 +146,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              context.read<SettingsProvider>().clearCategories();
+              //context.read<SettingsProvider>().clearCategories();
               setState(() {
                 showCategories = true;
                 showLeadStatus = false;
@@ -166,7 +166,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              context.read<SettingsProvider>().clearLeadStatus();
+             // context.read<SettingsProvider>().clearLeadStatus();
               setState(() {
                 showCategories = false;
                 showLeadStatus = true;
@@ -186,7 +186,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              context.read<SettingsProvider>().clearCallStatus();
+             // context.read<SettingsProvider>().clearCallStatus();
               setState(() {
                 showCategories = false;
                 showLeadStatus = false;
@@ -206,7 +206,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              context.read<SettingsProvider>().clearLeadCategory();
+              // context.read<SettingsProvider>().clearLeadCategory();
               setState(() {
                 showCategories = false;
                 showLeadStatus = false;
@@ -480,7 +480,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   }
 
                   onAdd(value);
-                  controller.clear();
+                   controller.clear();
                 },
               ),
             ],
