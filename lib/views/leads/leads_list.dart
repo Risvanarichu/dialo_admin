@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/agentProvider.dart';
 import '../../providers/leadProvider.dart';
+import 'addlead.dart';
 
 class Leads extends StatelessWidget {
   const Leads  ({super.key});
@@ -314,29 +315,114 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap:(){
-               // context.read<LeadProvider>().editData;
-              //     ({
-  //                 "ID":lead.id,
-  // "NAME": lead.name,
-  // "PHONE":lead.phone,
-  // "EMAIL":lead.email,
-  // "SOURCE":lead.source
-  // }
-  // );
+  onTap: () {
+  final provider = context.read<LeadProvider>();
+
+  provider.editData({
+    "ID": lead.id,
+    "NAME": lead.name,
+    "PHONE": lead.phone,
+    "EMAIL": lead.email,
+    "SOURCE": lead.source,
+    "STATUS": lead.status,
+    "CALLTYPE": lead.calltype,
+    "NOTES": lead.notes,
+    "AGENT_ID": lead.assignedAgentId,
+    "AGENT_NAME": lead.assignedAgentName,
+  });
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AddLead(),
+    ),
+  );
   },
 
               child: Icon(Icons.edit,color: AppColors.themeColor,),
             ),
             SizedBox(width: 10,),
             GestureDetector(
-              onTap: (){},
-              child: Icon(Icons.delete,color: AppColors.redColor,),
+              onTap: () {
+                showDeleteDialog(context, lead.id);
+              },
+              child: Icon(Icons.delete, color: AppColors.redColor),
             )
           ],
         ))
       ],
     ),
+    ),
+  );
+}
+
+void showEditDialog(BuildContext context) {
+  final provider = context.read<LeadProvider>();
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("Edit Lead"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: provider.nameController,
+            decoration: const InputDecoration(labelText: "Name"),
+          ),
+          TextField(
+            controller: provider.phoneController,
+            decoration: const InputDecoration(labelText: "Phone"),
+          ),
+          TextField(
+            controller: provider.emailController,
+            decoration: const InputDecoration(labelText: "Email"),
+          ),
+          TextField(
+            controller: provider.sourceController,
+            decoration: const InputDecoration(labelText: "Source"),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            provider.clearFields();
+            Navigator.pop(context);
+          },
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            await provider.updateUser(leadStatus: '', callType: '', notes: '');
+            Navigator.pop(context);
+          },
+          child: const Text("Update"),
+        ),
+      ],
+    ),
+  );
+}
+
+void showDeleteDialog(BuildContext context, String id) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("Delete Lead"),
+      content: const Text("Are you sure you want to delete?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () {
+            context.read<LeadProvider>().deleteUser(id);
+            Navigator.pop(context);
+          },
+          child: const Text("Delete", style: TextStyle(color: Colors.red)),
+        ),
+      ],
     ),
   );
 }

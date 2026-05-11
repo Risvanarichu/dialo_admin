@@ -23,6 +23,7 @@ class LeadProvider extends ChangeNotifier {
   Map<String, String> agentMap = {};
 
   List<String> callStatusList = [];
+  String selectedAgentFilter = "all";
   List<String> leadCategoryList = [];
 
 
@@ -43,6 +44,14 @@ class LeadProvider extends ChangeNotifier {
   StreamSubscription? leadSubscription;
 
   final TextEditingController searchController = TextEditingController();
+  String leadStatusValue = "";
+  String callTypeValue = "";
+  String notesValue = "";
+  DateTime? startDate;
+  DateTime? endDate;
+
+  String? selectedAgentId;
+  String? selectedAgentName;
 
 
   final nameController = TextEditingController();
@@ -57,6 +66,12 @@ class LeadProvider extends ChangeNotifier {
   void setLoading(bool value){
     isLoading = value;
     notifyListeners();
+  }
+
+  void setDateRange(DateTime start, DateTime end) {
+    startDate = start;
+    endDate = end;
+    applyFilters();
   }
 
   Future<void> init() async {
@@ -157,8 +172,8 @@ class LeadProvider extends ChangeNotifier {
 
         if (assignedId.isEmpty) {
           doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId,
-            "ASSIGNED_AGENT_NAME": agentName,
+            "ASSIGNED_AGENT_ID": agentId?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
             "ADDED_BY_ID": agentId,
           });
         }
@@ -194,8 +209,8 @@ class LeadProvider extends ChangeNotifier {
         if (data["ASSIGNED_AGENT_ID"] == null ||
             data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
           doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId,
-            "ASSIGNED_AGENT_NAME": agentName,
+            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
             "ADDED_BY_ID": agentId,
           });
         }
@@ -260,12 +275,38 @@ class LeadProvider extends ChangeNotifier {
       final matchesCallStatus =
           selectedCallStatus == "all" || callStatus == selectedCallStatus;
 
+      final matchesAgent =
+          selectedAgentFilter == "all" ||
+              lead.assignedAgentId == selectedAgentFilter;
+
+      final matchesDate =
+          startDate == null ||
+              endDate == null ||
+              (lead.lastContactedDate.isAfter(startDate!) &&
+                  lead.lastContactedDate.isBefore(endDate!));
+
       return matchesSearch &&
           matchesStatus &&
           matchesSource &&
-          matchesCallStatus;
+          matchesCallStatus &&
+          matchesAgent &&
+          matchesDate;
     }).toList();
 
+    notifyListeners();
+  }
+  @override
+  void dispose() {
+    leadSubscription?.cancel();
+    searchController.dispose();
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    sourceController.dispose();
+    super.dispose();
+  }
+  Future<void> fetchCategories() async {
+    isLoading = true;
     notifyListeners();
   }
 
@@ -436,30 +477,60 @@ class LeadProvider extends ChangeNotifier {
     phoneController.text = user["PHONE"]??"";
     emailController.text = user["EMAIL"]??"";
     sourceController.text = user["SOURCE"]??"";
+    leadStatusValue = user["STATUS"] ?? "";
+    callTypeValue = user["CALLTYPE"] ?? "";
+    notesValue = user["NOTES"] ?? "";
+
+    selectedAgentId = user["AGENT_ID"];
+    selectedAgentName = user["AGENT_NAME"];
+
 
     editingId = user["ID"];
     isEdit = true;
     notifyListeners();
   }
 
-  Future<void>updateUser() async{
-    try{
+  Future<void> updateUser({
+    required String leadStatus,
+    required String callType,
+    required String notes,
+    String? agentId,
+    String? agentName,
+  }) async {
+    try {
       setLoading(true);
-      if(editingId == null)return;
-      final updateUser ={
-        "NAME":nameController.text.trim(),
-        "PHONE":phoneController.text.trim(),
-        "EMAIL":emailController.text.trim(),
-        "SOURCE":sourceController.text.trim(),
-      };
-      await fbd.collection('LEADS').doc(editingId).update(updateUser);
+
+      if (editingId == null) return;
+
+
+      await fbd.collection('LEADS').doc(editingId).update(
+          {
+            "NAME": nameController.text.trim(),
+            "PHONE": phoneController.text.trim(),
+            "EMAIL": emailController.text.trim(),
+            "SOURCE": sourceController.text.trim(),
+
+            // ✅ ADD THESE
+            "STATUS": leadStatus,
+            "CALLTYPE": callType,
+            "NOTES": notes,
+            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
+          });
+
       await fetchLeads();
       //clearFields();
-    }catch(e){
+
+    } catch (e) {
       print("Update Error: $e");
-    }finally{
+    } finally {
       setLoading(false);
     }
+  }
+
+  void setAgentFilter(String agentId) {
+    selectedAgentFilter = agentId;
+    applyFilters();
   }
 
   Future<void> deleteUser(String id) async{
@@ -487,9 +558,20 @@ class LeadProvider extends ChangeNotifier {
     emailController.clear();
     sourceController.clear();
 
+    leadStatusValue = "";
+    callTypeValue = "";
+    notesValue = "";
+
+    selectedAgentId = null;
+    selectedAgentName = null;
+
     editingId = null;
     isEdit = false;
+
+    notifyListeners();
   }
+
+
 }
 
    // debugPrint("Fixed old leads ✅");

@@ -23,8 +23,22 @@ class _LoginPageState extends State<LoginPage>{
   void initState() {
     super.initState();
 
-    Future.microtask((){
+    Future.microtask(()async{
+      final provider = Provider.of<Loginprovider>(context,listen: false);
+      bool loggedIn = await provider.isLoggedIn();
+      if(loggedIn){
+      final prefs = await SharedPreferences.getInstance();
+      String? agentId = prefs.getString('agentId');
+      String? role = prefs.getString('role');
+      if(agentId != null && agentId.isNotEmpty){
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => SideMenu()),
+        );
+      }else{
       Provider.of<Loginprovider>(context, listen: false).loadUserData();
+      }
+    }
     });
   }
 
@@ -211,11 +225,10 @@ class _LoginPageState extends State<LoginPage>{
                                                      await prefs.setString('email', provider.emailController.text);
                                                      await prefs.setString('remember', 'true');
                                                    } else {
-                                                     await prefs.clear();
+                                                     await prefs.remove('email');
+                                                     await prefs.remove('remember');
                                                    }
-                                                 }
 
-                                                 if(success){
 
                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
@@ -243,7 +256,6 @@ class _LoginPageState extends State<LoginPage>{
                                                          ],
                                                        )
                                                    );
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  }
 
                                                 }

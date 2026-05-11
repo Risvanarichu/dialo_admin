@@ -12,7 +12,9 @@ class ReportsPage extends StatelessWidget {
     final provider = context.watch<ReportProvider>();
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-      body: Padding(
+      body: provider.isLoading 
+          ? const Center(child: CircularProgressIndicator()) 
+          : Padding(
         padding: const EdgeInsets.all(20),
         child: SingleChildScrollView(
           child: Column(

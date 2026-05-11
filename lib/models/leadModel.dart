@@ -19,6 +19,8 @@ class LeadModel {
   String calltype;
   DateTime lastContactedDate;
   String assignedAgentName;
+  String notes;
+
 
   LeadModel({
     required this.id,
@@ -36,6 +38,7 @@ class LeadModel {
     required this.calltype,
    required this.lastContactedDate,
    required this.assignedAgentName,
+    required this.notes,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -85,6 +88,7 @@ class LeadModel {
       lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
           ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
           : added_date,
+      notes: map['NOTES'].toString()?? ""
 
     );
   }

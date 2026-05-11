@@ -8,9 +8,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Loginprovider extends ChangeNotifier{
+  bool isLoading = false;
   bool isChecked = false;
   bool isPasswordHidden = true;
   String userRole = 'USER';
+
+  void setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -18,48 +24,66 @@ class Loginprovider extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
+
   List<Usermodel> userList = [];
+
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String? agentId = prefs.getString('agentId');
+    String? role = prefs.getString('role');
+
+    return agentId != null &&
+        agentId.isNotEmpty &&
+        role != null &&
+        role.isNotEmpty;
+  }
 
   Future<bool> login() async {
     final prefs = await SharedPreferences.getInstance();
 
     try {
-      print("Entered Email: ${emailController.text}");
-      print("Entered Password: ${passwordController.text}");
+      setLoading(true);
       final querySnapshot = await _firestore
           .collection('AGENT')
           .where('EMAIL', isEqualTo: emailController.text.trim().toLowerCase())
           .where('PASSWORD', isEqualTo: passwordController.text.trim())
           .get();
-      print("Docs found: ${querySnapshot.docs.length}");
 
       if (querySnapshot.docs.isNotEmpty) {
-        Map<String, dynamic> userMap =
+        final userMap =
         querySnapshot.docs.first.data() as Map<String, dynamic>;
 
-        print("Login Success: ${emailController.text}");
-
-        await prefs.setBool('remember', isChecked);
-        await prefs.setString('email', userMap['EMAIL'] ?? '');
-        await prefs.setString('password', userMap['PASSWORD'] ?? '');
-        await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+        // SAVE ALL DATA HERE ONLY
         await prefs.setString('agentId', querySnapshot.docs.first.id);
+        await prefs.setString('role', (userMap['ROLE'] ?? 'agent').toString().toUpperCase());
+        print("Saved Role: ${prefs.getString('role')}");
         await prefs.setString('name', userMap['NAME'] ?? '');
         await prefs.setString('image', userMap['IMAGE'] ?? '');
-        await prefs.setString('role', userMap['ROLE'] ?? 'USER');
+        await prefs.setString('employeeid', userMap['EMPLOYEEID'] ?? '');
+
+        if (isChecked) {
+          await prefs.setBool('remember', true);
+          await prefs.setString('email', userMap['EMAIL'] ?? '');
+        } else {
+          await prefs.remove('remember');
+          await prefs.remove('email');
+        }
 
 
         print("database user role ${userMap['ROLE']}");
 
         await fetchUsers();
-
+        setLoading(false);
         return true;
       } else {
-        print("Login Failed: Invalid credentials");
+        setLoading(false);
         return false;
       }
     } catch (e) {
-      print("Unexpected Error: $e");
+      print("Login Error: $e");
+      setLoading(false);
       return false;
     }
   }
@@ -75,10 +99,12 @@ class Loginprovider extends ChangeNotifier{
 
   Future<User?> signInWithGoogle()async{
     try {
+      setLoading(true);
       final googleUser = await GoogleSignIn().signIn();
 
       if (googleUser == null){
         print("Google Sign-In cancelled");
+        setLoading(false);
         return null;
       }
       final googleAuth = await googleUser.authentication;
@@ -93,15 +119,20 @@ class Loginprovider extends ChangeNotifier{
 
        final user = userCredential.user;
 
-      if (user == null ) return null;
+      if (user == null ) {
+        setLoading(false);
+        return null;
+      }
 
       await _saveUserToFirestore(user);
       await fetchUsers();
 
       print("Google Login Success: ${user.email}");
+      setLoading(false);
       return user;
     }catch (e){
       print("Google Error: $e");
+      setLoading(false);
       return null;
     }
   }
@@ -122,15 +153,17 @@ class Loginprovider extends ChangeNotifier{
 
   Future<void> fetchUsers() async {
     try {
+      setLoading(true);
       final snapshot = await _firestore.collection("USERS").get();
       userList = snapshot.docs.map((doc){
         return Usermodel.fromMap(doc.data(), doc.id);
       }).toList();
 
       print("Usres fetched: ${userList.length}");
-      notifyListeners();
+      setLoading(false);
     }catch (e) {
       print("Error fetching users: $e");
+      setLoading(false);
     }
   }
 

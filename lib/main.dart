@@ -41,8 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReportProvider()..fetchReports()),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
-        home:SettingsPage(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

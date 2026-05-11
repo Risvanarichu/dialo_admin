@@ -13,11 +13,41 @@ class SettingsProvider extends ChangeNotifier {
   List<String> leadCategory = [];
   List<String> leadSource = [];
 
+final TextEditingController categoryController = TextEditingController();
+  final TextEditingController statusController = TextEditingController();
+
+  bool isLoading = false;
+
+  void setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
+
   SettingsProvider() {
     fetchAllSettings();
   }
 
   String get value => '';
+  // Future<void> saveCategories() async {
+  //   List<Map<String, dynamic>> clearCategories =
+  //   categories.map((e) {
+  //     return {
+  //       "title": e["title"],
+  //       "sub": e["sub"],
+  //     };
+  //   }).toList();
+  //
+  //   // await db.collection("LEAD_SETTINGS").doc("categories").set({
+  //   //   "categoryList": clearCategories,
+  //   //   "callStatus": callStatus,
+  //   // });
+  // }
+
+  Future<void> saveCategories() async {
+    try {
+      setLoading(true);
+      final docRef = db.collection("LEAD_SETTINGS").doc("categories");
+      final doc = await docRef.get();
 
   Future<void> fetchAllSettings() async {
     await fetchCategories();
@@ -27,7 +57,29 @@ class SettingsProvider extends ChangeNotifier {
     await fetchLeadSource();
   }
 
-  // ================= CATEGORIES =================
+    List<Map<String, dynamic>> newCategories =
+    categories.map((e) {
+      return {
+        "title": e["title"],
+        "sub": e["sub"],
+      };
+    }).toList();
+
+    // ✅ MERGE old + new
+    existingCategories.addAll(newCategories);
+
+    // ✅ Remove duplicates (optional)
+    existingCategories = existingCategories.toSet().toList();
+
+    await docRef.set({
+      "categoryList": existingCategories,
+    });
+    setLoading(false);
+    } catch (e) {
+      print("Error saving categories: $e");
+      setLoading(false);
+    }
+  }
 
   void addCategory() {
     categories.add({
@@ -173,9 +225,11 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> fetchCategories() async {
-    final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
+    try {
+      setLoading(true);
+      final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
-    if (!doc.exists) {
+      if (!doc.exists) {
       clearCategories();
       return;
     }
@@ -347,12 +401,18 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> fetchLeadCategory() async {
-    final doc = await db.collection("LEAD_SETTINGS").doc("lead_category").get();
+    try {
+      setLoading(true);final doc = await db.collection("LEAD_SETTINGS").doc("lead_category").get();
 
     if (doc.exists) {
       leadCategory = List<String>.from(doc.data()?["leadCategoryList"] ?? []);
     } else {
       leadCategory = [];
+      }
+      setLoading(false);
+    } catch (e) {
+      print("Error fetching call status: $e");
+      setLoading(false);
     }
 
     notifyListeners();
@@ -433,10 +493,10 @@ class SettingsProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  // void clearLeadSource(int index) {
-  //   addleadSource(value);
-  //   notifyListeners();
-  // }
+  Future<void> saveCallStatus() async {
+    try {
+      setLoading(true);
+      final docRef = db.collection("LEAD_SETTINGS").doc("call_status");
 
   addleadSource(String value) {
     value=value.trim();
@@ -451,6 +511,11 @@ class SettingsProvider extends ChangeNotifier {
     await db.collection("LEAD SETTINGS").doc("Lead_Source").set({
       "leadSourceList":leadSource,
     });
+    setLoading(false);
+    } catch (e) {
+      print("Error saving call status: $e");
+      setLoading(false);
+    }
   }
   void deleteleadSource(int index) {
     leadSource.removeAt(index);
