@@ -1,5 +1,6 @@
 import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/views/agents/addUser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -57,17 +58,28 @@ class UsersPage extends StatelessWidget {
                     ),
 
                     /// PROFILE
-                    Row(
-                      children: const [
-                        Icon(Icons.notifications_none),
-                        SizedBox(width: 20),
-                        CircleAvatar(
-                          backgroundColor: AppColors.themeColor,
-                          child: Icon(Icons.person, color: AppColors.whitetext),
-                        ),
-                        SizedBox(width: 8),
-                        Text("PROFILE"),
-                      ],
+                    FutureBuilder<Map<String, String>>(
+                      future: _getUserData(),
+                      builder: (context, snapshot) {
+                        final String name = snapshot.data?['name'] ?? 'PROFILE';
+                        final String imageUrl = snapshot.data?['image'] ?? '';
+
+                        return Row(
+                          children: [
+                            const Icon(Icons.notifications_none),
+                            const SizedBox(width: 20),
+                            CircleAvatar(
+                              backgroundColor: AppColors.themeColor,
+                              backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+                              child: imageUrl.isEmpty
+                                  ? const Icon(Icons.person, color: AppColors.whitetext)
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(name),
+                          ],
+                        );
+                      },
                     )
                   ],
                 ),
@@ -234,6 +246,14 @@ class UsersPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<Map<String, String>> _getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'name': prefs.getString('name') ?? 'PROFILE',
+      'image': prefs.getString('image') ?? '',
+    };
   }
 }
 

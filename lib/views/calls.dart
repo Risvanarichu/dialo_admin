@@ -38,16 +38,35 @@ class _CallsState extends State<Calls> {
             ),
             child: Row(
               children: [
-                Expanded(child: TextField(
-                  decoration: InputDecoration(
-                    labelText: "Date Range",
-                    hintText: "dd-mm-yyyy",
-                    suffixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2100),
+                      );
+
+                      if (picked != null) {
+                        context.read<LeadProvider>().setDateRange(
+                          picked.start,
+                          picked.end,
+                        );
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: "Date Range",
+                          hintText: "Select date range",
+                          suffixIcon: const Icon(Icons.calendar_today),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  ),
-                ),
                 ),
                 const SizedBox(width: 15,),
                 Expanded(child: DropdownButtonFormField(
@@ -137,7 +156,7 @@ class _CallsState extends State<Calls> {
     Expanded(child: Center(child: Text("Time"))),
     Expanded(child: Center(child: Text("Date"))),
     Expanded(child: Center(child: Text("Assigned Agent"))),
-    Expanded(child: Center(child: Text("Actions"))),
+    // Expanded(child: Center(child: Text("Actions"))),
   ],
 ),
                     ),
@@ -234,16 +253,16 @@ class CallList extends StatelessWidget {
 Expanded(child: Center(child: Text(date))),
 Expanded(child: Center(child: Text(agent))),
 
-Expanded(
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Icon(Icons.phone, size: 18),
-      SizedBox(width: 10),
-      Icon(Icons.edit, size: 18),
-    ],
-  ),
-),
+// Expanded(
+//   child: Row(
+//     mainAxisAlignment: MainAxisAlignment.center,
+//     children: [
+//       Icon(Icons.phone, size: 18),
+//       SizedBox(width: 10),
+//       Icon(Icons.edit, size: 18),
+//     ],
+//   ),
+// ),
         ],
       ),
     );

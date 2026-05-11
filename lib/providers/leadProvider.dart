@@ -280,8 +280,8 @@ class LeadProvider extends ChangeNotifier {
       final matchesDate =
           startDate == null ||
               endDate == null ||
-              (lead.lastContactedDate.isAfter(startDate!) &&
-                  lead.lastContactedDate.isBefore(endDate!));
+              (lead.lastContactedDate.isAfter(startDate!.subtract(const Duration(days: 1))) &&
+                  lead.lastContactedDate.isBefore(endDate!.add(const Duration(days: 1))));
 
       return matchesSearch &&
           matchesStatus &&
