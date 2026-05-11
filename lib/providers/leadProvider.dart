@@ -23,7 +23,7 @@ class LeadProvider extends ChangeNotifier {
   Map<String, String> agentMap = {};
 
   List<String> callStatusList = [];
-  List<String> leadcallStatusList = [];
+  List<String> leadCategoryList = [];
 
 
   String selectedCallStatus = "all";
@@ -119,8 +119,8 @@ class LeadProvider extends ChangeNotifier {
         "NAME": name.trim(),
         "PHONE": phone.trim(),
         "EMAIL": email.trim(),
-        "SOURCE": source.trim(),
-        "STATUS": leadStatus.trim(),
+        "SOURCE": selectedSources,
+        "STATUS": selectedStatus,
         "CALL_TYPE": callType.trim(),
         "FOLLOW_UP_STATUS": "pending",
         "NOTES": notes.trim(),
@@ -273,21 +273,21 @@ class LeadProvider extends ChangeNotifier {
     try {
       final snapshot = await fbd
           .collection("LEAD_SETTINGS")
-          .doc("call_statuses")
+          .doc("lead_category")
           .get();
 
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
         final rawList = data["statuses"] ?? [];
 
-        leadcallStatusList =
+        leadCategoryList =
         List<String>.from(rawList.map((e) => e.toString()));
       } else {
-        leadcallStatusList = [];
+        leadCategoryList = [];
       }
     } catch (e) {
-      leadcallStatusList = [];
-      debugPrint("fetchleadCallStatuses error: $e");
+      leadCategoryList = [];
+      debugPrint("fetchleadcategory error: $e");
     } finally {
       notifyListeners();
     }
@@ -298,21 +298,21 @@ class LeadProvider extends ChangeNotifier {
 
     if (value.isEmpty) return;
 
-    if (!leadcallStatusList.contains(value)) {
-      leadcallStatusList.add(value);
+    if (!leadCategoryList.contains(value)) {
+      leadCategoryList.add(value);
       notifyListeners();
     }
   }
 
   void removeLeadStatus(int index) {
-    leadcallStatusList.removeAt(index);
+    leadCategoryList.removeAt(index);
     notifyListeners();
   }
 
   Future<void> saveLeadsStatus() async {
     try {
-      await fbd.collection("LEAD_SETTINGS").doc("call_statuses").set({
-        "statuses": leadcallStatusList,
+      await fbd.collection("LEAD_SETTINGS").doc("lead_category").set({
+        "statuses": leadCategoryList,
       });
     } catch (e) {
       debugPrint("Error saving lead status: $e");
@@ -454,7 +454,7 @@ class LeadProvider extends ChangeNotifier {
       };
       await fbd.collection('LEADS').doc(editingId).update(updateUser);
       await fetchLeads();
-      clearFields();
+      //clearFields();
     }catch(e){
       print("Update Error: $e");
     }finally{
@@ -492,13 +492,13 @@ class LeadProvider extends ChangeNotifier {
   }
 }
 
-    debugPrint("Fixed old leads ✅");
+   // debugPrint("Fixed old leads ✅");
   }
 
-  @override
-  void dispose() {
-    leadSubscription?.cancel();
-    searchController.dispose();
-    super.dispose();
-  }
-}
+//   @override
+//   void dispose() {
+//     leadSubscription?.cancel();
+//     searchController.dispose();
+//     super.dispose();
+//   }
+// }

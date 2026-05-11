@@ -16,12 +16,16 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
   bool showLeadStatus = false;
   bool showCallStatus = false;
   bool showLeadCategory = false;
+  bool showLeadSource = false;
 
   final _categoryFormKey = GlobalKey<FormState>();
 
   final TextEditingController leadStatusController = TextEditingController();
   final TextEditingController callStatusController = TextEditingController();
   final TextEditingController leadCategoryController = TextEditingController();
+  final TextEditingController leadSourceController = TextEditingController();
+
+
 
 
   @override
@@ -37,6 +41,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
     leadStatusController.dispose();
     callStatusController.dispose();
     leadCategoryController.dispose();
+    leadSourceController.dispose();
     super.dispose();
   }
 
@@ -106,6 +111,15 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onDelete: provider.deleteLeadCategory,
                         onSave: provider.saveLeadCategory,
                       ),
+                    if(showLeadSource)
+                      _simpleListCard(title: "Add Lead Source",
+                          hint: "Enter Lead Source",
+                          controller: leadSourceController,
+                          items: provider.leadSource,
+                          onAdd:provider.addleadSource,
+                          onDelete: provider.deleteleadSource,
+                          onSave: provider.saveleadSource,
+                      )
                   ],
                 ),
               ),
@@ -138,6 +152,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 showLeadStatus = false;
                 showCallStatus = false;
                 showLeadCategory = false;
+                showLeadSource = false;
               });
             },
             child: _box("Additional Details"),
@@ -157,6 +172,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 showLeadStatus = true;
                 showCallStatus = false;
                 showLeadCategory = false;
+                showLeadSource = false;
               });
             },
             child: _box("Lead Status"),
@@ -176,6 +192,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 showLeadStatus = false;
                 showCallStatus = true;
                 showLeadCategory = false;
+                showLeadSource = false;
               });
             },
             child: _box("Call Status"),
@@ -195,10 +212,29 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 showLeadStatus = false;
                 showCallStatus = false;
                 showLeadCategory = true;
+                showLeadSource= false;
               });
             },
             child: _box("Lead Category"),
           ),
+          const SizedBox(height: 25),
+          const Text("Lead Source",style:  TextStyle(
+            fontWeight: FontWeight.bold
+          ),),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: (){
+             // context.read<SettingsProvider>().clearLeadSource();
+              setState(() {
+               showCategories=false;
+               showLeadStatus=false;
+               showCallStatus=false;
+               showLeadCategory=false;
+               showLeadSource=true;
+              });
+            },
+            child: _box("Lead Source"),
+          )
         ],
       ),
     );
@@ -370,7 +406,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                       if (!valid) return;
 
                       await provider.saveCategories();
-                       provider.clearCategories();
+                      // provider.clearCategories();
 
                       if (!mounted) return;
 

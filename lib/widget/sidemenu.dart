@@ -93,8 +93,10 @@ class _SideMenuState extends State<SideMenu> {
                 _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
                 _menuItem(Icons.event_outlined, "Follow-Up", 4),
                 _menuItem(Icons.bar_chart_outlined, "Reports", 5),
-                if (prov.userRole == 'ADMIN') _menuItem(Icons.group_outlined, "Users", 6),
-                if (prov.userRole == 'ADMIN') _menuItem(Icons.settings_outlined, "Settings", 7),
+                if (prov.userRole == 'ADMIN')
+                  _menuItem(Icons.group_outlined, "Users", 6),
+                if (prov.userRole == 'ADMIN')
+                  _menuItem(Icons.settings_outlined, "Settings", 7),
 
                 const Spacer(),
 

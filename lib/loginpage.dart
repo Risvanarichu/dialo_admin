@@ -205,6 +205,7 @@ class _LoginPageState extends State<LoginPage>{
 
                                                  if (success){
                                                    final prefs = await SharedPreferences.getInstance();
+                                                   await provider.loadUserRole();
 
                                                    if(provider.isChecked){
                                                      await prefs.setString('email', provider.emailController.text);
@@ -215,7 +216,7 @@ class _LoginPageState extends State<LoginPage>{
                                                  }
 
                                                  if(success){
-                                                   provider.loadUserRole();
+
                                                    Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
                                                    showDialog(

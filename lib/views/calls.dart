@@ -6,14 +6,43 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/settings_provider.dart';
+
 class Calls extends StatefulWidget {
   const Calls({super.key});
 
   @override
   State<Calls> createState() => _CallsState();
+
 }
 
 class _CallsState extends State<Calls> {
+  final TextEditingController dateTimeCtrl=TextEditingController();
+  DateTime? selectedDateTime;
+  final TextEditingController dateTimeCntl = TextEditingController();
+
+  Future<void> pickDate() async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate == null) return;
+
+    // TimeOfDay? pickedTime = await showTimePicker(
+    //   context: context,
+    //  // initialTime: TimeOfDay.now(),
+    // );
+
+   // if (pickedTime == null) return;
+    setState(() {
+      selectedDateTime=pickedDate;
+      dateTimeCtrl.text=
+          DateFormat('dd-MM-yyyy').format(selectedDateTime!);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,41 +67,65 @@ class _CallsState extends State<Calls> {
             ),
             child: Row(
               children: [
-                Expanded(child: TextField(
-                  decoration: InputDecoration(
-                    labelText: "Date Range",
-                    hintText: "dd-mm-yyyy",
-                    suffixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                Expanded(
+                  child: TextFormField(
+                    controller: dateTimeCtrl,
+                    readOnly: true,
+                    onTap: pickDate,
+                    decoration: InputDecoration(
+                      labelText: "Pick Date ",
+                      hintText: "dd-MM-yyyy ",
+                      suffixIcon: const Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
-                ),
+                // Expanded(child: TextFormField(
+                //   decoration: InputDecoration(
+                //     labelText: "Date Range",
+                //     hintText: "dd-mm-yyyy",
+                //     suffixIcon: const Icon(Icons.calendar_today),
+                //   border: OutlineInputBorder(
+                //     borderRadius: BorderRadius.circular(8),
+                //   ),
+                //   ),
+                // ),
+                // ),
                 const SizedBox(width: 15,),
-                Expanded(child: DropdownButtonFormField(
-                  decoration: InputDecoration(
-                    labelText: "Call Status",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    )
+                Expanded(
+                  child: Consumer<SettingsProvider>(
+                    builder: (context, provider, child) {
+
+                      return DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Call Status",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+
+                        items: [
+                          const DropdownMenuItem(
+                            value: "all",
+                            child: Text("All Status"),
+                          ),
+
+                          ...provider.callStatus.map((status) {
+                            return DropdownMenuItem<String>(
+                              value: status,
+                              child: Text(status),
+                            );
+                          }).toList(),
+                        ],
+
+                        onChanged: (value) {
+                          print(value);
+                        },
+                      );
+                    },
                   ),
-                    items: const[
-                      DropdownMenuItem(
-                        value: "all",
-                          child: Text("All Status"),
-                      ),
-                      DropdownMenuItem(
-                        value:"answered" ,
-                          child:Text("Answered"),
-                      ),
-                      DropdownMenuItem(
-                        value: "missed",
-                          child: Text("Missed"),
-                      ),
-                    ],
-                    onChanged: (value){},
-                ),
                 ),
                 const SizedBox(width: 15,),
               Expanded(
@@ -136,35 +189,37 @@ class _CallsState extends State<Calls> {
     Expanded(child: Center(child: Text("Time"))),
     Expanded(child: Center(child: Text("Date"))),
     Expanded(child: Center(child: Text("Assigned Agent"))),
-    Expanded(child: Center(child: Text("Actions"))),
+   // Expanded(child: Center(child: Text("Actions"))),
   ],
 ),
                     ),
-                    Expanded(
-                        child:Consumer<LeadProvider>(
-  builder: (context, value, child) {
-   final leads = value.allLeads;
+//                     Expanded(
+//                         child:Consumer<LeadProvider>(
+//   builder: (context, value, child) {
+//    final leads = value.allLeads;
+//
+//     return ListView.builder(
+//       itemCount: leads.length,
+//       itemBuilder: (context, index) {
+//         final lead = leads[index];
+//
+//         return CallList(
+//           name: lead.name,
+//           phone: lead.phone,
+//           type: lead.source, // inbound/outbound
+//           status: lead.followupstatus == "pending"
+//               ? "Missed"
+//               : "Answered",
+//           duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
+//           date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
+//          agent: lead.assignedAgentName,
+//           // actions: '',
+//         );
+//       },
+//     );
+//   },
+// ))
 
-    return ListView.builder(
-      itemCount: leads.length,
-      itemBuilder: (context, index) {
-        final lead = leads[index];
-
-        return CallList(
-          name: lead.name,
-          phone: lead.phone,
-          type: lead.source, // inbound/outbound
-          status: lead.followupstatus == "pending"
-              ? "Missed"
-              : "Answered",
-          duration: DateFormat('hh:mm a').format(lead.lastContactedDate),// or custom
-          date: DateFormat('dd-MM-yyyy').format(lead.lastContactedDate),
-         agent: lead.assignedAgentName, actions: '',
-        );
-      },
-    );
-  },
-))
                   ],
                 ),
               ))
@@ -183,7 +238,7 @@ class CallList extends StatelessWidget {
   final String duration;
   final String date;
   final String agent;
-  final String actions;
+ // final String actions;
 
   const CallList ({
     required this.name,
@@ -193,7 +248,7 @@ class CallList extends StatelessWidget {
     required this.duration,
     required this.date,
     required this.agent,
-    required this.actions,
+  //  required this.actions,
   });
   @override
   Widget build(BuildContext context){
@@ -233,16 +288,16 @@ class CallList extends StatelessWidget {
 Expanded(child: Center(child: Text(date))),
 Expanded(child: Center(child: Text(agent))),
 
-Expanded(
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Icon(Icons.phone, size: 18),
-      SizedBox(width: 10),
-      Icon(Icons.edit, size: 18),
-    ],
-  ),
-),
+// Expanded(
+//   child: Row(
+//     mainAxisAlignment: MainAxisAlignment.center,
+//     children: [
+//       Icon(Icons.phone, size: 18),
+//       SizedBox(width: 10),
+//       Icon(Icons.edit, size: 18),
+//     ],
+//   ),
+// ),
         ],
       ),
     );
