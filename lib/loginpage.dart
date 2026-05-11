@@ -219,6 +219,7 @@ class _LoginPageState extends State<LoginPage>{
 
                                                  if (success){
                                                    final prefs = await SharedPreferences.getInstance();
+                                                   await provider.loadUserRole();
 
                                                    if(provider.isChecked){
                                                      await prefs.setString('email', provider.emailController.text);

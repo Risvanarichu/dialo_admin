@@ -56,6 +56,8 @@ class LeadProvider extends ChangeNotifier {
     init();
   }
 
+  get leadCategoryList => null;
+
   void setLoading(bool value){
     isLoading = value;
     notifyListeners();

@@ -11,6 +11,7 @@ class Loginprovider extends ChangeNotifier{
   bool isLoading = false;
   bool isChecked = false;
   bool isPasswordHidden = true;
+  String userRole = 'USER';
 
   void setLoading(bool value) {
     isLoading = value;
@@ -70,6 +71,9 @@ class Loginprovider extends ChangeNotifier{
           await prefs.remove('email');
         }
 
+
+        print("database user role ${userMap['ROLE']}");
+
         await fetchUsers();
         setLoading(false);
         return true;
@@ -82,6 +86,15 @@ class Loginprovider extends ChangeNotifier{
       setLoading(false);
       return false;
     }
+  }
+
+  Future<void> loadUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+
+      userRole = prefs.getString('role') ?? 'USER';
+
+    print("user role is $userRole");
+    notifyListeners();
   }
 
   Future<User?> signInWithGoogle()async{

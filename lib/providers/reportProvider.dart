@@ -142,7 +142,7 @@ class ReportProvider extends ChangeNotifier {
         final lead = doc.data() as Map<String, dynamic>;
 
         /// ✅ GET AGENT ID (FIX FIELD NAME HERE)
-        String agentId = (lead['ASSIGNED_AGENT_ID'] ?? lead['ADDED_BY_ID'] ?? lead['ADDED BY ID'] ?? "").toString();
+        String agentId = (lead['ASSIGNED_AGENT_ID'] ?? lead['ADDED_BY_ID'] ?? lead['ADDED_BY_ID'] ?? "").toString();
 
         /// ✅ CONVERT TO NAME
         String agentName = agentMap[agentId] ?? lead['ASSIGNED_AGENT_NAME']?.toString() ?? "Unknown";
@@ -281,7 +281,7 @@ class ReportProvider extends ChangeNotifier {
         final data = doc.data() as Map<String, dynamic>;
 
         /// ✅ ADD THIS (IMPORTANT)
-        String agentId = (data['ASSIGNED_AGENT_ID'] ?? data['ADDED_BY_ID'] ?? data['ADDED BY ID'] ?? "").toString();
+        String agentId = (data['ASSIGNED_AGENT_ID'] ?? data['ADDED_BY_ID'] ?? data['ADDED_BY_ID'] ?? "").toString();
         String agentName = agentMap[agentId] ?? data['ASSIGNED_AGENT_NAME']?.toString() ?? "Unknown";
 
         dynamicAgents.add(agentName);
