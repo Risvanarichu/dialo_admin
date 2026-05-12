@@ -28,6 +28,8 @@ class _AddLeadState extends State<AddLead> {
   String? selectedAgentName;
   String userRole = '';
 
+  String get text => '';
+
   @override
   void initState() {
     super.initState();
@@ -257,15 +259,59 @@ class _AddLeadState extends State<AddLead> {
     );
   }
 
+  // Widget _calltypeDropdown() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text("CALL TYPE*"),
+  //       const SizedBox(height: 6),
+  //       DropdownButtonFormField<String>(
+  //         value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
+  //         icon: const Icon(Icons.arrow_drop_down),
+  //         decoration: InputDecoration(
+  //           border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //           ),
+  //           enabledBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+  //           ),
+  //           focusedBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.blue, width: 2),
+  //           ),
+  //           contentPadding: const EdgeInsets.symmetric(
+  //             horizontal: 12,
+  //             vertical: 14,
+  //           ),
+  //
+  //         ),
+  //         items: const [
+  //           DropdownMenuItem(value: "Incoming", child: Text("Incoming")),
+  //           DropdownMenuItem(value: "Outgoing", child: Text("Outgoing")),
+  //         ],
+  //         onChanged: (value) {
+  //           setState(() {
+  //             callTypeCtrl.text = value?.trim() ?? "";
+  //           });
+  //         },
+  //       ),
+  //     ],
+  //   );
+  // }
   Widget _calltypeDropdown() {
+    final provider = context.watch<LeadProvider>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("CALL TYPE*"),
         const SizedBox(height: 6),
+
         DropdownButtonFormField<String>(
           value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
           icon: const Icon(Icons.arrow_drop_down),
+
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -282,23 +328,34 @@ class _AddLeadState extends State<AddLead> {
               horizontal: 12,
               vertical: 14,
             ),
-
           ),
-          items: const [
-            DropdownMenuItem(value: "Incoming", child: Text("Incoming")),
-            DropdownMenuItem(value: "Outgoing", child: Text("Outgoing")),
-          ],
+
+          hint: const Text("Select Call Type"),
+
+          items: provider.leadCategoryList.map((status) {
+            return DropdownMenuItem<String>(
+              value: status,
+              child: Text(text),
+            );
+          }).toList(),
+
           onChanged: (value) {
             setState(() {
               callTypeCtrl.text = value?.trim() ?? "";
             });
           },
+
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select call type";
+            }
+            return null;
+          },
         ),
       ],
     );
   }
-
-  // Widget _additionaldetailsCard(bool isMobile) {
+ // Widget _additionaldetailsCard(bool isMobile) {
   //   final provider = context.watch<LeadProvider>();
   //
   //   return Container(

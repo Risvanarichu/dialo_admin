@@ -74,7 +74,9 @@ class LeadModel {
       phone: map['PHONE']?.toString()??"",
       email: map['EMAIL']?.toString()??"",
       source: map['SOURCE']?.toString()??"",
-      status: map['STATUS']?.toString().toUpperCase()??"",
+      status: (map['STATUS'] ?? map['lead_status'] ?? "")
+          .toString()
+          .toUpperCase(),
       followupDate: followDate,
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
       time: DateFormat('hh:mm a').format(added_date),

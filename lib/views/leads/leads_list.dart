@@ -1,5 +1,7 @@
 import 'package:dialo_admin/constants/appcolors.dart';
 import 'package:dialo_admin/models/leadModel.dart';
+import 'package:dialo_admin/providers/settings_provider.dart';
+import 'package:dialo_admin/views/leads/lead_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/agentProvider.dart';
@@ -81,28 +83,78 @@ class Leads extends StatelessWidget {
                               const SizedBox(width: 10),
 
                               /// 🎯 STATUS FILTER
+                              // Expanded(
+                              //   child: Consumer2<LeadProvider,SettingsProvider>(
+                              //     builder: (context, leadprov.setprov, child) {
+                              //       final statusItems=[
+                              //         "All Status",
+                              //         ...SettingsProvider.leadStatus.toSet().toList(),
+                              //       ];
+                              //       return Container(
+                              //         padding: const EdgeInsets.symmetric(horizontal: 10),
+                              //         decoration: BoxDecoration(
+                              //           color: Colors.grey.shade100,
+                              //           borderRadius: BorderRadius.circular(10),
+                              //           border: Border.all(color: Colors.grey)
+                              //         ),
+                              //         child: DropdownButton(
+                              //           value: statusItems.contains(leadprov.selectedStatus)
+                              //   ?leadprov.selectedStatus:"All Status",
+                              //               isExpanded:true,
+                              //               underline:const SizedBox(),
+                              //               items:statusItems.map((e){
+                              //                 return DropdownMenuItem<String>(
+                              //                 value: e,
+                              //   child: Text(e),
+                              //
+                              //           );
+                              //   ).toList(),
+                              //           onChanged: (value) {
+                              //             if(value!=null){
+                              //   provider.updateStatus(value);
+                              //   }
+                              //           },
+                              //         ),
+                              //       );
+                              //     },
+                              //   ),
+                              // ),
                               Expanded(
-                                child: Consumer<LeadProvider>(
-                                  builder: (context, provider, child) {
+                                child: Consumer2<LeadProvider, SettingsProvider>(
+                                  builder: (context, leadProvider, settingsProvider, child) {
+
+                                    final statusItems = [
+                                      "All Status",
+                                      ...settingsProvider.leadStatus.toSet().toList(),
+                                    ];
+
                                     return Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.shade100,
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: Colors.grey)
+                                        border: Border.all(color: Colors.grey),
                                       ),
-                                      child: DropdownButton(
-                                        value: provider.selectedStatus,
+
+                                      child: DropdownButton<String>(
+                                        value: statusItems.contains(leadProvider.selectedStatus)
+                                            ? leadProvider.selectedStatus
+                                            : "All Status",
+
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Status", "NEW", "CONVERTED", "INTERESTED"]
-                                            .map((e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e),
-                                        ))
-                                            .toList(),
+
+                                        items: statusItems.map((e) {
+                                          return DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Text(e),
+                                          );
+                                        }).toList(),
+
                                         onChanged: (value) {
-                                          provider.updateStatus(value!);
+                                          if (value != null) {
+                                            leadProvider.updateStatus(value);
+                                          }
                                         },
                                       ),
                                     );
@@ -234,7 +286,15 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
   final mainProvider = context.read<Agentprovider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
-  return Container(
+  return InkWell(
+    onTap: (){
+      Navigator.push(
+        context,MaterialPageRoute(builder: (context)=>LeadDetails(lead: lead)),
+      );
+
+    },
+  child:
+    Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       border: Border(
@@ -248,7 +308,7 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
         Expanded(child: alignCenter(lead.name)),
         Expanded(child: alignCenter(lead.phone)),
         Expanded(child: alignCenter(lead.email)),
-        Expanded(child: Center(child: statusChip(lead.status))),
+        Expanded(child: Center(child:statusChip(lead.status) )),
         Expanded(child: alignCenter(lead.source)),
         Expanded(child: alignCenter(agentName)),
         Expanded(child: Row(
@@ -291,6 +351,7 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
           ],
         ))
       ],
+    ),
     ),
   );
 }
@@ -367,31 +428,34 @@ void showDeleteDialog(BuildContext context, String id) {
 }
 
 Widget statusChip(String status) {
-  final s = status.trim().toUpperCase();
-  Color color;
-  switch (s) {
-    case "NEW":
-      color = Colors.blue.shade300;
-      break;
-    case "CONVERTED":
-      color = Colors.orange.shade300;
-      break;
-    case "INTERESTED":
-      color = Colors.green;
-      break;
-    default:
-      color = Colors.grey.shade300;
-  }
-
+  final text =status.trim().isEmpty?"NO STATUS":status;
   return Container(
-    alignment: Alignment.center,
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration:
-        BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-    child: Text(status,
-    textAlign: TextAlign.center),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 6,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.blue.shade100,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      status,
+      style: const TextStyle(
+        color: Colors.blue,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
   );
 }
+  // return Container(
+  //   alignment: Alignment.center,
+  //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+  //   decoration:
+  //       BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+  //   child: Text(status,
+  //   textAlign: TextAlign.center),
+  // );
+//}
 Widget alignCenter(String text) {
   return Align(
     alignment: Alignment.center,

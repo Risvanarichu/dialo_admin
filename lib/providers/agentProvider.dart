@@ -160,7 +160,7 @@ class Agentprovider extends ChangeNotifier {
     nameController.text = user["NAME"]??"";
     phoneController.text = user["PHONE"]??"";
     emailController.text = user["EMAIL"]??"";
-    employeeController.text = user["EMPLOYEEID"]??"";
+    employeeController.text = user["EMPLOYEE_ID"]??"";
     roleController.text = user["ROLE"]??"";
     passwordController.text = user["PASSWORD"]??"";
 
@@ -193,7 +193,7 @@ class Agentprovider extends ChangeNotifier {
         "NAME" : nameController.text.trim(),
         "PHONE":phoneController.text.trim(),
         "EMAIL":emailController.text.trim(),
-        "EMPLOYEEID":employeeController.text.trim(),
+        "EMPLOYEE_ID":employeeController.text.trim(),
         "ROLE":roleController.text.toUpperCase().trim(),
         "PASSWORD":passwordController.text.trim(),
         "STATUS":isActive,

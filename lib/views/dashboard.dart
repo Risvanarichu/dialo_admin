@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/dashboardProvider.dart';
 
@@ -107,18 +108,41 @@ class TopBar extends StatelessWidget {
               const SizedBox(width: 20),
               const Icon(Icons.notifications_none),
               const SizedBox(width: 20),
-              const CircleAvatar(
-                backgroundColor: Color(0xff3570CE),
-                child: Icon(Icons.person_outline, color: Colors.white),
+              FutureBuilder<Map<String, String>>(
+                future: _getUserData(),
+                builder: (context, snapshot) {
+                  final String name = snapshot.data?['name'] ?? 'Profile';
+                  final String imageUrl = snapshot.data?['image'] ?? '';
+
+                  return Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: const Color(0xff3570CE),
+                        backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+                        child: imageUrl.isEmpty
+                            ? const Icon(Icons.person_outline, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(name),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(width: 8),
-              const Text("Profile"),
             ],
           ),
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
       ],
     );
+  }
+
+  Future<Map<String, String>> _getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'name': prefs.getString('name') ?? 'Profile',
+      'image': prefs.getString('image') ?? '',
+    };
   }
 }
 
