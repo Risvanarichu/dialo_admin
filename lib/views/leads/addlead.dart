@@ -1,4 +1,5 @@
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -145,7 +146,7 @@ class _AddLeadState extends State<AddLead> {
           _rowFields(
             isMobile,
             _leadStatusDropdown(),
-            _calltypeDropdown(),
+            _calltypeDropdown()
           ),
           const SizedBox(height: 16,),
           if (userRole == 'ADMIN') _agentDropdown()
@@ -209,45 +210,64 @@ class _AddLeadState extends State<AddLead> {
     );
   }
 
+  //
   Widget _leadStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("LEAD STATUS*"),
         const SizedBox(height: 6),
+
         DropdownButtonFormField<String>(
-          value: leadStatusCtrl.text.isEmpty ? null : leadStatusCtrl.text.trim(),
+          value: leadStatusCtrl.text.isEmpty
+              ? null
+              : leadStatusCtrl.text.trim(),
+
           icon: const Icon(Icons.arrow_drop_down),
+
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+              borderSide: const BorderSide(
+                color: Colors.grey,
+                width: 1.5,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              borderSide: const BorderSide(
+                color: Colors.blue,
+                width: 2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 14,
             ),
           ),
-          items: const [
-            DropdownMenuItem(value: "New", child: Text("New")),
-            DropdownMenuItem(value: "Contacted", child: Text("Contacted")),
-            DropdownMenuItem(value: "Rejected", child: Text("Rejected")),
-            DropdownMenuItem(value: "Accepted", child: Text("Accepted")),
-            DropdownMenuItem(value: "Joined", child: Text("Joined")),
-          ],
-          onChanged: (value) {
 
+          hint: const Text("Select Lead Status"),
+
+          items: (provider.leadStatus )
+              .map<DropdownMenuItem<String>>((status) {
+            return DropdownMenuItem<String>(
+              value: status.toString(),
+              child: Text(status.toString()),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            context.read<SettingsProvider>().leadStatus;
             setState(() {
-              leadStatusCtrl.text = value?.trim() ?? "";
+              leadStatusCtrl.text = value ?? "";
             });
           },
+
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "Please select lead status";
@@ -299,6 +319,67 @@ class _AddLeadState extends State<AddLead> {
   //     ],
   //   );
   // }
+  // Widget _calltypeDropdown() {
+  //   final provider = context.watch<LeadProvider>();
+  //
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text("CALL TYPE*"),
+  //       const SizedBox(height: 6),
+  //
+  //       DropdownButtonFormField<String>(
+  //         value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
+  //         icon: const Icon(Icons.arrow_drop_down),
+  //
+  //         decoration: InputDecoration(
+  //           border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //           ),
+  //           enabledBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+  //           ),
+  //           focusedBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.blue, width: 2),
+  //           ),
+  //           contentPadding: const EdgeInsets.symmetric(
+  //             horizontal: 12,
+  //             vertical: 14,
+  //           ),
+  //         ),
+  //
+  //         hint: const Text("Select Call Type"),
+  //
+  //         items: provider.leadCategoryList ??[]).map<DropdownMenuItem<String>>((status) {
+  //           return DropdownMenuItem<String>(
+  //             value: status.toString(),
+  //             child: Text(status.toString()),
+  //           );
+  //         }).toList(),
+  //
+  //         onChanged: (value) {
+  //           setState(() {
+  //             callTypeCtrl.text = value?.trim() ?? "";
+  //           });
+  //         },
+  //
+  //         validator: (value) {
+  //           if (value == null || value.isEmpty) {
+  //             return "Please select call type";
+  //           }
+  //           return null;
+  //         },
+  //   decoration: InputDecoration(
+  //   border: OutlineInputBorder(
+  //   borderRadius: BorderRadius.circular(10),
+  //   ),
+  //   ),
+  //   ),
+  //   ],
+  //   );
+  // }
   Widget _calltypeDropdown() {
     final provider = context.watch<LeadProvider>();
 
@@ -310,38 +391,20 @@ class _AddLeadState extends State<AddLead> {
 
         DropdownButtonFormField<String>(
           value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
+          hint: const Text("Select Call Type"),
           icon: const Icon(Icons.arrow_drop_down),
 
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
-
-          hint: const Text("Select Call Type"),
-
-          items: provider.leadCategoryList.map((status) {
+          items: (provider.leadCategoryList ?? [])
+              .map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
-              value: status,
-              child: Text(text),
+              value: status.toString(),
+              child: Text(status.toString()),
             );
           }).toList(),
 
           onChanged: (value) {
             setState(() {
-              callTypeCtrl.text = value?.trim() ?? "";
+              callTypeCtrl.text = value ?? "";
             });
           },
 
@@ -351,6 +414,12 @@ class _AddLeadState extends State<AddLead> {
             }
             return null;
           },
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         ),
       ],
     );

@@ -118,7 +118,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                           items: provider.leadSource,
                           onAdd:provider.addleadSource,
                           onDelete: provider.deleteleadSource,
-                          onSave: provider.saveleadSource,
+                          onSave: provider.saveLeadSource,
                       )
                   ],
                 ),
@@ -507,7 +507,10 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                      onDelete(index);
+                     context.read<SettingsProvider>().deleteCallStatus(index);
+                     context.read<SettingsProvider>().deleteLeadCategory(index);
+                     context.read<SettingsProvider>().deleteleadSource(index);
+                     context.read<SettingsProvider>().deleteLeadStatus(index);
                     },
                   ),
                 );
