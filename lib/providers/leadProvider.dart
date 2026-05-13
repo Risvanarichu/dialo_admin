@@ -56,7 +56,14 @@ class LeadProvider extends ChangeNotifier {
     init();
   }
 
-  get leadCategoryList => null;
+  List<String> get leadCategoryList {
+    for (var cat in categoryList) {
+      if (cat.title.toLowerCase() == "call type") {
+        return cat.sub;
+      }
+    }
+    return [];
+  }
 
   void setLoading(bool value){
     isLoading = value;

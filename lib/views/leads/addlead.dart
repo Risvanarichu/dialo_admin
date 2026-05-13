@@ -312,36 +312,25 @@ class _AddLeadState extends State<AddLead> {
           value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
           icon: const Icon(Icons.arrow_drop_down),
 
+
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
             ),
           ),
 
           hint: const Text("Select Call Type"),
 
-          items: provider.leadCategoryList.map((status) {
+          items: (provider.leadCategoryList ?? []).map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
               value: status,
-              child: Text(text),
+              child: Text(status),
             );
           }).toList(),
 
           onChanged: (value) {
             setState(() {
-              callTypeCtrl.text = value?.trim() ?? "";
+              callTypeCtrl.text = value ?? "";
             });
           },
 
