@@ -28,7 +28,9 @@ class Agent_Add_Model {
       status: data["STATUS"] ?? false,
       phone: data["PHONE"] ?? "",
       image: data["IMAGE"] ?? "",
-      totalCalls: data["TOTAL CALLS"] ?? "",
+      totalCalls: (data["TOTAL CALLS"] ?? 0) is int
+          ? data["TOTAL CALLS"]
+          : int.tryParse(data["TOTAL CALLS"].toString()) ?? 0,
     );
   }
 }
@@ -40,6 +42,7 @@ class AgentPerformanceModel{
   AgentPerformanceModel({
     required this.name,
     required this.totalCalls,
-    this.online = false,
-  });
+    required bool? online,
+  }): online = online ?? false;
+
 }

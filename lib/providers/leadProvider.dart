@@ -51,6 +51,8 @@ class LeadProvider extends ChangeNotifier {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final sourceController = TextEditingController();
+  final remarkController = TextEditingController();
+  final dateController = TextEditingController();
 
   LeadProvider() {
     init();
@@ -513,6 +515,54 @@ class LeadProvider extends ChangeNotifier {
   void setButtonLoading(bool value){
     isButtonLoading = value;
     notifyListeners();
+  }
+
+  Future<void> addFollowUp({
+    required String leadId,
+    required String callStatus,
+    required String leadStatus,
+    required String leadCategory,
+    required String priority,
+    required String remarks,
+    String? email,
+    DateTime? followUpDate,
+  }) async {
+    try {
+      setButtonLoading(true);
+
+      final ref = fbd
+          .collection('LEADS')
+          .doc(leadId)
+          .collection('FOLLOWUPS')
+          .doc();
+
+      await ref.set({
+        "FOLLOWUP_ID": ref.id,
+        "CALL_STATUS": callStatus,
+        "LEAD_STATUS": leadStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "PRIORITY": priority,
+        "EMAIL": email ?? "",
+        "REMARKS": remarks,
+        "DATE": followUpDate ?? DateTime.now(),
+        "CREATED_AT": FieldValue.serverTimestamp(),
+      });
+
+      /// update main lead
+      await fbd.collection('LEADS').doc(leadId).update({
+        "STATUS": leadStatus,
+        "FOLLOW_UP_STATUS": "pending",
+        "PRIORITY": priority,
+        "LAST_REMARK": remarks,
+        "LAST_CONTACTED": FieldValue.serverTimestamp(),
+      });
+
+    } catch (e) {
+      debugPrint("Follow-up error: $e");
+      rethrow;
+    } finally {
+      setButtonLoading(false);
+    }
   }
 
   void clearFields(){

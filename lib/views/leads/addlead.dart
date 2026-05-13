@@ -401,12 +401,12 @@ class _AddLeadState extends State<AddLead> {
             ),
           ),
 
-          hint: const Text("Select Call Type"),
+          // hint: const Text("Select Call Type"),
 
           items: (provider.leadCategoryList ?? []).map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
-              value: status,
-              child: Text(status),
+              // value: status,
+              // child: Text(status),
               value: status.toString(),
               child: Text(status.toString()),
             );
@@ -425,11 +425,11 @@ class _AddLeadState extends State<AddLead> {
             return null;
           },
 
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+          // decoration: InputDecoration(
+          //   border: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          // ),
         ),
       ],
     );
