@@ -457,9 +457,19 @@ class _AddLeadState extends State<AddLead> {
           hint: const Text("Select Call Status"),
           icon: const Icon(Icons.arrow_drop_down),
 
-          items: (provider.callStatus )
-              .map<DropdownMenuItem<String>>((status) {
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+
+          // hint: const Text("Select Call Type"),
+
+          items: (provider.callStatus ).map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
+              // value: status,
+              // child: Text(status),
               value: status.toString(),
               child: Text(status.toString()),
             );
@@ -478,11 +488,11 @@ class _AddLeadState extends State<AddLead> {
             return null;
           },
 
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+          // decoration: InputDecoration(
+          //   border: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          // ),
         ),
       ],
     );
