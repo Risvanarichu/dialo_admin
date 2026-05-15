@@ -18,8 +18,6 @@ class SettingsProvider extends ChangeNotifier {
     fetchAllSettings();
   }
 
-  TextEditingController categoryController = TextEditingController();
-
   Future<void> fetchAllSettings() async {
     await fetchCategories();
     await fetchLeadStatus();
@@ -130,11 +128,7 @@ class SettingsProvider extends ChangeNotifier {
   // }
   Future<void> saveCategories() async {
     final newList = categories
-        .where((e) =>
-    e["title"]
-        .toString()
-        .trim()
-        .isNotEmpty)
+        .where((e) => e["title"].toString().trim().isNotEmpty)
         .map((e) {
       return {
         "title": e["title"].toString().trim(),
@@ -166,7 +160,8 @@ class SettingsProvider extends ChangeNotifier {
         oldList.add(newCat);
       } else {
         final oldSub = List<String>.from(oldList[index]["sub"] ?? []);
-        final newSub = List<String>.from(newCat["sub"] as List);
+        final newSub = List<String>.from(newList);
+
         oldList[index]["sub"] = {...oldSub, ...newSub}.toList();
       }
     }
@@ -298,7 +293,7 @@ class SettingsProvider extends ChangeNotifier {
         .toList();
 
     await db.collection("LEAD_SETTINGS").doc("call_status").set({
-      "callStatusList": FieldValue.arrayUnion(cleanList),
+      "callStatusList":FieldValue.arrayUnion(cleanList),
     },
         SetOptions(merge: true)
     );
@@ -345,7 +340,7 @@ class SettingsProvider extends ChangeNotifier {
         .toList();
 
     await db.collection("LEAD_SETTINGS").doc("lead_category").set({
-      "leadCategoryList": FieldValue.arrayUnion(cleanList),
+      "leadCategoryList":FieldValue.arrayUnion(cleanList),
     },
         SetOptions(merge: true));
   }
@@ -421,7 +416,7 @@ class SettingsProvider extends ChangeNotifier {
       "leadSourceList": [],
     });
 
-    // clearAllFields();
+   // clearAllFields();
   }
 
   @override
@@ -437,38 +432,26 @@ class SettingsProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  void addleadSource(String value) async {
-    value = value.trim();
+ void addleadSource(String value)async {
+   value = value.trim();
 
-    if (value.isEmpty) return;
+   if (value.isEmpty) return;
 
-    if (leadSource.contains(value)) return;
+   if (leadSource.contains(value)) return;
 
-    leadSource.add(value);
+   leadSource.add(value);
 
-    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
-      "sourceList": leadSource,
-    });
+   await db.collection("LEAD_SETTINGS").doc("lead_source").set({
+     "sourceList": leadSource,
+   });
 
-    notifyListeners();
+   notifyListeners();
   }
 
   void deleteleadSource(int value) {
-    leadSource.removeAt(value);
-    notifyListeners();
   }
 
-  Future<void> saveLeadSource() async {
-    final cleanList = leadSource
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .toList();
-
-    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
-      "leadSourceList": FieldValue.arrayUnion(cleanList),
-    },
-        SetOptions(merge: true));
+  Future<void> saveleadSource() async {
   }
 
   Future<void> fetchLeadSource() async {
@@ -483,6 +466,5 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-
 
 
