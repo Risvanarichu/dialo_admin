@@ -118,7 +118,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                           items: provider.leadSource,
                           onAdd:provider.addleadSource,
                           onDelete: provider.deleteleadSource,
-                          onSave: provider.saveleadSource,
+                          onSave: provider.saveLeadSource,
                       )
                   ],
                 ),
@@ -430,6 +430,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
     );
   }
 
+
   Widget _simpleListCard({
     required String title,
     required String hint,
@@ -507,7 +508,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                      onDelete(index);
+                     onDelete(index);
                     },
                   ),
                 );
@@ -532,6 +533,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
                 }
                 await onSave();
+                await context.read<SettingsProvider>().fetchAllSettings();
                 controller.clear();
 
 

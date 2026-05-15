@@ -1,4 +1,5 @@
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +20,10 @@ class _AddLeadState extends State<AddLead> {
 
 
   final leadStatusCtrl = TextEditingController();
-  final callTypeCtrl = TextEditingController();
+  final callStatusCtrl = TextEditingController();
+  final leadCategoryCtrl = TextEditingController();
   final notesCtrl = TextEditingController();
+  String selectedLeadCategory="";
   final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   final phoneRegex = RegExp(r'^[6-9]\d{9}$');
 
@@ -39,7 +42,7 @@ class _AddLeadState extends State<AddLead> {
 
       if (provider.isEdit) {
         leadStatusCtrl.text = provider.leadStatusValue;
-        callTypeCtrl.text = provider.callTypeValue;
+        callStatusCtrl.text = provider.callStatusValue;
         notesCtrl.text = provider.notesValue;
 
         selectedAgentId = provider.selectedAgentId;
@@ -139,16 +142,21 @@ class _AddLeadState extends State<AddLead> {
           _rowFields(
             isMobile,
             _input("EMAIL ADDRESS*", provider.emailController,),
-            _input("SOURCES*", provider.sourceController),
+            _sourceDropdown(),
           ),
           const SizedBox(height: 16),
           _rowFields(
             isMobile,
             _leadStatusDropdown(),
-            _calltypeDropdown(),
+            _callStatusDropdown(),
           ),
           const SizedBox(height: 16,),
-          if (userRole == 'ADMIN') _agentDropdown()
+          _rowFields(isMobile,
+          userRole == 'ADMIN'?
+          _agentDropdown()
+          :const SizedBox(),
+    _leadCategoryDropdown(),
+    ),
         ],
       ),
     );
@@ -166,7 +174,7 @@ class _AddLeadState extends State<AddLead> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("ASSIGN TO AGENT"),
+        const Text("ASSIGNED AGENT*"),
         const SizedBox(height: 6),
 
         DropdownButtonFormField<String>(
@@ -208,16 +216,41 @@ class _AddLeadState extends State<AddLead> {
       ],
     );
   }
+  Widget _sourceDropdown() {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final leadProvider = context.watch<LeadProvider>();
 
-  Widget _leadStatusDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("LEAD STATUS*"),
+        const Text("SOURCES*"),
         const SizedBox(height: 6),
+
         DropdownButtonFormField<String>(
-          value: leadStatusCtrl.text.isEmpty ? null : leadStatusCtrl.text.trim(),
-          icon: const Icon(Icons.arrow_drop_down),
+          value: leadProvider.sourceController.text.isEmpty
+              ? null
+              : leadProvider.sourceController.text,
+
+          hint: const Text("Select Source"),
+
+          items: settingsProvider.leadSource.map<DropdownMenuItem<String>>((source) {
+            return DropdownMenuItem<String>(
+              value: source.toString(),
+              child: Text(source.toString()),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            leadProvider.sourceController.text = value ?? "";
+          },
+
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select source";
+            }
+            return null;
+          },
+
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -235,19 +268,69 @@ class _AddLeadState extends State<AddLead> {
               vertical: 14,
             ),
           ),
-          items: const [
-            DropdownMenuItem(value: "New", child: Text("New")),
-            DropdownMenuItem(value: "Contacted", child: Text("Contacted")),
-            DropdownMenuItem(value: "Rejected", child: Text("Rejected")),
-            DropdownMenuItem(value: "Accepted", child: Text("Accepted")),
-            DropdownMenuItem(value: "Joined", child: Text("Joined")),
-          ],
-          onChanged: (value) {
+        ),
+      ],
+    );
+  }
 
+  //
+  Widget _leadStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("LEAD STATUS*"),
+        const SizedBox(height: 6),
+
+        DropdownButtonFormField<String>(
+          value: leadStatusCtrl.text.isEmpty
+              ? null
+              : leadStatusCtrl.text.trim(),
+
+          icon: const Icon(Icons.arrow_drop_down),
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.grey,
+                width: 1.5,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.blue,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 14,
+            ),
+          ),
+
+          hint: const Text("Select Lead Status"),
+
+          items: (provider.leadStatus )
+              .map<DropdownMenuItem<String>>((status) {
+            return DropdownMenuItem<String>(
+              value: status.toString(),
+              child: Text(status.toString()),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            context.read<SettingsProvider>().leadStatus;
             setState(() {
-              leadStatusCtrl.text = value?.trim() ?? "";
+              leadStatusCtrl.text = value ?? "";
             });
           },
+
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "Please select lead status";
@@ -299,58 +382,155 @@ class _AddLeadState extends State<AddLead> {
   //     ],
   //   );
   // }
-  Widget _calltypeDropdown() {
-    final provider = context.watch<LeadProvider>();
+  // Widget _calltypeDropdown() {
+  //   final provider = context.watch<LeadProvider>();
+  //
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Text("CALL TYPE*"),
+  //       const SizedBox(height: 6),
+  //
+  //       DropdownButtonFormField<String>(
+  //         value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
+  //         icon: const Icon(Icons.arrow_drop_down),
+  //
+  //         decoration: InputDecoration(
+  //           border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //           ),
+  //           enabledBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+  //           ),
+  //           focusedBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(10),
+  //             borderSide: const BorderSide(color: Colors.blue, width: 2),
+  //           ),
+  //           contentPadding: const EdgeInsets.symmetric(
+  //             horizontal: 12,
+  //             vertical: 14,
+  //           ),
+  //         ),
+  //
+  //         hint: const Text("Select Call Type"),
+  //
+  //         items: provider.leadCategoryList ??[]).map<DropdownMenuItem<String>>((status) {
+  //           return DropdownMenuItem<String>(
+  //             value: status.toString(),
+  //             child: Text(status.toString()),
+  //           );
+  //         }).toList(),
+  //
+  //         onChanged: (value) {
+  //           setState(() {
+  //             callTypeCtrl.text = value?.trim() ?? "";
+  //           });
+  //         },
+  //
+  //         validator: (value) {
+  //           if (value == null || value.isEmpty) {
+  //             return "Please select call type";
+  //           }
+  //           return null;
+  //         },
+  //   decoration: InputDecoration(
+  //   border: OutlineInputBorder(
+  //   borderRadius: BorderRadius.circular(10),
+  //   ),
+  //   ),
+  //   ),
+  //   ],
+  //   );
+  // }
+  Widget  _callStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("CALL TYPE*"),
+        const Text("CALL STATUS*"),
         const SizedBox(height: 6),
 
         DropdownButtonFormField<String>(
-          value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
+          value: callStatusCtrl.text.isEmpty ? null : callStatusCtrl.text.trim(),
+          hint: const Text("Select Call Status"),
           icon: const Icon(Icons.arrow_drop_down),
+
 
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
           ),
 
-          hint: const Text("Select Call Type"),
+          // hint: const Text("Select Call Type"),
 
-          items: provider.leadCategoryList.map((status) {
+          items: (provider.callStatus ).map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
-              value: status,
-              child: Text(text),
+              // value: status,
+              // child: Text(status),
+              value: status.toString(),
+              child: Text(status.toString()),
             );
           }).toList(),
 
           onChanged: (value) {
             setState(() {
-              callTypeCtrl.text = value?.trim() ?? "";
+              callStatusCtrl.text = value ?? "";
             });
           },
 
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return "Please select call type";
+              return "Please select call Status";
             }
             return null;
           },
+
+          // decoration: InputDecoration(
+          //   border: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          // ),
+        ),
+      ],
+    );
+  }
+  Widget _leadCategoryDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("LEAD CATEGORY*"),
+        const SizedBox(height: 6),
+
+        DropdownButtonFormField<String>(
+          value: selectedLeadCategory.isEmpty
+              ? null
+              : selectedLeadCategory,
+
+          hint: const Text("Select Lead Category"),
+
+          items: provider.leadCategory.map((category) {
+            return DropdownMenuItem<String>(
+              value: category,
+              child: Text(category),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            setState(() {
+              selectedLeadCategory = value ?? "";
+            });
+          },
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         ),
       ],
     );
@@ -616,7 +796,8 @@ class _AddLeadState extends State<AddLead> {
                 if(provider.isEdit){
                   await provider.updateUser(
                     leadStatus: leadStatusCtrl.text,
-                    callType: callTypeCtrl.text,
+                    callStatus: callStatusCtrl.text,
+                    leadCategory: leadCategoryCtrl.text,
                     notes: notesCtrl.text,
                     agentId: selectedAgentId,
                     agentName: selectedAgentName,
@@ -632,7 +813,7 @@ class _AddLeadState extends State<AddLead> {
                     source: provider.sourceController.text,
                     leadStatus: leadStatusCtrl.text,
                     notes: notesCtrl.text,
-                    callType: callTypeCtrl.text,
+                    callStatus: callStatusCtrl.text,
                     assignedAgentId: selectedAgentId,
                     // ✅ ADD
                     assignedAgentName: selectedAgentName,
@@ -644,7 +825,7 @@ class _AddLeadState extends State<AddLead> {
                 }
 
                 provider.clearFields();
-                Navigator.pop(context);
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>Leads()));
 
 
               } catch (e) {
