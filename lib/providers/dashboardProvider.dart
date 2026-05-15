@@ -20,18 +20,14 @@ class DashboardProvider extends ChangeNotifier {
   int voicemail = 0;
   int other = 0;
 
-  bool dashboardLoading = false;
-  bool graphLoading = false;
-  bool agentLoading = false;
-  bool recentCallLoading = false;
-
+bool isLoading = false;
   List<FlSpot> leadSpots = [];
   List<FlSpot> callSpots = [];
 
-  get isLoading => null;
+
 
   Future<void> fetchDashboardCounts() async {
-    dashboardLoading  = true;
+    isLoading = true;
     notifyListeners();
 
     try {
@@ -100,7 +96,7 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint("Error fetching dashboard: $e");
     }
 
-    dashboardLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -164,7 +160,7 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> fetchDashBoardAgentPerformance() async {
     try {
-      agentLoading = true;
+       isLoading= true;
       notifyListeners();
 
       final snapshot = await db.collection("AGENT").get();
@@ -182,13 +178,13 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint("Error fetching agent performance: $e");
     }
 
-    agentLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchRecentCalls() async {
     try {
-      recentCallLoading = true;
+      isLoading = true;
       notifyListeners();
 
       final snapshot = await db
@@ -250,7 +246,7 @@ class DashboardProvider extends ChangeNotifier {
       debugPrint("Error fetching recent calls: $e");
     }
 
-    recentCallLoading = false;
+    isLoading= false;
     notifyListeners();
   }
 }

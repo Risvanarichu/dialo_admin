@@ -20,8 +20,10 @@ class _AddLeadState extends State<AddLead> {
 
 
   final leadStatusCtrl = TextEditingController();
-  final callTypeCtrl = TextEditingController();
+  final callStatusCtrl = TextEditingController();
+  final leadCategoryCtrl = TextEditingController();
   final notesCtrl = TextEditingController();
+  String selectedLeadCategory="";
   final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   final phoneRegex = RegExp(r'^[6-9]\d{9}$');
 
@@ -40,7 +42,7 @@ class _AddLeadState extends State<AddLead> {
 
       if (provider.isEdit) {
         leadStatusCtrl.text = provider.leadStatusValue;
-        callTypeCtrl.text = provider.callTypeValue;
+        callStatusCtrl.text = provider.callStatusValue;
         notesCtrl.text = provider.notesValue;
 
         selectedAgentId = provider.selectedAgentId;
@@ -140,16 +142,21 @@ class _AddLeadState extends State<AddLead> {
           _rowFields(
             isMobile,
             _input("EMAIL ADDRESS*", provider.emailController,),
-            _input("SOURCES*", provider.sourceController),
+            _sourceDropdown(),
           ),
           const SizedBox(height: 16),
           _rowFields(
             isMobile,
             _leadStatusDropdown(),
-            _calltypeDropdown()
+            _callStatusDropdown(),
           ),
           const SizedBox(height: 16,),
-          if (userRole == 'ADMIN') _agentDropdown()
+          _rowFields(isMobile,
+          userRole == 'ADMIN'?
+          _agentDropdown()
+          :const SizedBox(),
+    _leadCategoryDropdown(),
+    ),
         ],
       ),
     );
@@ -167,7 +174,7 @@ class _AddLeadState extends State<AddLead> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("ASSIGN TO AGENT"),
+        const Text("ASSIGNED AGENT*"),
         const SizedBox(height: 6),
 
         DropdownButtonFormField<String>(
@@ -203,6 +210,62 @@ class _AddLeadState extends State<AddLead> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _sourceDropdown() {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final leadProvider = context.watch<LeadProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("SOURCES*"),
+        const SizedBox(height: 6),
+
+        DropdownButtonFormField<String>(
+          value: leadProvider.sourceController.text.isEmpty
+              ? null
+              : leadProvider.sourceController.text,
+
+          hint: const Text("Select Source"),
+
+          items: settingsProvider.leadSource.map<DropdownMenuItem<String>>((source) {
+            return DropdownMenuItem<String>(
+              value: source.toString(),
+              child: Text(source.toString()),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            leadProvider.sourceController.text = value ?? "";
+          },
+
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select source";
+            }
+            return null;
+          },
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.blue, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 14,
             ),
           ),
         ),
@@ -380,18 +443,18 @@ class _AddLeadState extends State<AddLead> {
   //   ],
   //   );
   // }
-  Widget _calltypeDropdown() {
-    final provider = context.watch<LeadProvider>();
+  Widget  _callStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("CALL TYPE*"),
+        const Text("CALL STATUS*"),
         const SizedBox(height: 6),
 
         DropdownButtonFormField<String>(
-          value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
-          hint: const Text("Select Call Type"),
+          value: callStatusCtrl.text.isEmpty ? null : callStatusCtrl.text.trim(),
+          hint: const Text("Select Call Status"),
           icon: const Icon(Icons.arrow_drop_down),
 
 
@@ -403,7 +466,7 @@ class _AddLeadState extends State<AddLead> {
 
           // hint: const Text("Select Call Type"),
 
-          items: (provider.leadCategoryList ?? []).map<DropdownMenuItem<String>>((status) {
+          items: (provider.callStatus ).map<DropdownMenuItem<String>>((status) {
             return DropdownMenuItem<String>(
               // value: status,
               // child: Text(status),
@@ -414,13 +477,13 @@ class _AddLeadState extends State<AddLead> {
 
           onChanged: (value) {
             setState(() {
-              callTypeCtrl.text = value ?? "";
+              callStatusCtrl.text = value ?? "";
             });
           },
 
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return "Please select call type";
+              return "Please select call Status";
             }
             return null;
           },
@@ -430,6 +493,44 @@ class _AddLeadState extends State<AddLead> {
           //     borderRadius: BorderRadius.circular(10),
           //   ),
           // ),
+        ),
+      ],
+    );
+  }
+  Widget _leadCategoryDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("LEAD CATEGORY*"),
+        const SizedBox(height: 6),
+
+        DropdownButtonFormField<String>(
+          value: selectedLeadCategory.isEmpty
+              ? null
+              : selectedLeadCategory,
+
+          hint: const Text("Select Lead Category"),
+
+          items: provider.leadCategory.map((category) {
+            return DropdownMenuItem<String>(
+              value: category,
+              child: Text(category),
+            );
+          }).toList(),
+
+          onChanged: (value) {
+            setState(() {
+              selectedLeadCategory = value ?? "";
+            });
+          },
+
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         ),
       ],
     );
@@ -695,7 +796,8 @@ class _AddLeadState extends State<AddLead> {
                 if(provider.isEdit){
                   await provider.updateUser(
                     leadStatus: leadStatusCtrl.text,
-                    callType: callTypeCtrl.text,
+                    callStatus: callStatusCtrl.text,
+                    leadCategory: leadCategoryCtrl.text,
                     notes: notesCtrl.text,
                     agentId: selectedAgentId,
                     agentName: selectedAgentName,
@@ -711,7 +813,7 @@ class _AddLeadState extends State<AddLead> {
                     source: provider.sourceController.text,
                     leadStatus: leadStatusCtrl.text,
                     notes: notesCtrl.text,
-                    callType: callTypeCtrl.text,
+                    callStatus: callStatusCtrl.text,
                     assignedAgentId: selectedAgentId,
                     // ✅ ADD
                     assignedAgentName: selectedAgentName,
@@ -723,7 +825,7 @@ class _AddLeadState extends State<AddLead> {
                 }
 
                 provider.clearFields();
-                Navigator.pop(context);
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>Leads()));
 
 
               } catch (e) {

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 class SettingsProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
+
+
+
   List<Map<String, dynamic>> categories = [];
 
   List<String> leadStatus = [];
@@ -446,22 +449,9 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   void deleteleadSource(int value) {
-    leadSource.removeAt(value);
-    notifyListeners();
-
   }
 
-  Future<void> saveLeadSource() async {
-    final cleanList = leadSource
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .toList();
-
-    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
-      "leadSourceList":FieldValue.arrayUnion(cleanList),
-    },
-        SetOptions(merge: true));
+  Future<void> saveleadSource() async {
   }
 
   Future<void> fetchLeadSource() async {

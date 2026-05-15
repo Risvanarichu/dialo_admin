@@ -49,7 +49,7 @@ class LeadDetails extends StatelessWidget {
                     const SizedBox(height: 20),
                     detailRow("Phone", lead.phone),
                     detailRow("Email", lead.email),
-                    detailRow("Status", lead.status),
+                    detailRow("Status", lead.Leadstatus),
                     detailRow("Source", lead.source),
                     detailRow("Priority", lead.priority),
                     detailRow("Agent_ID", lead.assignedAgentId),

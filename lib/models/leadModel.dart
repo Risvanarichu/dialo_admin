@@ -9,14 +9,15 @@ class LeadModel {
   String phone;
   String email;
   String source;
-  String status;
+  String Leadstatus;
+  String Leadcategory;
   DateTime followupDate;
   String followupTime;
   String time;
   String priority;
   String assignedAgentId;
   String followupstatus;
-  String calltype;
+  String callStatus;
   DateTime lastContactedDate;
   String assignedAgentName;
   String notes;
@@ -28,14 +29,15 @@ class LeadModel {
     required this.phone,
     required this.email,
     required this.source,
-    required this.status,
+    required this.Leadstatus,
+    required this.Leadcategory,
     required this.followupDate,
     required this.followupTime,
     required this.time,
     required this.priority,
     required this.assignedAgentId,
     required this.followupstatus,
-    required this.calltype,
+    required this.callStatus,
    required this.lastContactedDate,
    required this.assignedAgentName,
     required this.notes,
@@ -74,9 +76,11 @@ class LeadModel {
       phone: map['PHONE']?.toString()??"",
       email: map['EMAIL']?.toString()??"",
       source: map['SOURCE']?.toString()??"",
-      status: (map['STATUS'] ?? map['lead_status'] ?? "")
+      Leadcategory: map['LEAD_CATEGORY']?.toString()??"",
+      Leadstatus: (map['LEAD_STATUS'] ?? "")
           .toString()
           .toUpperCase(),
+
       followupDate: followDate,
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
       time: DateFormat('hh:mm a').format(added_date),
@@ -84,7 +88,7 @@ class LeadModel {
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       assignedAgentName: map["ASSIGNED_AGENT_NAME"] ?? "",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
-     calltype: map['INCOMING']?.toString().toUpperCase() ?? "OUTGOING",
+     callStatus: map['']?.toString().toUpperCase() ?? '',
       lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
           ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
           : added_date,

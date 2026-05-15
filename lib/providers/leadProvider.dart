@@ -38,7 +38,7 @@ class LeadProvider extends ChangeNotifier {
   bool isPageLoading = false;
   var userList;
   String leadStatusValue = "";
-  String callTypeValue = "";
+  String callStatusValue = "";
   String notesValue = "";
   DateTime? startDate;
   DateTime? endDate;
@@ -54,6 +54,8 @@ class LeadProvider extends ChangeNotifier {
   final remarkController = TextEditingController();
   final dateController = TextEditingController();
 
+  var leadCategoryValue;
+
   LeadProvider() {
     init();
   }
@@ -66,6 +68,8 @@ class LeadProvider extends ChangeNotifier {
     }
     return [];
   }
+
+  get leadCategory => null;
 
   void setLoading(bool value){
     isLoading = value;
@@ -139,33 +143,36 @@ class LeadProvider extends ChangeNotifier {
     required String email,
     required String source,
     required String leadStatus,
-    required String callType,
+    required String callStatus,
     required String notes,
     String? assignedAgentId,
     String? assignedAgentName,
   }) async {
     try {
-      final docRef = fbd.collection("LEADS").doc();
+      String leadId = DateTime.now().millisecondsSinceEpoch.toString();
 
+      final docRef = fbd.collection("LEADS").doc(leadId);
       await docRef.set({
         "LEAD_ID": docRef.id,
         "NAME": name.trim(),
         "PHONE": phone.trim(),
         "EMAIL": email.trim(),
         "SOURCE": source.trim(),
-        "STATUS": leadStatus.trim(),
-        "CALLTYPE": callType.trim(),
+        "LEAD_STATUS": leadStatus.trim(),
+        "CALL_STATUS": callStatus.trim(),
+        "LEAD_CATEGORY": leadCategory.trim(),
         "FOLLOW_UP_STATUS": "pending",
         "NOTES": notes.trim(),
-        "ADDITIONAL DETAILS": additionalDetails,
-        "ADDED TIME": FieldValue.serverTimestamp(),
-        "ADDED BY ID": agentId,
+        "ADDITIONAL_LEAD_DETAILS": additionalDetails,
+        "ADDED_TIME": FieldValue.serverTimestamp(),
+        "ADDED_BY_ID": agentId,
         "ASSIGNED_AGENT_ID": assignedAgentId ?? agentId,
         "ASSIGNED_AGENT_NAME": assignedAgentName ?? agentName,
-        "FOLLOW UP DATE": now.add(Duration(days: 3)),
-        "FOLLOW UP TIME": "",
+        "FOLLOW_UP_DATE": now.add(Duration(days: 3)),
+        "FOLLOW_UP_TIME": "",
         "PLACE": "",
-        "PRIORITY": "Medium",
+        "PRIORITY": "High",
+        "LAST_CONTACTED_DATE":now,
       });
     } catch (e) {
       debugPrint("Error adding lead: $e");
@@ -259,8 +266,8 @@ class LeadProvider extends ChangeNotifier {
       final name = lead.name.toLowerCase() ;
       final phone = lead.phone.toLowerCase() ;
       final email = lead.email.toLowerCase() ;
-      final status = lead.status.toUpperCase();
-      final calltype = lead.calltype.toUpperCase();
+      final status = lead.Leadstatus.toUpperCase();
+      final callStatus = lead.callStatus.toUpperCase();
       final source = lead.source.toUpperCase();
 
       final matchesSearch =
@@ -276,9 +283,9 @@ class LeadProvider extends ChangeNotifier {
       final matchesSource =
           selectedSources == "All Sources" ||
               source.toLowerCase() == selectedSources.toLowerCase();
-      final callStatus = (lead.followupstatus ) == "pending"
-          ? "missed"
-          : "answered";
+      // final callStatus= (lead.followupstatus ) == "pending"
+      //     ? "missed"
+      //     : "answered";
 
       final matchesCallStatus =
           selectedCallStatus == "all" ||
@@ -443,7 +450,8 @@ class LeadProvider extends ChangeNotifier {
     emailController.text = user["EMAIL"]??"";
     sourceController.text = user["SOURCE"]??"";
     leadStatusValue = user["STATUS"] ?? "";
-    callTypeValue = user["CALLTYPE"] ?? "";
+    callStatusValue = user["CALLSTATUS"] ?? "";
+    leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
     notesValue = user["NOTES"] ?? "";
 
     selectedAgentId = user["AGENT_ID"];
@@ -457,7 +465,8 @@ class LeadProvider extends ChangeNotifier {
 
   Future<void> updateUser({
     required String leadStatus,
-    required String callType,
+    required String callStatus,
+    required String leadCategory,
     required String notes,
     String? agentId,
     String? agentName,
@@ -477,7 +486,8 @@ class LeadProvider extends ChangeNotifier {
 
             // ✅ ADD THESE
             "STATUS": leadStatus,
-            "CALLTYPE": callType,
+            "CALLSTATUS": callStatus,
+            "LEAD_CATEGORY": leadCategory,
             "NOTES": notes,
             "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
             "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
@@ -572,7 +582,8 @@ class LeadProvider extends ChangeNotifier {
     sourceController.clear();
 
     leadStatusValue = "";
-    callTypeValue = "";
+    callStatusValue = "";
+    leadCategoryValue = "";
     notesValue = "";
 
     selectedAgentId = null;

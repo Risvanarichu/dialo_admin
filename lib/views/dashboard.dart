@@ -939,6 +939,10 @@ class AgentPerformance extends StatelessWidget {
               ),
               const SizedBox(height: 15),
               if (provider.isLoading)
+
+              if (provider.agentLoading)
+
+              if (provider.isLoading)
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
                 )
@@ -955,7 +959,7 @@ class AgentPerformance extends StatelessWidget {
                        return AgentRow(
                          agent.name,
                         "${agent.totalCalls} calls",
-                        agent.online,
+                        agent.online ?? false,
                        );
                     },
                   ),

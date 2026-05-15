@@ -308,7 +308,7 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
         Expanded(child: alignCenter(lead.name)),
         Expanded(child: alignCenter(lead.phone)),
         Expanded(child: alignCenter(lead.email)),
-        Expanded(child: Center(child:statusChip(lead.status) )),
+        Expanded(child: Center(child:statusChip(lead.Leadstatus) )),
         Expanded(child: alignCenter(lead.source)),
         Expanded(child: alignCenter(agentName)),
         Expanded(child: Row(
@@ -324,8 +324,8 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
     "PHONE": lead.phone,
     "EMAIL": lead.email,
     "SOURCE": lead.source,
-    "STATUS": lead.status,
-    "CALLTYPE": lead.calltype,
+    "LEAD_STATUS": lead.Leadstatus,
+    "CALL_STATUS": lead.callStatus,
     "NOTES": lead.notes,
     "AGENT_ID": lead.assignedAgentId,
     "AGENT_NAME": lead.assignedAgentName,
@@ -394,7 +394,7 @@ void showEditDialog(BuildContext context) {
         ),
         ElevatedButton(
           onPressed: () async {
-            await provider.updateUser(leadStatus: '', callType: '', notes: '');
+            await provider.updateUser(leadStatus: '', callStatus: '',leadCategory: '', notes: '');
             Navigator.pop(context);
           },
           child: const Text("Update"),
