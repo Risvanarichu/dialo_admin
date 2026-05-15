@@ -325,7 +325,7 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
     "EMAIL": lead.email,
     "SOURCE": lead.source,
     "LEAD_STATUS": lead.Leadstatus,
-    "CALLS_TATUS": lead.callStatus,
+    "CALL_STATUS": lead.callStatus,
     "NOTES": lead.notes,
     "AGENT_ID": lead.assignedAgentId,
     "AGENT_NAME": lead.assignedAgentName,

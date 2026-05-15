@@ -171,7 +171,7 @@ class LeadProvider extends ChangeNotifier {
         "FOLLOW_UP_DATE": now.add(Duration(days: 3)),
         "FOLLOW_UP_TIME": "",
         "PLACE": "",
-        "PRIORITY": "Medium",
+        "PRIORITY": "High",
         "LAST_CONTACTED_DATE":now,
       });
     } catch (e) {

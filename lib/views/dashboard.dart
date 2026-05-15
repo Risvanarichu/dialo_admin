@@ -955,7 +955,7 @@ class AgentPerformance extends StatelessWidget {
                        return AgentRow(
                          agent.name,
                         "${agent.totalCalls} calls",
-                        agent.online,
+                        agent.online ?? false,
                        );
                     },
                   ),

@@ -77,7 +77,7 @@ class LeadModel {
       email: map['EMAIL']?.toString()??"",
       source: map['SOURCE']?.toString()??"",
       Leadcategory: map['LEAD_CATEGORY']?.toString()??"",
-      Leadstatus: (map['STATUS'] ?? map['lead_status'] ?? "")
+      Leadstatus: (map['LEAD_STATUS'] ?? "")
           .toString()
           .toUpperCase(),
 
