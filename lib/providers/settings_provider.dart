@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 class SettingsProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
+
+
+
   List<Map<String, dynamic>> categories = [];
 
   List<String> leadStatus = [];
