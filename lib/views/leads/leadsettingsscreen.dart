@@ -118,7 +118,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                           items: provider.leadSource,
                           onAdd:provider.addleadSource,
                           onDelete: provider.deleteleadSource,
-                          onSave: provider.saveLeadSource,
+                          onSave: provider.saveleadSource,
                       )
                   ],
                 ),
@@ -259,119 +259,208 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
             const SizedBox(height: 20),
 
+            // Expanded(
+            //   child: ListView(
+            //     children: [
+            //       ...List.generate(provider.categories.length, (index) {
+            //         final cat = provider.categories[index];
+            //
+            //         return Column(
+            //           children: [
+            //             Row(
+            //               children: [
+            //                 Expanded(
+            //                   child: TextFormField(
+            //                     controller: cat["controller"],
+            //                     decoration: InputDecoration(
+            //                       hintText: "Category ${index + 1}",
+            //                       border: const OutlineInputBorder(),
+            //                     ),
+            //                     validator: (value) {
+            //                       if (value == null ||
+            //                           value.trim().isEmpty) {
+            //                         return "Required";
+            //                       }
+            //                       return null;
+            //                     },
+            //                     onChanged: (value) {
+            //                       provider.updateCategory(index, value);
+            //                     },
+            //                   ),
+            //                 ),
+            //
+            //                 IconButton(
+            //                   icon:
+            //                   const Icon(Icons.add, color: Colors.blue),
+            //                   onPressed: () {
+            //                     if (cat["controller"].text
+            //                         .trim()
+            //                         .isEmpty) {
+            //                       ScaffoldMessenger.of(context).showSnackBar(
+            //                         const SnackBar(
+            //                           content: Text("Enter category first"),
+            //                         ),
+            //                       );
+            //                       return;
+            //                     }
+            //
+            //                     provider.addSubCategory(index);
+            //                   },
+            //                 ),
+            //
+            //                 IconButton(
+            //                   icon:
+            //                   const Icon(Icons.delete, color: Colors.red),
+            //                   onPressed: () {
+            //                     provider.deleteCategory(index);
+            //                   },
+            //                 ),
+            //               ],
+            //             ),
+            //
+            //             const SizedBox(height: 10),
+            //
+            //             ...List.generate(cat["sub"].length, (subIndex) {
+            //               return Padding(
+            //                 padding:
+            //                 const EdgeInsets.only(left: 35, bottom: 10),
+            //                 child: Row(
+            //                   children: [
+            //                     Expanded(
+            //                       child: TextFormField(
+            //                         controller:
+            //                         cat["subcontrollers"][subIndex],
+            //                         decoration: InputDecoration(
+            //                           hintText:
+            //                           "Sub Category ${index + 1}.${subIndex + 1}",
+            //                           border: const OutlineInputBorder(),
+            //                         ),
+            //                         validator: (value) {
+            //                           if (value == null ||
+            //                               value.trim().isEmpty) {
+            //                             return "Required";
+            //                           }
+            //                           return null;
+            //                         },
+            //                         onChanged: (value) {
+            //                           provider.updateSubCategory(
+            //                             index,
+            //                             subIndex,
+            //                             value,
+            //                           );
+            //                         },
+            //                       ),
+            //                     ),
+            //
+            //                     IconButton(
+            //                       icon: const Icon(Icons.delete,
+            //                           color: Colors.red),
+            //                       onPressed: () {
+            //                         provider.deleteSubCategory(
+            //                           index,
+            //                           subIndex,
+            //                         );
+            //                       },
+            //                     ),
+            //                   ],
+            //                 ),
+            //               );
+            //             }),
+            //
+            //             const SizedBox(height: 15),
+            //           ],
+            //         );
+            //       }),
+            //     ],
+            //   ),
+            // ),
+
             Expanded(
-              child: ListView(
-                children: [
-                  ...List.generate(provider.categories.length, (index) {
-                    final cat = provider.categories[index];
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: cat["controller"],
-                                decoration: InputDecoration(
-                                  hintText: "Category ${index + 1}",
-                                  border: const OutlineInputBorder(),
-                                ),
-                                validator: (value) {
-                                  if (value == null ||
-                                      value.trim().isEmpty) {
-                                    return "Required";
-                                  }
-                                  return null;
-                                },
-                                onChanged: (value) {
-                                  provider.updateCategory(index, value);
-                                },
-                              ),
-                            ),
 
-                            IconButton(
-                              icon:
-                              const Icon(Icons.add, color: Colors.blue),
-                              onPressed: () {
-                                if (cat["controller"].text
-                                    .trim()
-                                    .isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Enter category first"),
-                                    ),
-                                  );
-                                  return;
-                                }
+                    ...List.generate(provider.categories.length, (index) {
+                      final cat = provider.categories[index];
 
-                                provider.addSubCategory(index);
-                              },
-                            ),
-
-                            IconButton(
-                              icon:
-                              const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                provider.deleteCategory(index);
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        ...List.generate(cat["sub"].length, (subIndex) {
-                          return Padding(
-                            padding:
-                            const EdgeInsets.only(left: 35, bottom: 10),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller:
-                                    cat["subcontrollers"][subIndex],
-                                    decoration: InputDecoration(
-                                      hintText:
-                                      "Sub Category ${index + 1}.${subIndex + 1}",
-                                      border: const OutlineInputBorder(),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return "Required";
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) {
-                                      provider.updateSubCategory(
-                                        index,
-                                        subIndex,
-                                        value,
-                                      );
-                                    },
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: cat["controller"],
+                                  decoration: InputDecoration(
+                                    hintText: "Category ${index + 1}",
+                                    border: const OutlineInputBorder(),
                                   ),
-                                ),
-
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    provider.deleteSubCategory(
-                                      index,
-                                      subIndex,
-                                    );
+                                  onChanged: (value) {
+                                    provider.updateCategory(index, value);
                                   },
                                 ),
-                              ],
-                            ),
-                          );
-                        }),
+                              ),
 
-                        const SizedBox(height: 15),
-                      ],
-                    );
-                  }),
-                ],
+                              IconButton(
+                                icon: const Icon(Icons.add, color: Colors.blue),
+                                onPressed: () {
+                                  provider.addSubCategory(index);
+                                },
+                              ),
+
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  provider.deleteCategory(index);
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          ...List.generate(cat["sub"].length, (subIndex) {
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 35, bottom: 10),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: cat["subcontrollers"][subIndex],
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onChanged: (value) {
+                                        provider.updateSubCategory(
+                                            index, subIndex, value);
+                                      },
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () {
+                                      provider.deleteSubCategory(index, subIndex);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+
+                          const SizedBox(height: 15),
+                        ],
+                      );
+                    }),
+
+                    const SizedBox(height: 20),
+
+
+                    _addedDetailsBox(provider),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
 
@@ -575,4 +664,69 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       child: Text(text),
     );
   }
+}
+
+Widget _addedDetailsBox(SettingsProvider provider) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey),
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.grey.shade100,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Added Additional Details",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+
+        const SizedBox(height: 10),
+
+        if (provider.categories.isEmpty)
+          const Text("No data added"),
+
+        ...provider.categories.map((cat) {
+          final title = cat["title"] ?? "";
+          final subList = List<String>.from(cat["sub"] ?? []);
+
+          if (title.trim().isEmpty) return const SizedBox();
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+
+                const SizedBox(height: 5),
+
+                Wrap(
+                  spacing: 8,
+                  children: subList.map((sub) {
+                    return Chip(
+                      label: Text(sub),
+                      backgroundColor: Colors.blue.shade50,
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    ),
+  );
 }

@@ -432,26 +432,36 @@ class SettingsProvider extends ChangeNotifier {
     super.dispose();
   }
 
- void addleadSource(String value)async {
-   value = value.trim();
+  void addleadSource(String value) {
+    value = value.trim();
 
-   if (value.isEmpty) return;
+    if (value.isEmpty) return;
+    if (leadSource.contains(value)) return;
 
-   if (leadSource.contains(value)) return;
-
-   leadSource.add(value);
-
-   await db.collection("LEAD_SETTINGS").doc("lead_source").set({
-     "sourceList": leadSource,
-   });
-
-   notifyListeners();
+    leadSource.add(value);
+    notifyListeners();
   }
 
-  void deleteleadSource(int value) {
+  Future<void> deleteleadSource(int index) async {
+    leadSource.removeAt(index);
+
+    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
+      "leadSourceList": leadSource,
+    });
+
+    notifyListeners();
   }
 
   Future<void> saveleadSource() async {
+    final cleanList = leadSource
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+
+    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
+      "leadSourceList": FieldValue.arrayUnion(cleanList),
+    }, SetOptions(merge: true));
   }
 
   Future<void> fetchLeadSource() async {
