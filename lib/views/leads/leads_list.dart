@@ -212,7 +212,6 @@ class Leads extends StatelessWidget {
                                 tableHead("Status"),
                                 tableHead("Source"),
                                 tableHead("Assigned Agent"),
-                                tableHead("Actions")
                               ],
                             ),
                           ),
@@ -311,45 +310,45 @@ Widget tableRowDynamic(LeadModel lead, BuildContext context) {
         Expanded(child: Center(child:statusChip(lead.Leadstatus) )),
         Expanded(child: alignCenter(lead.source)),
         Expanded(child: alignCenter(agentName)),
-        Expanded(child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-  onTap: () {
-  final provider = context.read<LeadProvider>();
-
-  provider.editData({
-    "ID": lead.id,
-    "NAME": lead.name,
-    "PHONE": lead.phone,
-    "EMAIL": lead.email,
-    "SOURCE": lead.source,
-    "LEAD_STATUS": lead.Leadstatus,
-    "CALL_STATUS": lead.callStatus,
-    "NOTES": lead.notes,
-    "AGENT_ID": lead.assignedAgentId,
-    "AGENT_NAME": lead.assignedAgentName,
-  });
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const AddLead(),
-    ),
-  );
-  },
-
-              child: Icon(Icons.edit,color: AppColors.themeColor,),
-            ),
-            SizedBox(width: 10,),
-            GestureDetector(
-              onTap: () {
-                showDeleteDialog(context, lead.id);
-              },
-              child: Icon(Icons.delete, color: AppColors.redColor),
-            )
-          ],
-        ))
+  //       Expanded(child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           GestureDetector(
+  // onTap: () {
+  // final provider = context.read<LeadProvider>();
+  //
+  // provider.editData({
+  //   "ID": lead.id,
+  //   "NAME": lead.name,
+  //   "PHONE": lead.phone,
+  //   "EMAIL": lead.email,
+  //   "SOURCE": lead.source,
+  //   "LEAD_STATUS": lead.Leadstatus,
+  //   "CALL_STATUS": lead.callStatus,
+  //   "NOTES": lead.notes,
+  //   "AGENT_ID": lead.assignedAgentId,
+  //   "AGENT_NAME": lead.assignedAgentName,
+  // });
+  //
+  // Navigator.push(
+  //   context,
+  //   MaterialPageRoute(
+  //     builder: (_) => const AddLead(),
+  //   ),
+  // );
+  // },
+  //
+  //             child: Icon(Icons.edit,color: AppColors.themeColor,),
+  //           ),
+  //           SizedBox(width: 10,),
+  //           GestureDetector(
+  //             onTap: () {
+  //               showDeleteDialog(context, lead.id);
+  //             },
+  //             child: Icon(Icons.delete, color: AppColors.redColor),
+  //           )
+  //         ],
+  //       ))
       ],
     ),
     ),

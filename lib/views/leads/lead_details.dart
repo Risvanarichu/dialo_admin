@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../constants/appcolors.dart';
 import '../../providers/leadProvider.dart';
 import '../../providers/settings_provider.dart';
+import 'addlead.dart';
 
 class LeadDetails extends StatelessWidget {
   final LeadModel lead;
@@ -47,12 +48,67 @@ class LeadDetails extends StatelessWidget {
                           fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
+
                     detailRow("Phone", lead.phone),
                     detailRow("Email", lead.email),
                     detailRow("Status", lead.Leadstatus),
                     detailRow("Source", lead.source),
                     detailRow("Priority", lead.priority),
                     detailRow("Agent_ID", lead.assignedAgentId),
+
+                    const SizedBox(height: 20),
+
+                    /// 🔽 BUTTONS AT BOTTOM RIGHT
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        /// ✏️ EDIT BUTTON
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.read<LeadProvider>().editData({
+                              "ID": lead.id,
+                              "NAME": lead.name,
+                              "PHONE": lead.phone,
+                              "EMAIL": lead.email,
+                              "SOURCE": lead.source,
+                              "LEAD_STATUS": lead.Leadstatus,
+                              "CALL_STATUS": lead.callStatus,
+                              "NOTES": lead.notes,
+                              "AGENT_ID": lead.assignedAgentId,
+                              "AGENT_NAME": lead.assignedAgentName,
+                            });
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>  AddLead(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit,color: AppColors.whitetext,),
+                          label: const Text("Edit",style:
+                            TextStyle(color: AppColors.whitetext),),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.themeColor,
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        /// 🗑 DELETE BUTTON
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _showDeleteDialog(context, lead.id);
+                          },
+                          icon: const Icon(Icons.delete,color: AppColors.whitetext,),
+                          label: const Text("Delete",style:
+                          TextStyle(color: AppColors.whitetext)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -90,6 +146,37 @@ class LeadDetails extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showDeleteDialog(BuildContext context, String leadId) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Delete Lead"),
+        content: const Text("Are you sure you want to delete this lead?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await context.read<LeadProvider>().deleteUser(leadId);
+              Navigator.pop(context);
+              Navigator.pop(context); // go back after delete
+            },
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
 Widget detailRow(String title,String value){
   return Padding(padding: 
@@ -301,12 +388,14 @@ class _AddFollowUpDialogState extends State<AddFollowUpDialog> {
       String? value,
       Function(String?) onChanged,
       ) {
+    final uniqueList = list.toSet().toList(); // ✅ remove duplicates
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DropdownButtonFormField<String>(
-        value: value,
+        value: uniqueList.contains(value) ? value : null, // ✅ safe value
         hint: Text(label),
-        items: list.map((e) {
+        items: uniqueList.map((e) {
           return DropdownMenuItem(
             value: e,
             child: Text(e),

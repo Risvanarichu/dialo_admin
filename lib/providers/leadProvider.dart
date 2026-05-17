@@ -449,7 +449,7 @@ class LeadProvider extends ChangeNotifier {
     phoneController.text = user["PHONE"]??"";
     emailController.text = user["EMAIL"]??"";
     sourceController.text = user["SOURCE"]??"";
-    leadStatusValue = user["STATUS"] ?? "";
+    leadStatusValue = user["LEAD_STATUS"] ?? "";
     callStatusValue = user["CALLSTATUS"] ?? "";
     leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
     notesValue = user["NOTES"] ?? "";
@@ -485,7 +485,7 @@ class LeadProvider extends ChangeNotifier {
             "SOURCE": sourceController.text.trim(),
 
             // ✅ ADD THESE
-            "STATUS": leadStatus,
+            "LEAD_STATUS": leadStatus,
             "CALLSTATUS": callStatus,
             "LEAD_CATEGORY": leadCategory,
             "NOTES": notes,
@@ -560,7 +560,7 @@ class LeadProvider extends ChangeNotifier {
 
       /// update main lead
       await fbd.collection('LEADS').doc(leadId).update({
-        "STATUS": leadStatus,
+        "LEAD_STATUS": leadStatus,
         "FOLLOW_UP_STATUS": "pending",
         "PRIORITY": priority,
         "LAST_REMARK": remarks,
