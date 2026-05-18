@@ -941,6 +941,8 @@ class AgentPerformance extends StatelessWidget {
               if (provider.isLoading)
 
               if (provider.agentLoading)
+
+              if (provider.isLoading)
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
                 )
