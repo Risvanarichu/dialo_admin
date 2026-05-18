@@ -78,9 +78,12 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                     _leftCard(),
 
                     const SizedBox(width: 40),
-                    Expanded(child: showCategories ? _additionalDetailsCard(isMobile,provider):const SizedBox()),
-                    if (showLeadStatus)
-                      _simpleListCard(
+                    Expanded(child:Align(
+                      alignment:Alignment.topLeft,
+                      child:
+                    showCategories ? _additionalDetailsCard(isMobile,provider):
+                    showLeadStatus
+                      ?_simpleListCard(
                         title: "Add Lead Status",
                         hint: "Enter lead status",
                         controller: leadStatusController,
@@ -88,9 +91,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onAdd: provider.addLeadStatus,
                         onDelete: provider.deleteLeadStatus,
                         onSave: provider.saveLeadStatus,
-                      ),
-                    if (showCallStatus)
-                      _simpleListCard(
+                      )
+                    :showCallStatus
+                      ? _simpleListCard(
                         title: "Add Call Status",
                         hint: "Enter call status",
                         controller: callStatusController,
@@ -98,9 +101,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onAdd: provider.addCallStatus,
                         onDelete: provider.deleteCallStatus,
                         onSave: provider.saveCallStatus,
-                      ),
-                    if (showLeadCategory)
-                      _simpleListCard(
+                      )
+                    :showLeadCategory
+                     ? _simpleListCard(
                         title: "Add Lead Category",
                         hint: "Enter Lead category",
                         controller: leadCategoryController,
@@ -108,9 +111,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onAdd: provider.addLeadCategory,
                         onDelete: provider.deleteLeadCategory,
                         onSave: provider.saveLeadCategory,
-                      ),
-                    if (showLeadSource)
-                      _simpleListCard(
+                      )
+                    :showLeadSource
+                    ?  _simpleListCard(
                         title: "Add Lead Source",
                         hint: "Enter Lead Source",
                         controller: leadSourceController,
@@ -118,7 +121,10 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onAdd: provider.addleadSource,
                         onDelete: provider.deleteleadSource,
                         onSave: provider.saveleadSource,
-                      ),
+
+                    ):const SizedBox(),
+                    ),
+                    ),
                   ],
                 ),
               ),
@@ -131,7 +137,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
   Widget _leftCard() {
     return Container(
-      width: 300,
+       width: 300,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
@@ -254,7 +260,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       SettingsProvider provider,
       ) {
     return Container(
-      width: double.infinity,
+      // width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -316,6 +322,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
               IconButton(
                 onPressed: () {
                   provider.clearAdditionalInputFields();
+                  provider.deleteCategory(index);
                 },
                 icon: const Icon(Icons.delete_outline),
               ),
@@ -464,6 +471,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 icon: const Icon(Icons.add, color: Colors.black),
                 onPressed: () {
                   final value = controller.text.trim();
+
 
                   if (value.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
