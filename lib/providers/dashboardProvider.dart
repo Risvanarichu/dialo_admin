@@ -24,6 +24,8 @@ bool isLoading = false;
   List<FlSpot> leadSpots = [];
   List<FlSpot> callSpots = [];
 
+  var agentLoading;
+
 
 
   Future<void> fetchDashboardCounts() async {

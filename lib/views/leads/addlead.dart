@@ -81,8 +81,8 @@ class _AddLeadState extends State<AddLead> {
                       child: Column(
                         children: [
                           _formCard(isMobile),
-                          // const SizedBox(height: 24),
-                          // _additionaldetailsCard(isMobile),
+                           const SizedBox(height: 24),
+                           //_additionaldetailsCard(isMobile,),
                           const SizedBox(height: 24),
                           _notesSection(),
                           const SizedBox(height: 24),
@@ -571,8 +571,8 @@ class _AddLeadState extends State<AddLead> {
   //   );
   // }
 
-  Widget _buildDropdownField(String label, List subList) {
-    final provider = context.watch<LeadProvider>();
+  Widget _additionaldetailsCard(String label, List subList) {
+    final provider = context.watch<SettingsProvider>();
 
     final currentValue = provider.additionalDetails[label];
 
@@ -597,7 +597,7 @@ class _AddLeadState extends State<AddLead> {
           }).toList(),
 
           onChanged: (value) {
-            context.read<LeadProvider>().updateAdditionalDetail(label, value);
+            context.read<SettingsProvider>().updateAdditionalDetail(label, value);
           },
 
           decoration: InputDecoration(
@@ -623,7 +623,7 @@ class _AddLeadState extends State<AddLead> {
   }
 
   Widget _buildTextField(String label) {
-    final provider=context.watch<LeadProvider>();
+    final provider=context.watch<SettingsProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -633,7 +633,7 @@ class _AddLeadState extends State<AddLead> {
           key: ValueKey("${label}_${provider.additionalDetails[label] ?? ""}"),
           initialValue: provider.additionalDetails[label] ?? "",
           onChanged: (value) {
-            context.read<LeadProvider>().additionalDetails[label] = value;
+            context.read<SettingsProvider>().additionalDetails[label] = value;
           },
           decoration: InputDecoration(
             border: OutlineInputBorder(

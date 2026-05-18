@@ -938,11 +938,9 @@ class AgentPerformance extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 15),
-<<<<<<< HEAD
               if (provider.isLoading)
-=======
+
               if (provider.agentLoading)
->>>>>>> 238c83d3badb63980d59ef804458b5c90be09155
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
                 )

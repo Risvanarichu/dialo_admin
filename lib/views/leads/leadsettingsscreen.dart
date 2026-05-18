@@ -24,9 +24,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
   final TextEditingController callStatusController = TextEditingController();
   final TextEditingController leadCategoryController = TextEditingController();
   final TextEditingController leadSourceController = TextEditingController();
-
-
-
+  final TextEditingController additionalCategoryController = TextEditingController();
 
   @override
   void initState() {
@@ -47,6 +45,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     final provider = context.watch<SettingsProvider>();
 
     return Scaffold(
@@ -79,8 +78,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                     _leftCard(),
 
                     const SizedBox(width: 40),
-
-                    if (showCategories) _categoryCard(provider),
+                    Expanded(child: showCategories ? _additionalDetailsCard(isMobile,provider):const SizedBox()),
                     if (showLeadStatus)
                       _simpleListCard(
                         title: "Add Lead Status",
@@ -111,15 +109,16 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                         onDelete: provider.deleteLeadCategory,
                         onSave: provider.saveLeadCategory,
                       ),
-                    if(showLeadSource)
-                      _simpleListCard(title: "Add Lead Source",
-                          hint: "Enter Lead Source",
-                          controller: leadSourceController,
-                          items: provider.leadSource,
-                          onAdd:provider.addleadSource,
-                          onDelete: provider.deleteleadSource,
-                          onSave: provider.saveLeadSource,
-                      )
+                    if (showLeadSource)
+                      _simpleListCard(
+                        title: "Add Lead Source",
+                        hint: "Enter Lead Source",
+                        controller: leadSourceController,
+                        items: provider.leadSource,
+                        onAdd: provider.addleadSource,
+                        onDelete: provider.deleteleadSource,
+                        onSave: provider.saveLeadSource,
+                      ),
                   ],
                 ),
               ),
@@ -141,7 +140,10 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Add Leads", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Add Leads",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
           GestureDetector(
@@ -160,13 +162,15 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           const SizedBox(height: 25),
 
-          const Text("Lead Status",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Lead Status",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
           GestureDetector(
             onTap: () {
-             // context.read<SettingsProvider>().clearLeadStatus();
+              // context.read<SettingsProvider>().clearLeadStatus();
               setState(() {
                 showCategories = false;
                 showLeadStatus = true;
@@ -180,13 +184,15 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           const SizedBox(height: 25),
 
-          const Text("Call Status",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Call Status",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
           GestureDetector(
             onTap: () {
-             // context.read<SettingsProvider>().clearCallStatus();
+              // context.read<SettingsProvider>().clearCallStatus();
               setState(() {
                 showCategories = false;
                 showLeadStatus = false;
@@ -200,8 +206,10 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           const SizedBox(height: 25),
 
-          const Text("Lead Category",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Lead Category",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
           GestureDetector(
@@ -212,224 +220,228 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 showLeadStatus = false;
                 showCallStatus = false;
                 showLeadCategory = true;
-                showLeadSource= false;
+                showLeadSource = false;
               });
             },
             child: _box("Lead Category"),
           ),
           const SizedBox(height: 25),
-          const Text("Lead Source",style:  TextStyle(
-            fontWeight: FontWeight.bold
-          ),),
+          const Text(
+            "Lead Source",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
           GestureDetector(
-            onTap: (){
-             // context.read<SettingsProvider>().clearLeadSource();
+            onTap: () {
+              // context.read<SettingsProvider>().clearLeadSource();
               setState(() {
-               showCategories=false;
-               showLeadStatus=false;
-               showCallStatus=false;
-               showLeadCategory=false;
-               showLeadSource=true;
+                showCategories = false;
+                showLeadStatus = false;
+                showCallStatus = false;
+                showLeadCategory = false;
+                showLeadSource = true;
               });
             },
             child: _box("Lead Source"),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _categoryCard(SettingsProvider provider) {
+  Widget _additionalDetailsCard(
+      bool isMobile,
+      SettingsProvider provider,
+      ) {
     return Container(
-      width: 430,
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      child: Form(
-        key: _categoryFormKey,
-        child: Column(
-          children: [
-            const Text(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(
+            child: Text(
               "Add Additional Details",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-            Expanded(
-              child: ListView(
+          /// CATEGORY + ADD BUTTON + DELETE BUTTON
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: provider.additionalCategoryController,
+                  decoration: InputDecoration(
+                    hintText: "Category",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+
+              IconButton(
+                onPressed: () {
+                  provider.addAdditionalSubCategory();
+                },
+                icon: const Icon(Icons.add),
+              ),
+
+              IconButton(
+                onPressed: () {
+                  provider.clearAdditionalInputFields();
+                },
+                icon: const Icon(Icons.delete_outline),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          /// SUB CATEGORY FIELD
+          TextFormField(
+            controller: provider.additionalSubCategoryController,
+            decoration: InputDecoration(
+              hintText: "Sub",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          /// ADDED LIST
+          if (provider.additionalDetailsList.isNotEmpty)
+            Container(
+              width: isMobile ? double.infinity : 350,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ...List.generate(provider.categories.length, (index) {
-                    final cat = provider.categories[index];
+                  const Text(
+                    "Added Additional Details",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-                    return Column(
-                      children: [
-                        Row(
+                  const SizedBox(height: 12),
+
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: provider.additionalDetailsList.length,
+                    itemBuilder: (context, index) {
+                      final item = provider.additionalDetailsList[index];
+                      final category = item["title"] ?? "";
+                      final subList = item["sub"] ?? [];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: cat["controller"],
-                                decoration: InputDecoration(
-                                  hintText: "Category ${index + 1}",
-                                  border: const OutlineInputBorder(),
-                                ),
-                                validator: (value) {
-                                  if (value == null ||
-                                      value.trim().isEmpty) {
-                                    return "Required";
-                                  }
-                                  return null;
-                                },
-                                onChanged: (value) {
-                                  provider.updateCategory(index, value);
-                                },
+                            Text(
+                              category,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
 
-                            IconButton(
-                              icon:
-                              const Icon(Icons.add, color: Colors.blue),
-                              onPressed: () {
-                                if (cat["controller"].text
-                                    .trim()
-                                    .isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Enter category first"),
+                            const SizedBox(height: 6),
+
+                            ...subList.map<Widget>((sub) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade400,
+                                          ),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(sub.toString()),
+                                      ),
                                     ),
-                                  );
-                                  return;
-                                }
 
-                                provider.addSubCategory(index);
-                              },
-                            ),
-
-                            IconButton(
-                              icon:
-                              const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                provider.deleteCategory(index);
-                              },
-                            ),
+                                    IconButton(
+                                      onPressed: () {
+                                        provider.deleteAdditionalSubCategory(
+                                          index,
+                                          sub.toString(),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ],
                         ),
-
-                        const SizedBox(height: 10),
-
-                        ...List.generate(cat["sub"].length, (subIndex) {
-                          return Padding(
-                            padding:
-                            const EdgeInsets.only(left: 35, bottom: 10),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller:
-                                    cat["subcontrollers"][subIndex],
-                                    decoration: InputDecoration(
-                                      hintText:
-                                      "Sub Category ${index + 1}.${subIndex + 1}",
-                                      border: const OutlineInputBorder(),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return "Required";
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) {
-                                      provider.updateSubCategory(
-                                        index,
-                                        subIndex,
-                                        value,
-                                      );
-                                    },
-                                  ),
-                                ),
-
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    provider.deleteSubCategory(
-                                      index,
-                                      subIndex,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-
-                        const SizedBox(height: 15),
-                      ],
-                    );
-                  }),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
 
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.themeColor,
-                    ),
-                    onPressed: () {
-                      provider.addCategory();
-                    },
-                    child: const Text(
-                      "Add Category",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+          const SizedBox(height: 25),
+
+          /// BUTTONS
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    provider.addAdditionalCategoryToList();
+                  },
+                  child: const Text("Add Category"),
                 ),
+              ),
 
-                const SizedBox(width: 10),
+              const SizedBox(width: 16),
 
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.themeColor,
-                    ),
-                    onPressed: () async {
-                      final valid =
-                          _categoryFormKey.currentState?.validate() ?? false;
-
-                      if (!valid) return;
-
-                      await provider.saveCategories();
-                      // provider.clearCategories();
-
-                      if (!mounted) return;
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Categories saved successfully"),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Submit",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await provider.saveAdditionalDetails();
+                  },
+                  child: const Text("Submit"),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
-
 
   Widget _simpleListCard({
     required String title,
@@ -481,7 +493,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   }
 
                   onAdd(value);
-                   controller.clear();
+                  controller.clear();
                 },
               ),
             ],
@@ -508,7 +520,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                     onDelete(index);
+                      onDelete(index);
                     },
                   ),
                 );
@@ -524,19 +536,15 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 backgroundColor: AppColors.themeColor,
               ),
               onPressed: () async {
-
                 if (items.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Add at least one item")),
                   );
                   return;
-
                 }
                 await onSave();
                 await context.read<SettingsProvider>().fetchAllSettings();
                 controller.clear();
-
-
 
                 if (!mounted) return;
 

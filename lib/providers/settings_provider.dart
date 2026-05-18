@@ -8,15 +8,19 @@ class SettingsProvider extends ChangeNotifier {
 
 
   List<Map<String, dynamic>> categories = [];
+  List<Map<String, dynamic>> savedCategories = [];
 
   List<String> leadStatus = [];
   List<String> callStatus = [];
   List<String> leadCategory = [];
   List<String> leadSource = [];
+  Map<String, dynamic> additionalDetails = {};
 
   SettingsProvider() {
     fetchAllSettings();
   }
+
+
 
   Future<void> fetchAllSettings() async {
     await fetchCategories();
@@ -24,6 +28,75 @@ class SettingsProvider extends ChangeNotifier {
     await fetchCallStatus();
     await fetchLeadCategory();
     await fetchLeadSource();
+  }
+  final TextEditingController additionalCategoryController =
+  TextEditingController();
+
+  final TextEditingController additionalSubCategoryController =
+  TextEditingController();
+
+  List<Map<String, dynamic>> additionalDetailsList = [];
+
+  void addAdditionalCategoryToList() {
+    final category = additionalCategoryController.text.trim();
+    final sub = additionalSubCategoryController.text.trim();
+
+    if (category.isEmpty) return;
+
+    additionalDetailsList.add({
+      "title": category,
+      "sub": sub.isEmpty ? [] : [sub],
+    });
+
+    additionalCategoryController.clear();
+    additionalSubCategoryController.clear();
+
+    notifyListeners();
+  }
+
+  void addAdditionalSubCategory() {
+    final category = additionalCategoryController.text.trim();
+    final sub = additionalSubCategoryController.text.trim();
+
+    if (category.isEmpty || sub.isEmpty) return;
+
+    final index = additionalDetailsList.indexWhere(
+          (element) => element["title"] == category,
+    );
+
+    if (index != -1) {
+      additionalDetailsList[index]["sub"].add(sub);
+    } else {
+      additionalDetailsList.add({
+        "title": category,
+        "sub": [sub],
+      });
+    }
+
+    additionalSubCategoryController.clear();
+    notifyListeners();
+  }
+
+  void deleteAdditionalSubCategory(int categoryIndex, String sub) {
+    additionalDetailsList[categoryIndex]["sub"].remove(sub);
+    notifyListeners();
+  }
+
+  void clearAdditionalInputFields() {
+    additionalCategoryController.clear();
+    additionalSubCategoryController.clear();
+    notifyListeners();
+  }
+
+  Future<void> saveAdditionalDetails() async {
+    await FirebaseFirestore.instance
+        .collection("LEAD_SETTINGS")
+        .doc("additional_details")
+        .set({
+      "detailsList": additionalDetailsList,
+    });
+
+    clearAdditionalInputFields();
   }
 
   // ================= CATEGORIES =================
@@ -132,7 +205,7 @@ class SettingsProvider extends ChangeNotifier {
         .map((e) {
       return {
         "title": e["title"].toString().trim(),
-        "sub": List<String>.from(e["sub"])
+        "sub": List<String>.from(e["sub"] ?? [])
             .map((s) => s.trim())
             .where((s) => s.isNotEmpty)
             .toSet()
@@ -140,37 +213,12 @@ class SettingsProvider extends ChangeNotifier {
       };
     }).toList();
 
-    final docRef = db.collection("LEAD_SETTINGS").doc("categories");
-    final doc = await docRef.get();
-
-    List<Map<String, dynamic>> oldList = [];
-
-    if (doc.exists) {
-      oldList = List<Map<String, dynamic>>.from(
-        doc.data()?["categoryList"] ?? [],
-      );
-    }
-
-    for (var newCat in newList) {
-      final index = oldList.indexWhere(
-            (oldCat) => oldCat["title"] == newCat["title"],
-      );
-
-      if (index == -1) {
-        oldList.add(newCat);
-      } else {
-        final oldSub = List<String>.from(oldList[index]["sub"] ?? []);
-        final newSub = List<String>.from(newList);
-
-        oldList[index]["sub"] = {...oldSub, ...newSub}.toList();
-      }
-    }
-
-    await docRef.set({
-      "categoryList": oldList,
+    await db.collection("LEAD_SETTINGS").doc("categories").set({
+      "categoryList": newList,
     }, SetOptions(merge: true));
-  }
 
+    await fetchCategories();
+  }
   Future<void> fetchCategories() async {
     final doc = await db.collection("LEAD_SETTINGS").doc("categories").get();
 
@@ -213,6 +261,7 @@ class SettingsProvider extends ChangeNotifier {
         "subcontrollers": [],
       });
     }
+    savedCategories=List<Map<String,dynamic>>.from(rawList);
 
     notifyListeners();
   }
@@ -451,8 +500,6 @@ class SettingsProvider extends ChangeNotifier {
   void deleteleadSource(int value) {
   }
 
-  Future<void> saveleadSource() async {
-  }
 
   Future<void> fetchLeadSource() async {
     final doc = await db.collection("LEAD_SETTINGS").doc("lead_source").get();
@@ -463,6 +510,25 @@ class SettingsProvider extends ChangeNotifier {
       leadSource = [];
     }
 
+    notifyListeners();
+  }
+
+  Future<void> saveLeadSource() async {
+    final cleanList = leadSource
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+
+    await db.collection("LEAD_SETTINGS").doc("LEAD_CATEGORY").set({
+      "leadCategoryList":FieldValue.arrayUnion(cleanList),
+    },
+        SetOptions(merge: true));
+
+  }
+
+  void updateAdditionalDetail(String label, String? value) {
+    additionalDetails[label]=value;
     notifyListeners();
   }
 }
