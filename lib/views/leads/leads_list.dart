@@ -1,4 +1,4 @@
-import 'package:dialo_admin/constants/appcolors.dart';
+
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
 import 'package:dialo_admin/views/leads/lead_details.dart';
@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/agentProvider.dart';
 import '../../providers/leadProvider.dart';
-import 'addlead.dart';
+
 
 class Leads extends StatelessWidget {
   const Leads  ({super.key});
