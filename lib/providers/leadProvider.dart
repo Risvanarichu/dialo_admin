@@ -18,7 +18,7 @@ class LeadProvider extends ChangeNotifier {
   List<LeadCategoryModel> categoryList = [];
   List<Map<String, dynamic>> categories = [];
   Map<String, dynamic> additionalDetails = {};
-  bool isCategoryLoading=false;
+  bool isCategoryLoading = false;
   Map<String, String> agentMap = {};
   String selectedCallStatus = "all";
   List<String> callStatusList = [];
@@ -34,7 +34,7 @@ class LeadProvider extends ChangeNotifier {
   String? agentName;
   String? editingId;
   bool isEdit = false;
-  bool isButtonLoading=false;
+  bool isButtonLoading = false;
   bool isPageLoading = false;
   var userList;
   String leadStatusValue = "";
@@ -71,7 +71,7 @@ class LeadProvider extends ChangeNotifier {
 
   get leadCategory => null;
 
-  void setLoading(bool value){
+  void setLoading(bool value) {
     isLoading = value;
     notifyListeners();
   }
@@ -82,7 +82,7 @@ class LeadProvider extends ChangeNotifier {
     applyFilters();
   }
 
-  Future<void>init()async{
+  Future<void> init() async {
     await loadAgentData();
     await loadAgents();
     listenLeads();
@@ -98,12 +98,12 @@ class LeadProvider extends ChangeNotifier {
     print("Agent Name: $agentName");
   }
 
-  Future<void>loadAgents()async{
+  Future<void> loadAgents() async {
     final snapshot = await fbd.collection('AGENT').get();
 
-    agentMap={
+    agentMap = {
       for(var doc in snapshot.docs)
-        doc.id: doc.data()["NAME"]?? "Unknown"
+        doc.id: doc.data()["NAME"] ?? "Unknown"
     };
     notifyListeners();
   }
@@ -146,10 +146,13 @@ class LeadProvider extends ChangeNotifier {
     required String callStatus,
     required String notes,
     String? assignedAgentId,
-    String? assignedAgentName,
+    String? assignedAgentName, required String leadCategory, required Map<String, dynamic> additionalDetails,
   }) async {
     try {
-      String leadId = DateTime.now().millisecondsSinceEpoch.toString();
+      String leadId = DateTime
+          .now()
+          .millisecondsSinceEpoch
+          .toString();
 
       final docRef = fbd.collection("LEADS").doc(leadId);
       await docRef.set({
@@ -172,14 +175,13 @@ class LeadProvider extends ChangeNotifier {
         "FOLLOW_UP_TIME": "",
         "PLACE": "",
         "PRIORITY": "High",
-        "LAST_CONTACTED_DATE":now,
+        "LAST_CONTACTED_DATE": now,
       });
     } catch (e) {
       debugPrint("Error adding lead: $e");
       rethrow;
     }
   }
-
 
 
   void listenLeads() {
@@ -192,13 +194,15 @@ class LeadProvider extends ChangeNotifier {
       leads = snapshot.docs.map((doc) {
         final data = doc.data();
 
-        String assignedAgentId  = data["ASSIGNED_AGENT_ID"] ?? "";
+        String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
 
-        if (assignedAgentId .toString().isEmpty) {
+        if (assignedAgentId
+            .toString()
+            .isEmpty) {
           doc.reference.update({
             "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
             "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
-            "ADDED_BY_ID": agentId ,
+            "ADDED_BY_ID": agentId,
           });
         }
 
@@ -222,7 +226,6 @@ class LeadProvider extends ChangeNotifier {
   }
 
 
-
   Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
@@ -235,7 +238,9 @@ class LeadProvider extends ChangeNotifier {
 
 
         if (data["ASSIGNED_AGENT_ID"] == null ||
-            data["ASSIGNED_AGENT_ID"].toString().isEmpty) {
+            data["ASSIGNED_AGENT_ID"]
+                .toString()
+                .isEmpty) {
           doc.reference.update({
             "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
             "ASSIGNED_AGENT_NAME": agentName ?? this.agentName, // ✅ add
@@ -263,9 +268,9 @@ class LeadProvider extends ChangeNotifier {
     final query = searchQuery.toLowerCase();
 
     allLeads = leads.where((lead) {
-      final name = lead.name.toLowerCase() ;
-      final phone = lead.phone.toLowerCase() ;
-      final email = lead.email.toLowerCase() ;
+      final name = lead.name.toLowerCase();
+      final phone = lead.phone.toLowerCase();
+      final email = lead.email.toLowerCase();
       final status = lead.Leadstatus.toUpperCase();
       final callStatus = lead.callStatus.toUpperCase();
       final source = lead.source.toUpperCase();
@@ -298,8 +303,10 @@ class LeadProvider extends ChangeNotifier {
       final matchesDate =
           startDate == null ||
               endDate == null ||
-              (lead.lastContactedDate.isAfter(startDate!.subtract(const Duration(days: 1))) &&
-                  lead.lastContactedDate.isBefore(endDate!.add(const Duration(days: 1))));
+              (lead.lastContactedDate.isAfter(
+                  startDate!.subtract(const Duration(days: 1))) &&
+                  lead.lastContactedDate.isBefore(
+                      endDate!.add(const Duration(days: 1))));
 
       return matchesSearch &&
           matchesStatus &&
@@ -311,6 +318,7 @@ class LeadProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
   @override
   void dispose() {
     leadSubscription?.cancel();
@@ -321,6 +329,7 @@ class LeadProvider extends ChangeNotifier {
     sourceController.dispose();
     super.dispose();
   }
+
   Future<void> fetchCategories() async {
     isLoading = true;
     notifyListeners();
@@ -328,7 +337,8 @@ class LeadProvider extends ChangeNotifier {
 
   Future<void> fetchCallStatuses() async {
     try {
-      final snapshot = await fbd.collection("LEAD_SETTINGS").doc("call_statuses").get();
+      final snapshot = await fbd.collection("LEAD_SETTINGS").doc(
+          "call_statuses").get();
 
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
@@ -341,7 +351,6 @@ class LeadProvider extends ChangeNotifier {
       callStatusList = [];
       debugPrint("fetchCallStatuses error: $e");
     } finally {
-
       isLoading = false;
       notifyListeners();
     }
@@ -350,14 +359,18 @@ class LeadProvider extends ChangeNotifier {
 
   Future<void> fetchLeadCategories() async {
     try {
-      final snapshot = await fbd.collection("LEAD_SETTINGS").doc("categories").get();
+      final snapshot = await fbd
+          .collection("LEAD_SETTINGS")
+          .doc("categories")
+          .get();
 
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
         final rawList = data["categoryList"] ?? data["categories"] ?? [];
 
         categoryList = List<LeadCategoryModel>.from(
-          rawList.map((e) => LeadCategoryModel.fromMap(Map<String, dynamic>.from(e))),
+          rawList.map((e) =>
+              LeadCategoryModel.fromMap(Map<String, dynamic>.from(e))),
         );
       } else {
         categoryList = [];
@@ -396,6 +409,7 @@ class LeadProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
   void updateAdditionalDetail(String key, dynamic value) {
     additionalDetails[key] = value;
     notifyListeners();
@@ -406,7 +420,8 @@ class LeadProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> assignAgent(String leadId, String agentId, String agentName) async {
+  Future<void> assignAgent(String leadId, String agentId,
+      String agentName) async {
     try {
       await fbd.collection('LEADS').doc(leadId).update({
         "ASSIGNED_AGENT_ID": agentId,
@@ -418,8 +433,6 @@ class LeadProvider extends ChangeNotifier {
   }
 
 
-
-
   void updateSource(String source) {
     selectedSources = source;
     applyFilters();
@@ -427,28 +440,28 @@ class LeadProvider extends ChangeNotifier {
 
   void updateStatus(String s) {
     selectedStatus = s;
-    applyFilters();}
+    applyFilters();
+  }
+
   Future<void> completedLead(String leadId) async {
     await fbd.collection('LEADS').doc(leadId).update({
       "FOLLOW_UP_STATUS": "COMPLETED",
     });
   }
 
-  Future<void> rescheduleLead(
-
-      String leadId, DateTime date, String time) async {
+  Future<void> rescheduleLead(String leadId, DateTime date, String time) async {
     await fbd.collection('LEADS').doc(leadId).update({
-      "FOLLOW UP DATE":  now.add(const Duration(days: 3)),
+      "FOLLOW UP DATE": now.add(const Duration(days: 3)),
       "FOLLOW UP TIME": time,
       "FOLLOW_UP_STATUS": "pending",
     });
   }
 
-  void editData(Map<String,dynamic>user){
-    nameController.text = user["NAME"]??"";
-    phoneController.text = user["PHONE"]??"";
-    emailController.text = user["EMAIL"]??"";
-    sourceController.text = user["SOURCE"]??"";
+  void editData(Map<String, dynamic>user) {
+    nameController.text = user["NAME"] ?? "";
+    phoneController.text = user["PHONE"] ?? "";
+    emailController.text = user["EMAIL"] ?? "";
+    sourceController.text = user["SOURCE"] ?? "";
     leadStatusValue = user["LEAD_STATUS"] ?? "";
     callStatusValue = user["CALLSTATUS"] ?? "";
     leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
@@ -495,7 +508,6 @@ class LeadProvider extends ChangeNotifier {
 
       await fetchLeads();
       clearFields();
-
     } catch (e) {
       print("Update Error: $e");
     } finally {
@@ -508,25 +520,95 @@ class LeadProvider extends ChangeNotifier {
     applyFilters();
   }
 
-  Future<void> deleteUser(String id) async{
-    try{
+  Future<void> deleteUser(String id) async {
+    try {
       await fbd.collection('LEADS').doc(id).delete();
       await fetchLeads();
-    }catch(e){
+    } catch (e) {
       print("Delete Error:$e");
     }
   }
 
-  void setPageLoading(bool value){
+  void setPageLoading(bool value) {
     isPageLoading = value;
     notifyListeners();
   }
 
-  void setButtonLoading(bool value){
+  void setButtonLoading(bool value) {
     isButtonLoading = value;
     notifyListeners();
   }
 
+//   Future<void> addFollowUp({
+//     required String leadId,
+//     required String callStatus,
+//     required String leadStatus,
+//     required String leadCategory,
+//     required String priority,
+//     required String remarks,
+//     String? email,
+//     DateTime? followUpDate,
+//   }) async {
+//     try {
+//       setButtonLoading(true);
+//
+//       final ref = fbd
+//           .collection('LEADS')
+//           .doc(leadId)
+//           .collection('FOLLOWUPS')
+//           .doc();
+//
+//       await ref.set({
+//         "FOLLOWUP_ID": ref.id,
+//         "CALL_STATUS": callStatus,
+//         "LEAD_STATUS": leadStatus,
+//         "LEAD_CATEGORY": leadCategory,
+//         "PRIORITY": priority,
+//         "EMAIL": email ?? "",
+//         "REMARKS": remarks,
+//         "DATE": followUpDate ?? DateTime.now(),
+//         "CREATED_AT": FieldValue.serverTimestamp(),
+//       });
+//
+//       /// update main lead
+//       await fbd.collection('LEADS').doc(leadId).update({
+//         "LEAD_STATUS": leadStatus,
+//         "FOLLOW_UP_STATUS": "pending",
+//         "PRIORITY": priority,
+//         "LAST_REMARK": remarks,
+//         "LAST_CONTACTED": FieldValue.serverTimestamp(),
+//       });
+//
+//     } catch (e) {
+//       debugPrint("Follow-up error: $e");
+//       rethrow;
+//     } finally {
+//       setButtonLoading(false);
+//     }
+//   }
+//
+//   void clearFields(){
+//     nameController.clear();
+//     phoneController.clear();
+//     emailController.clear();
+//     sourceController.clear();
+//
+//     leadStatusValue = "";
+//     callStatusValue = "";
+//     leadCategoryValue = "";
+//     notesValue = "";
+//
+//     selectedAgentId = null;
+//     selectedAgentName = null;
+//
+//     editingId = null;
+//     isEdit = false;
+//
+//     notifyListeners();
+//   }
+//
+//
+// }
   Future<void> addFollowUp({
     required String leadId,
     required String callStatus,
@@ -534,66 +616,34 @@ class LeadProvider extends ChangeNotifier {
     required String leadCategory,
     required String priority,
     required String remarks,
-    String? email,
+    required String email,
     DateTime? followUpDate,
   }) async {
-    try {
-      setButtonLoading(true);
+    isButtonLoading = true;
+    notifyListeners();
 
-      final ref = fbd
-          .collection('LEADS')
-          .doc(leadId)
-          .collection('FOLLOWUPS')
-          .doc();
+    await FirebaseFirestore.instance
+        .collection("LEADS")
+        .doc(leadId)
+        .collection("FOLLOW_UPS")
+        .add({
+      "CALL_STATUS": callStatus,
+      "LEAD_STATUS": leadStatus,
+      "LEAD_CATEGORY": leadCategory,
+      "PRIORITY": priority,
+      "REMARKS": remarks,
+      "EMAIL": email,
+      "FOLLOW_UP_DATE": followUpDate,
+      "CREATED_AT": FieldValue.serverTimestamp(),
+    });
 
-      await ref.set({
-        "FOLLOWUP_ID": ref.id,
-        "CALL_STATUS": callStatus,
-        "LEAD_STATUS": leadStatus,
-        "LEAD_CATEGORY": leadCategory,
-        "PRIORITY": priority,
-        "EMAIL": email ?? "",
-        "REMARKS": remarks,
-        "DATE": followUpDate ?? DateTime.now(),
-        "CREATED_AT": FieldValue.serverTimestamp(),
-      });
-
-      /// update main lead
-      await fbd.collection('LEADS').doc(leadId).update({
-        "LEAD_STATUS": leadStatus,
-        "FOLLOW_UP_STATUS": "pending",
-        "PRIORITY": priority,
-        "LAST_REMARK": remarks,
-        "LAST_CONTACTED": FieldValue.serverTimestamp(),
-      });
-
-    } catch (e) {
-      debugPrint("Follow-up error: $e");
-      rethrow;
-    } finally {
-      setButtonLoading(false);
-    }
-  }
-
-  void clearFields(){
-    nameController.clear();
-    phoneController.clear();
+    remarkController.clear();
     emailController.clear();
-    sourceController.clear();
+    dateController.clear();
 
-    leadStatusValue = "";
-    callStatusValue = "";
-    leadCategoryValue = "";
-    notesValue = "";
-
-    selectedAgentId = null;
-    selectedAgentName = null;
-
-    editingId = null;
-    isEdit = false;
-
+    isButtonLoading = false;
     notifyListeners();
   }
 
-
+  void clearFields() {}
 }

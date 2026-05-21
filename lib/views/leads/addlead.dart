@@ -18,81 +18,78 @@ class AddLead extends StatefulWidget {
 class _AddLeadState extends State<AddLead> {
   final _formKey = GlobalKey<FormState>();
 
-
   final leadStatusCtrl = TextEditingController();
   final callStatusCtrl = TextEditingController();
-  final leadCategoryCtrl = TextEditingController();
   final notesCtrl = TextEditingController();
-  String selectedLeadCategory="";
-  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-  final phoneRegex = RegExp(r'^[6-9]\d{9}$');
 
+  String selectedLeadCategory = "";
   String? selectedAgentId;
   String? selectedAgentName;
-  String userRole = '';
-
-  String get text => '';
+  String userRole = "";
 
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() async {
-      final provider = context.read<LeadProvider>();
+      final leadProvider = context.read<LeadProvider>();
+      final settingsProvider = context.read<SettingsProvider>();
 
-      if (provider.isEdit) {
-        leadStatusCtrl.text = provider.leadStatusValue;
-        callStatusCtrl.text = provider.callStatusValue;
-        notesCtrl.text = provider.notesValue;
+      await settingsProvider.fetchAllSettings();
 
-        selectedAgentId = provider.selectedAgentId;
-        selectedAgentName = provider.selectedAgentName;
+      if (leadProvider.isEdit) {
+        leadStatusCtrl.text = leadProvider.leadStatusValue;
+        callStatusCtrl.text = leadProvider.callStatusValue;
+        notesCtrl.text = leadProvider.notesValue;
+
+        selectedAgentId = leadProvider.selectedAgentId;
+        selectedAgentName = leadProvider.selectedAgentName;
       }
 
       final prefs = await SharedPreferences.getInstance();
 
-      setState(() {
-        userRole = (prefs.getString('role') ?? '').toUpperCase();
-      });
+      if (mounted) {
+        setState(() {
+          userRole = (prefs.getString("role") ?? "").toUpperCase();
+        });
+      }
     });
   }
 
-
-  late final provider = context.watch<LeadProvider>();
+  @override
+  void dispose() {
+    leadStatusCtrl.dispose();
+    callStatusCtrl.dispose();
+    notesCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final isMobile = MediaQuery.of(context).size.width < 900;
 
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-      body: Row(
+      body: Column(
         children: [
+          _topBar(),
           Expanded(
-            child: Column(
-              children: [
-                _topBar(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          _formCard(isMobile),
-                           const SizedBox(height: 24),
-                           //_additionaldetailsCard(isMobile,),
-                          const SizedBox(height: 24),
-                          _notesSection(),
-                          const SizedBox(height: 24),
-                          _actionButtons(),
-                        ],
-                      ),
-                    ),
-                  ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _formCard(isMobile),
+                    const SizedBox(height: 24),
+                    additionalDetailsFields(),
+                    const SizedBox(height: 24),
+                    _notesSection(),
+                    const SizedBox(height: 24),
+                    _actionButtons(),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -102,28 +99,22 @@ class _AddLeadState extends State<AddLead> {
 
   Widget _topBar() {
     final provider = context.watch<LeadProvider>();
+
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       color: Colors.white,
       alignment: Alignment.centerLeft,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            provider.isEdit ? "EDIT LEAD" : "ADD NEW LEAD",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          const Divider(height: 1),
-        ],
+      child: Text(
+        provider.isEdit ? "EDIT LEAD" : "ADD NEW LEAD",
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   Widget _formCard(bool isMobile) {
     final provider = context.watch<LeadProvider>();
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -135,13 +126,13 @@ class _AddLeadState extends State<AddLead> {
         children: [
           _rowFields(
             isMobile,
-            _input("FULL NAME*",provider.nameController ),
+            _input("FULL NAME*", provider.nameController),
             _input("PHONE NUMBER*", provider.phoneController, phone: true),
           ),
           const SizedBox(height: 16),
           _rowFields(
             isMobile,
-            _input("EMAIL ADDRESS*", provider.emailController,),
+            _input("EMAIL ADDRESS*", provider.emailController),
             _sourceDropdown(),
           ),
           const SizedBox(height: 16),
@@ -150,33 +141,180 @@ class _AddLeadState extends State<AddLead> {
             _leadStatusDropdown(),
             _callStatusDropdown(),
           ),
-          const SizedBox(height: 16,),
-          _rowFields(isMobile,
-          userRole == 'ADMIN'?
-          _agentDropdown()
-          :const SizedBox(),
-    _leadCategoryDropdown(),
-    ),
+          const SizedBox(height: 16),
+          _rowFields(
+            isMobile,
+            userRole == "ADMIN" ? _agentDropdown() : const SizedBox(),
+            _leadCategoryDropdown(),
+          ),
         ],
       ),
     );
   }
+
+  Widget _sourceDropdown() {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final leadProvider = context.watch<LeadProvider>();
+
+    final sourceValue =
+    settingsProvider.leadSource.contains(leadProvider.sourceController.text)
+        ? leadProvider.sourceController.text
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("SOURCES*"),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: sourceValue,
+          hint: const Text("Select Source"),
+          items: settingsProvider.leadSource.map((source) {
+            return DropdownMenuItem<String>(
+              value: source,
+              child: Text(source),
+            );
+          }).toList(),
+          onChanged: (value) {
+            leadProvider.sourceController.text = value ?? "";
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select source";
+            }
+            return null;
+          },
+          decoration: _dropdownDecoration(),
+        ),
+      ],
+    );
+  }
+
+  Widget _leadStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    final validValue =
+    provider.leadStatus.contains(leadStatusCtrl.text)
+        ? leadStatusCtrl.text
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("LEAD STATUS*"),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: validValue,
+          hint: const Text("Select Lead Status"),
+          items: provider.leadStatus.map((status) {
+            return DropdownMenuItem<String>(
+              value: status,
+              child: Text(status),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              leadStatusCtrl.text = value ?? "";
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select lead status";
+            }
+            return null;
+          },
+          decoration: _dropdownDecoration(),
+        ),
+      ],
+    );
+  }
+
+  Widget _callStatusDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    final validValue =
+    provider.callStatus.contains(callStatusCtrl.text)
+        ? callStatusCtrl.text
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("CALL STATUS*"),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: validValue,
+          hint: const Text("Select Call Status"),
+          items: provider.callStatus.map((status) {
+            return DropdownMenuItem<String>(
+              value: status,
+              child: Text(status),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              callStatusCtrl.text = value ?? "";
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select call status";
+            }
+            return null;
+          },
+          decoration: _dropdownDecoration(),
+        ),
+      ],
+    );
+  }
+
+  Widget _leadCategoryDropdown() {
+    final provider = context.watch<SettingsProvider>();
+
+    final validValue =
+    provider.leadCategory.contains(selectedLeadCategory)
+        ? selectedLeadCategory
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("LEAD CATEGORY*"),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: validValue,
+          hint: const Text("Select Lead Category"),
+          items: provider.leadCategory.map((category) {
+            return DropdownMenuItem<String>(
+              value: category,
+              child: Text(category),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedLeadCategory = value ?? "";
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please select lead category";
+            }
+            return null;
+          },
+          decoration: _dropdownDecoration(),
+        ),
+      ],
+    );
+  }
+
   Widget _agentDropdown() {
     final agentProvider = context.watch<Agentprovider>();
-
-    // ✅ ADD THIS HERE
-    if (agentProvider.userList.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("ASSIGNED AGENT*"),
         const SizedBox(height: 6),
-
         DropdownButtonFormField<String>(
           value: selectedAgentId != null &&
               agentProvider.userList
@@ -184,16 +322,13 @@ class _AddLeadState extends State<AddLead> {
                   .contains(selectedAgentId)
               ? selectedAgentId
               : null,
-
           hint: const Text("Select Agent"),
-
           items: agentProvider.userList.map<DropdownMenuItem<String>>((agent) {
             return DropdownMenuItem<String>(
               value: agent["ID"],
               child: Text(agent["NAME"]),
             );
           }).toList(),
-
           onChanged: (value) {
             setState(() {
               selectedAgentId = value;
@@ -206,452 +341,173 @@ class _AddLeadState extends State<AddLead> {
               selectedAgentName = selectedAgent["NAME"]?.toString();
             });
           },
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-  Widget _sourceDropdown() {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final leadProvider = context.watch<LeadProvider>();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("SOURCES*"),
-        const SizedBox(height: 6),
-
-        DropdownButtonFormField<String>(
-          value: leadProvider.sourceController.text.isEmpty
-              ? null
-              : leadProvider.sourceController.text,
-
-          hint: const Text("Select Source"),
-
-          items: settingsProvider.leadSource.map<DropdownMenuItem<String>>((source) {
-            return DropdownMenuItem<String>(
-              value: source.toString(),
-              child: Text(source.toString()),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            leadProvider.sourceController.text = value ?? "";
-          },
-
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please select source";
-            }
-            return null;
-          },
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
+          decoration: _dropdownDecoration(),
         ),
       ],
     );
   }
 
-  //
-  Widget _leadStatusDropdown() {
-    final provider = context.watch<SettingsProvider>();
+  Widget additionalDetailsFields() {
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        final list = settingsProvider.additionalFieldsList;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("LEAD STATUS*"),
-        const SizedBox(height: 6),
+        if (list.isEmpty) {
+          return const SizedBox();
+        }
 
-        DropdownButtonFormField<String>(
-          value: leadStatusCtrl.text.isEmpty
-              ? null
-              : leadStatusCtrl.text.trim(),
-
-          icon: const Icon(Icons.arrow_drop_down),
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: Colors.grey,
-                width: 1.5,
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Additional Fields",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: Colors.blue,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
+              const SizedBox(height: 16),
+              ...list.map((item) {
+                final String title = item["title"] ?? "";
+                final List<String> subList =
+                List<String>.from(item["sub"] ?? []);
+
+                if (subList.isNotEmpty) {
+                  final selectedValue =
+                  settingsProvider.additionalDetails[title];
+
+                  final validValue =
+                  subList.contains(selectedValue) ? selectedValue : null;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 15),
+                    child: DropdownButtonFormField<String>(
+                      value: validValue,
+                      hint: Text("Select $title"),
+                      decoration: _dropdownDecoration(label: title),
+                      items: subList.map((sub) {
+                        return DropdownMenuItem<String>(
+                          value: sub,
+                          child: Text(sub),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        settingsProvider.updateAdditionalDetail(title, value);
+                      },
+                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: TextFormField(
+                    initialValue:
+                    settingsProvider.additionalDetails[title] ?? "",
+                    decoration: _dropdownDecoration(label: title),
+                    onChanged: (value) {
+                      settingsProvider.updateAdditionalDetail(title, value);
+                    },
+                  ),
+                );
+              }).toList(),
+            ],
           ),
-
-          hint: const Text("Select Lead Status"),
-
-          items: (provider.leadStatus )
-              .map<DropdownMenuItem<String>>((status) {
-            return DropdownMenuItem<String>(
-              value: status.toString(),
-              child: Text(status.toString()),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            context.read<SettingsProvider>().leadStatus;
-            setState(() {
-              leadStatusCtrl.text = value ?? "";
-            });
-          },
-
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please select lead status";
-            }
-            return null;
-          },
-        ),
-      ],
+        );
+      },
     );
   }
 
-  // Widget _calltypeDropdown() {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Text("CALL TYPE*"),
-  //       const SizedBox(height: 6),
-  //       DropdownButtonFormField<String>(
-  //         value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
-  //         icon: const Icon(Icons.arrow_drop_down),
-  //         decoration: InputDecoration(
-  //           border: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //           ),
-  //           enabledBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //             borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-  //           ),
-  //           focusedBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //             borderSide: const BorderSide(color: Colors.blue, width: 2),
-  //           ),
-  //           contentPadding: const EdgeInsets.symmetric(
-  //             horizontal: 12,
-  //             vertical: 14,
-  //           ),
-  //
-  //         ),
-  //         items: const [
-  //           DropdownMenuItem(value: "Incoming", child: Text("Incoming")),
-  //           DropdownMenuItem(value: "Outgoing", child: Text("Outgoing")),
-  //         ],
-  //         onChanged: (value) {
-  //           setState(() {
-  //             callTypeCtrl.text = value?.trim() ?? "";
-  //           });
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
-  // Widget _calltypeDropdown() {
-  //   final provider = context.watch<LeadProvider>();
-  //
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Text("CALL TYPE*"),
-  //       const SizedBox(height: 6),
-  //
-  //       DropdownButtonFormField<String>(
-  //         value: callTypeCtrl.text.isEmpty ? null : callTypeCtrl.text.trim(),
-  //         icon: const Icon(Icons.arrow_drop_down),
-  //
-  //         decoration: InputDecoration(
-  //           border: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //           ),
-  //           enabledBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //             borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-  //           ),
-  //           focusedBorder: OutlineInputBorder(
-  //             borderRadius: BorderRadius.circular(10),
-  //             borderSide: const BorderSide(color: Colors.blue, width: 2),
-  //           ),
-  //           contentPadding: const EdgeInsets.symmetric(
-  //             horizontal: 12,
-  //             vertical: 14,
-  //           ),
-  //         ),
-  //
-  //         hint: const Text("Select Call Type"),
-  //
-  //         items: provider.leadCategoryList ??[]).map<DropdownMenuItem<String>>((status) {
-  //           return DropdownMenuItem<String>(
-  //             value: status.toString(),
-  //             child: Text(status.toString()),
-  //           );
-  //         }).toList(),
-  //
-  //         onChanged: (value) {
-  //           setState(() {
-  //             callTypeCtrl.text = value?.trim() ?? "";
-  //           });
-  //         },
-  //
-  //         validator: (value) {
-  //           if (value == null || value.isEmpty) {
-  //             return "Please select call type";
-  //           }
-  //           return null;
-  //         },
-  //   decoration: InputDecoration(
-  //   border: OutlineInputBorder(
-  //   borderRadius: BorderRadius.circular(10),
-  //   ),
-  //   ),
-  //   ),
-  //   ],
-  //   );
-  // }
-  Widget  _callStatusDropdown() {
-    final provider = context.watch<SettingsProvider>();
-
+  Widget _notesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("CALL STATUS*"),
-        const SizedBox(height: 6),
-
-        DropdownButtonFormField<String>(
-          value: callStatusCtrl.text.isEmpty ? null : callStatusCtrl.text.trim(),
-          hint: const Text("Select Call Status"),
-          icon: const Icon(Icons.arrow_drop_down),
-
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-
-          // hint: const Text("Select Call Type"),
-
-          items: (provider.callStatus ).map<DropdownMenuItem<String>>((status) {
-            return DropdownMenuItem<String>(
-              // value: status,
-              // child: Text(status),
-              value: status.toString(),
-              child: Text(status.toString()),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            setState(() {
-              callStatusCtrl.text = value ?? "";
-            });
-          },
-
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please select call Status";
-            }
-            return null;
-          },
-
-          // decoration: InputDecoration(
-          //   border: OutlineInputBorder(
-          //     borderRadius: BorderRadius.circular(10),
-          //   ),
-          // ),
-        ),
-      ],
-    );
-  }
-  Widget _leadCategoryDropdown() {
-    final provider = context.watch<SettingsProvider>();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("LEAD CATEGORY*"),
-        const SizedBox(height: 6),
-
-        DropdownButtonFormField<String>(
-          value: selectedLeadCategory.isEmpty
-              ? null
-              : selectedLeadCategory,
-
-          hint: const Text("Select Lead Category"),
-
-          items: provider.leadCategory.map((category) {
-            return DropdownMenuItem<String>(
-              value: category,
-              child: Text(category),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            setState(() {
-              selectedLeadCategory = value ?? "";
-            });
-          },
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
- // Widget _additionaldetailsCard(bool isMobile) {
-  //   final provider = context.watch<LeadProvider>();
-  //
-  //   return Container(
-  //     padding: const EdgeInsets.all(24),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(20),
-  //       border: Border.all(color: Colors.grey),
-  //     ),
-  //     child: Column(
-  //       children: [
-  //         const Text(
-  //           "Additional Details",
-  //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //         ),
-  //         const SizedBox(height: 16),
-  //         if (provider.categories.isEmpty)
-  //           const Text("No additional details found")
-  //         else
-  //           ...provider.categories.map((cat) {
-  //             final String title = cat["title"] ?? "";
-  //             final List subList = cat["sub"] ?? [];
-  //
-  //             return Padding(
-  //               padding: const EdgeInsets.only(bottom: 16),
-  //               child: subList.isNotEmpty
-  //                   ? _buildDropdownField(title, subList)
-  //                   : _buildTextField(title),
-  //             );
-  //           }).toList(),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  Widget _additionaldetailsCard(String label, List subList) {
-    final provider = context.watch<SettingsProvider>();
-
-    final currentValue = provider.additionalDetails[label];
-
-    final validValue = subList.contains(currentValue) ? currentValue : null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
-        const SizedBox(height: 6),
-
-        DropdownButtonFormField<String>(
-          value: validValue,
-
-          hint: const Text("Select"),
-
-          items: subList.toSet().map<DropdownMenuItem<String>>((e) {
-            return DropdownMenuItem<String>(
-              value: e.toString(),
-              child: Text(e.toString()),
-            );
-          }).toList(),
-
-          onChanged: (value) {
-            context.read<SettingsProvider>().updateAdditionalDetail(label, value);
-          },
-
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField(String label) {
-    final provider=context.watch<SettingsProvider>();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
+        const Text("NOTES"),
         const SizedBox(height: 6),
         TextFormField(
-          key: ValueKey("${label}_${provider.additionalDetails[label] ?? ""}"),
-          initialValue: provider.additionalDetails[label] ?? "",
-          onChanged: (value) {
-            context.read<SettingsProvider>().additionalDetails[label] = value;
+          controller: notesCtrl,
+          maxLines: 4,
+          decoration: _dropdownDecoration(),
+        ),
+      ],
+    );
+  }
+
+  Widget _actionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const Leads()),
+            );
           },
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text("Cancel", style: TextStyle(color: Colors.white)),
+        ),
+        const SizedBox(width: 16),
+        ElevatedButton(
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              final leadProvider = context.read<LeadProvider>();
+              final settingsProvider = context.read<SettingsProvider>();
+
+              try {
+                if (leadProvider.isEdit) {
+                  await leadProvider.updateUser(
+                    leadStatus: leadStatusCtrl.text,
+                    callStatus: callStatusCtrl.text,
+                    leadCategory: selectedLeadCategory,
+                    notes: notesCtrl.text,
+                    agentId: selectedAgentId,
+                    agentName: selectedAgentName,
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lead Updated Successfully")),
+                  );
+                } else {
+                  await leadProvider.addLead(
+                    name: leadProvider.nameController.text.trim(),
+                    phone: leadProvider.phoneController.text.trim(),
+                    email: leadProvider.emailController.text.trim(),
+                    source: leadProvider.sourceController.text.trim(),
+                    leadStatus: leadStatusCtrl.text.trim(),
+                    notes: notesCtrl.text.trim(),
+                    callStatus: callStatusCtrl.text.trim(),
+                    leadCategory: selectedLeadCategory,
+                    additionalDetails: settingsProvider.additionalDetails,
+                    assignedAgentId: selectedAgentId,
+                    assignedAgentName: selectedAgentName,
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lead Added Successfully")),
+                  );
+                }
+
+                leadProvider.clearFields();
+                settingsProvider.additionalDetails.clear();
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Leads()),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to save lead: $e")),
+                );
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          child: const Text("Save", style: TextStyle(color: Colors.white)),
         ),
       ],
     );
@@ -696,42 +552,23 @@ class _AddLeadState extends State<AddLead> {
             LengthLimitingTextInputFormatter(10),
           ]
               : [],
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
+          decoration: _dropdownDecoration(),
           validator: (value) {
-            final text=value?.trim()??"";
-            if (label.contains("*") && (value == null || value.trim().isEmpty)) {
+            final text = value?.trim() ?? "";
+
+            if (label.contains("*") && text.isEmpty) {
               return "Required";
             }
-            if(label=="EMAIL ADDRESS*"&&!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(text)){
+
+            if (label == "EMAIL ADDRESS*" &&
+                !RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(text)) {
               return "Enter a valid email";
             }
-            if(phone&& !RegExp(r'^[6-9]\d{9}$').hasMatch(text)){
-              return"Enter Valid phone number";
+
+            if (phone && !RegExp(r'^[6-9]\d{9}$').hasMatch(text)) {
+              return "Enter valid phone number";
             }
+
             return null;
           },
         ),
@@ -739,109 +576,29 @@ class _AddLeadState extends State<AddLead> {
     );
   }
 
-  Widget _notesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("NOTES"),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: notesCtrl,
-          maxLines: 4,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _actionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const Leads()),
-            );
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text(
-            "Cancel",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        const SizedBox(width: 16),
-        ElevatedButton(
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              final provider = context.read<LeadProvider>();
-              try {
-                if(provider.isEdit){
-                  await provider.updateUser(
-                    leadStatus: leadStatusCtrl.text,
-                    callStatus: callStatusCtrl.text,
-                    leadCategory: leadCategoryCtrl.text,
-                    notes: notesCtrl.text,
-                    agentId: selectedAgentId,
-                    agentName: selectedAgentName,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lead Updated Successfully "))
-                  );
-                }else {
-                  await context.read<LeadProvider>().addLead(
-                    name: provider.nameController.text,
-                    phone: provider.phoneController.text,
-                    email: provider.emailController.text,
-                    source: provider.sourceController.text,
-                    leadStatus: leadStatusCtrl.text,
-                    notes: notesCtrl.text,
-                    callStatus: callStatusCtrl.text,
-                    assignedAgentId: selectedAgentId,
-                    // ✅ ADD
-                    assignedAgentName: selectedAgentName,
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lead Added Successfully")),
-                  );
-                }
-
-                provider.clearFields();
-                Navigator.push(context,MaterialPageRoute(builder: (context)=>Leads()));
-
-
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to save lead: $e")),
-                );
-              }
-            }
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          child: const Text(
-            "Save",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
+  InputDecoration _dropdownDecoration({String? label}) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.blue, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
     );
   }
 }

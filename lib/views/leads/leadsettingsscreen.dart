@@ -12,25 +12,30 @@ class LeadSettingsScreen extends StatefulWidget {
 }
 
 class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
-  bool showCategories = false;
+  bool showAdditionalFields = false;
   bool showLeadStatus = false;
   bool showCallStatus = false;
   bool showLeadCategory = false;
   bool showLeadSource = false;
 
-  final _categoryFormKey = GlobalKey<FormState>();
+  final _additionalFieldFormKey = GlobalKey<FormState>();
 
   final TextEditingController leadStatusController = TextEditingController();
   final TextEditingController callStatusController = TextEditingController();
   final TextEditingController leadCategoryController = TextEditingController();
   final TextEditingController leadSourceController = TextEditingController();
-  final TextEditingController additionalCategoryController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      context.read<SettingsProvider>().fetchAllSettings();
+
+    Future.microtask(() async {
+      final provider = context.read<SettingsProvider>();
+      await provider.fetchAllSettings();
+
+      if (provider.additionalFields.isEmpty) {
+        provider.addAdditionalField();
+      }
     });
   }
 
@@ -43,9 +48,16 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
     super.dispose();
   }
 
+  void _hideAll() {
+    showAdditionalFields = false;
+    showLeadStatus = false;
+    showCallStatus = false;
+    showLeadCategory = false;
+    showLeadSource = false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
     final provider = context.watch<SettingsProvider>();
 
     return Scaffold(
@@ -61,9 +73,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(30),
@@ -76,55 +86,58 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _leftCard(),
-
                     const SizedBox(width: 40),
-                    Expanded(child:Align(
-                      alignment:Alignment.topLeft,
-                      child:
-                    showCategories ? _additionalDetailsCard(isMobile,provider):
-                    showLeadStatus
-                      ?_simpleListCard(
+
+                    if (showAdditionalFields)
+                      _additionalFieldsCard(provider),
+
+                    if (showLeadStatus)
+                      _simpleListCard(
                         title: "Add Lead Status",
                         hint: "Enter lead status",
+                        listTitle: "Lead Status",
                         controller: leadStatusController,
                         items: provider.leadStatus,
                         onAdd: provider.addLeadStatus,
                         onDelete: provider.deleteLeadStatus,
                         onSave: provider.saveLeadStatus,
-                      )
-                    :showCallStatus
-                      ? _simpleListCard(
+                      ),
+
+                    if (showCallStatus)
+                      _simpleListCard(
                         title: "Add Call Status",
                         hint: "Enter call status",
+                        listTitle: "Call Status",
                         controller: callStatusController,
                         items: provider.callStatus,
                         onAdd: provider.addCallStatus,
                         onDelete: provider.deleteCallStatus,
                         onSave: provider.saveCallStatus,
-                      )
-                    :showLeadCategory
-                     ? _simpleListCard(
+                      ),
+
+                    if (showLeadCategory)
+                      _simpleListCard(
                         title: "Add Lead Category",
-                        hint: "Enter Lead category",
+                        hint: "Enter lead category",
+                        listTitle: "Lead Category",
                         controller: leadCategoryController,
                         items: provider.leadCategory,
                         onAdd: provider.addLeadCategory,
                         onDelete: provider.deleteLeadCategory,
                         onSave: provider.saveLeadCategory,
-                      )
-                    :showLeadSource
-                    ?  _simpleListCard(
+                      ),
+
+                    if (showLeadSource)
+                      _simpleListCard(
                         title: "Add Lead Source",
-                        hint: "Enter Lead Source",
+                        hint: "Enter lead source",
+                        listTitle: "Lead Source",
                         controller: leadSourceController,
                         items: provider.leadSource,
                         onAdd: provider.addleadSource,
                         onDelete: provider.deleteleadSource,
                         onSave: provider.saveleadSource,
-
-                    ):const SizedBox(),
-                    ),
-                    ),
+                      ),
                   ],
                 ),
               ),
@@ -137,7 +150,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
   Widget _leftCard() {
     return Container(
-       width: 300,
+      width: 300,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
@@ -146,24 +159,17 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Add Leads",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          const Text("Add Leads", style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
 
           GestureDetector(
             onTap: () {
-              //context.read<SettingsProvider>().clearCategories();
               setState(() {
-                showCategories = true;
-                showLeadStatus = false;
-                showCallStatus = false;
-                showLeadCategory = false;
-                showLeadSource = false;
+                _hideAll();
+                showAdditionalFields = true;
               });
             },
-            child: _box("Additional Details"),
+            child: _box("Additional Fields"),
           ),
 
           const SizedBox(height: 25),
@@ -176,13 +182,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              // context.read<SettingsProvider>().clearLeadStatus();
               setState(() {
-                showCategories = false;
+                _hideAll();
                 showLeadStatus = true;
-                showCallStatus = false;
-                showLeadCategory = false;
-                showLeadSource = false;
               });
             },
             child: _box("Lead Status"),
@@ -198,13 +200,9 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              // context.read<SettingsProvider>().clearCallStatus();
               setState(() {
-                showCategories = false;
-                showLeadStatus = false;
+                _hideAll();
                 showCallStatus = true;
-                showLeadCategory = false;
-                showLeadSource = false;
               });
             },
             child: _box("Call Status"),
@@ -220,31 +218,26 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           GestureDetector(
             onTap: () {
-              // context.read<SettingsProvider>().clearLeadCategory();
               setState(() {
-                showCategories = false;
-                showLeadStatus = false;
-                showCallStatus = false;
+                _hideAll();
                 showLeadCategory = true;
-                showLeadSource = false;
               });
             },
             child: _box("Lead Category"),
           ),
+
           const SizedBox(height: 25),
+
           const Text(
             "Lead Source",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
+
           GestureDetector(
             onTap: () {
-              // context.read<SettingsProvider>().clearLeadSource();
               setState(() {
-                showCategories = false;
-                showLeadStatus = false;
-                showCallStatus = false;
-                showLeadCategory = false;
+                _hideAll();
                 showLeadSource = true;
               });
             },
@@ -255,121 +248,61 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
     );
   }
 
-  Widget _additionalDetailsCard(
-      bool isMobile,
-      SettingsProvider provider,
-      ) {
+  Widget _additionalFieldsCard(SettingsProvider provider) {
     return Container(
-      // width: double.infinity,
+      width: 500,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.circular(15),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Center(
-            child: Text(
-              "Add Additional Details",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+      child: Form(
+        key: _additionalFieldFormKey,
+        child: Column(
+          children: [
+            const Text(
+              "Add Additional Fields",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             Expanded(
-              child: ListView(
-                children: [
-                  ...List.generate(provider.categories.length, (index) {
-                    final cat = provider.categories[index];
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ...List.generate(provider.additionalFields.length, (index) {
+                      final item = provider.additionalFields[index];
 
-                    return Column(
-                      children: [
-                        Row(
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 18),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade400),
+                        ),
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: cat["controller"],
-                                decoration: InputDecoration(
-                                  hintText: "Category ${index + 1}",
-                                  border: const OutlineInputBorder(),
-                                ),
-                                validator: (value) {
-                                  if (value == null ||
-                                      value.trim().isEmpty) {
-                                    return "Required";
-                                  }
-                                  return null;
-                                },
-                                onChanged: (value) {
-                                  provider.updateCategory(index, value);
-                                },
-                              ),
-                            ),
-
-                              IconButton(
-                                icon: const Icon(Icons.add, color: Colors.blue),
-                                onPressed: () {
-                                  provider.addSubCategory(index);
-                                },
-                              ),
-
-              IconButton(
-                onPressed: () {
-                  provider.clearAdditionalInputFields();
-                  provider.deleteCategory(index);
-                },
-                icon: const Icon(Icons.delete_outline),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          /// SUB CATEGORY FIELD
-          TextFormField(
-            controller: provider.additionalSubCategoryController,
-            decoration: InputDecoration(
-              hintText: "Sub",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-                        ...List.generate(cat["sub"].length, (subIndex) {
-                          return Padding(
-                            padding:
-                            const EdgeInsets.only(left: 35, bottom: 10),
-                            child: Row(
+                            Row(
                               children: [
                                 Expanded(
                                   child: TextFormField(
-                                    controller:
-                                    cat["subcontrollers"][subIndex],
+                                    controller: item["controller"],
                                     decoration: InputDecoration(
-                                      hintText:
-                                      "Sub Category ${index + 1}.${subIndex + 1}",
+                                      hintText: "Field ${index + 1}",
                                       border: const OutlineInputBorder(),
                                     ),
                                     validator: (value) {
                                       if (value == null ||
                                           value.trim().isEmpty) {
-                                        return "Required";
+                                        return "Enter field name";
                                       }
                                       return null;
                                     },
                                     onChanged: (value) {
-                                      provider.updateSubCategory(
+                                      provider.updateAdditionalField(
                                         index,
-                                        subIndex,
                                         value,
                                       );
                                     },
@@ -377,55 +310,176 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                                 ),
 
                                 IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.blue,
+                                  ),
                                   onPressed: () {
-                                    provider.deleteSubCategory(
-                                      index,
-                                      subIndex,
-                                    );
+                                    final title = item["controller"]
+                                        .text
+                                        .trim();
+
+                                    if (title.isEmpty) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content:
+                                          Text("Enter field name first"),
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    provider.addSubCategory(index);
+                                  },
+                                ),
+
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    provider.deleteAdditionalField(index);
                                   },
                                 ),
                               ],
                             ),
-                          );
-                        }),
 
-                        const SizedBox(height: 15),
-                      ],
-                    );
-                  }),
-                ],
+                            const SizedBox(height: 10),
+
+                            ...List.generate(item["sub"].length, (subIndex) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 35,
+                                  bottom: 10,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller:
+                                        item["subcontrollers"][subIndex],
+                                        decoration: InputDecoration(
+                                          hintText:
+                                          "Sub field ${subIndex + 1}",
+                                          border: const OutlineInputBorder(),
+                                        ),
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.trim().isEmpty) {
+                                            return "Enter sub field";
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: (value) {
+                                          provider.updateSubCategory(
+                                            index,
+                                            subIndex,
+                                            value,
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        provider.deleteSubCategory(
+                                          index,
+                                          subIndex,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      );
+                    }),
+
+                    _addedDetailsBox(provider),
+                  ],
+                ),
               ),
             ),
 
-          const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
-          /// BUTTONS
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    provider.addAdditionalCategoryToList();
-                  },
-                  child: const Text("Add Category"),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.themeColor,
+                    ),
+                    onPressed: () {
+                      final lastField = provider.additionalFields.isNotEmpty
+                          ? provider.additionalFields.last["controller"]
+                          .text
+                          .trim()
+                          : "";
+
+                      if (provider.additionalFields.isNotEmpty &&
+                          lastField.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Fill current field first"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      provider.addAdditionalField();
+                    },
+                    child: const Text(
+                      "Add Field",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 16),
+                const SizedBox(width: 10),
 
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await provider.saveAdditionalDetails();
-                  },
-                  child: const Text("Submit"),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.themeColor,
+                    ),
+                    onPressed: () async {
+                      final valid =
+                          _additionalFieldFormKey.currentState?.validate() ??
+                              false;
+
+                      if (!valid) return;
+
+                      await provider.saveAdditionalFields();
+                      await provider.clearAdditionalFields();
+                      await provider.fetchAdditionalDetails();
+
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Additional fields saved successfully"),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Submit",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -433,6 +487,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
   Widget _simpleListCard({
     required String title,
     required String hint,
+    required String listTitle,
     required TextEditingController controller,
     required List<String> items,
     required Function(String) onAdd,
@@ -472,7 +527,6 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 onPressed: () {
                   final value = controller.text.trim();
 
-
                   if (value.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Enter value first")),
@@ -489,18 +543,20 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
 
           const SizedBox(height: 25),
 
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              "Status",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              listTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
 
           const SizedBox(height: 10),
 
           Expanded(
-            child: ListView.builder(
+            child: items.isEmpty
+                ? const Center(child: Text("No data added"))
+                : ListView.builder(
               itemCount: items.length,
               itemBuilder: (context, index) {
                 return ListTile(
@@ -530,6 +586,7 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                   );
                   return;
                 }
+
                 await onSave();
                 await context.read<SettingsProvider>().fetchAllSettings();
                 controller.clear();
@@ -546,6 +603,90 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _addedDetailsBox(SettingsProvider provider) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Added Additional Fields",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          if (provider.additionalFieldsList.isEmpty)
+            const Text("No data added"),
+
+          ...provider.additionalFieldsList.map((item) {
+            final title = item["title"] ?? "";
+            final subList = List<String>.from(item["sub"] ?? []);
+
+            if (title.toString().trim().isEmpty) {
+              return const SizedBox();
+            }
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border.all(color: Colors.black12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+
+                        const SizedBox(height: 5),
+
+                        if (subList.isEmpty)
+                          const Text(
+                            "No sub fields",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+
+                        if (subList.isNotEmpty)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 5,
+                            children: subList.map((sub) {
+                              return Chip(
+                                label: Text(sub),
+                                backgroundColor: Colors.blue.shade50,
+                              );
+                            }).toList(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
         ],
       ),
     );
@@ -571,69 +712,4 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
       child: Text(text),
     );
   }
-}
-
-Widget _addedDetailsBox(SettingsProvider provider) {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(15),
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey),
-      borderRadius: BorderRadius.circular(12),
-      color: Colors.grey.shade100,
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Added Additional Details",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 10),
-
-        if (provider.categories.isEmpty)
-          const Text("No data added"),
-
-        ...provider.categories.map((cat) {
-          final title = cat["title"] ?? "";
-          final subList = List<String>.from(cat["sub"] ?? []);
-
-          if (title.trim().isEmpty) return const SizedBox();
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-
-                const SizedBox(height: 5),
-
-                Wrap(
-                  spacing: 8,
-                  children: subList.map((sub) {
-                    return Chip(
-                      label: Text(sub),
-                      backgroundColor: Colors.blue.shade50,
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ],
-    ),
-  );
 }
