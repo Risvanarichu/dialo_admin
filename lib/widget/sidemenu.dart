@@ -18,7 +18,8 @@ import '../views/settings/settscreen.dart';
 
 class SideMenu extends StatefulWidget {
   final int selectedIndex;
-  const SideMenu({super.key,this.selectedIndex=0});
+  final Widget? child;
+  const SideMenu({super.key, this.selectedIndex = 0, this.child});
 
   @override
   State<SideMenu> createState() => _SideMenuState();
@@ -75,45 +76,50 @@ String userRole='USER';
             color: AppColors.whitetext,
             child: Column(
               children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        /// LOGO + NAME
+                        const SizedBox(height: 30),
 
-                /// LOGO + NAME
-                const SizedBox(height: 30),
+                        Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 35,
+                              child: Image.asset("assets/side_logo.png"),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              "DIALO",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ],
+                        ),
 
-                Column(
-                  children: [
-                    CircleAvatar(
-                      radius:35,
-                    child: Image.asset("assets/side_logo.png"),
-                    // backgroundImage: AssetImage(
-                    //   "assets/dialo-logo1.png"),
+                        const SizedBox(height: 20),
+
+                        /// MENU ITEMS
+                        _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
+                        _menuItem(Icons.phone_outlined, "Calls", 1),
+                        _menuItem(Icons.people_outline, "Leads", 2),
+                        _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
+                        _menuItem(Icons.event_outlined, "Follow-Up", 4),
+                        _menuItem(Icons.bar_chart_outlined, "Reports", 5),
+                        if (prov.userRole == 'ADMIN')
+                          _menuItem(Icons.group_outlined, "Users", 6),
+                        if (prov.userRole == 'ADMIN')
+                          _menuItem(Icons.settings_outlined, "Settings", 7),
+                      ],
                     ),
-            SizedBox(height: 8),
-    Text(
-                      "DIALO",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
 
-                const SizedBox(height: 20),
-
-                /// MENU ITEMS
-                _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
-                _menuItem(Icons.phone_outlined, "Calls", 1),
-                _menuItem(Icons.people_outline, "Leads", 2),
-                _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
-                _menuItem(Icons.event_outlined, "Follow-Up", 4),
-                _menuItem(Icons.bar_chart_outlined, "Reports", 5),
-                if (prov.userRole == 'ADMIN')
-                  _menuItem(Icons.group_outlined, "Users", 6),
-                if (prov.userRole == 'ADMIN')
-                  _menuItem(Icons.settings_outlined, "Settings", 7),
-
-                const Spacer(),
+                const Divider(height: 1),
 
                 /// LOGOUT
                 ListTile(
@@ -136,7 +142,9 @@ String userRole='USER';
           Expanded(
             child: Container(
               color: AppColors.whitetext,
-              child: pages[selectedIndex],
+              child: widget.child != null && selectedIndex == widget.selectedIndex
+                  ? widget.child!
+                  : pages[selectedIndex],
             ),
           )
         ],
