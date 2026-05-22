@@ -28,7 +28,8 @@ class SideMenu extends StatefulWidget {
 class _SideMenuState extends State<SideMenu> {
 
   late int selectedIndex;
-String userRole='USER';
+// String userRole='USER';
+
 
   @override
   void initState() {
@@ -36,20 +37,9 @@ String userRole='USER';
 
     selectedIndex = widget.selectedIndex;
 
-    _loadUserRole();
+    context.read<Loginprovider>().loadUserRole();
   }
 
-  Future<void> _loadUserRole() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    String? role = prefs.getString('role');
-
-    print("Loaded Role: $role"); // 👈 ADD HERE
-
-    setState(() {
-      userRole = role ?? 'USER';
-    });
-  }
 
   final List<Widget> pages = [
     Dashboard(),

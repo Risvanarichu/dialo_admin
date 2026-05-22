@@ -66,13 +66,19 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "LEAD SETTINGS",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+            Row(
+              children: [
+                IconButton(onPressed: (){
+                  Navigator.pop(context);
+                },
+                    icon:const Icon(Icons.arrow_back),),
+                Text(
+                    "LEAD SETTINGS",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+              ],
             ),
+
             const SizedBox(height: 20),
             Expanded(
               child: Container(
