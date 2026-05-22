@@ -17,7 +17,8 @@ import '../views/settings/settscreen.dart';
 
 
 class SideMenu extends StatefulWidget {
-  const SideMenu({super.key});
+  final int selectedIndex;
+  const SideMenu({super.key,this.selectedIndex=0});
 
   @override
   State<SideMenu> createState() => _SideMenuState();
@@ -25,12 +26,16 @@ class SideMenu extends StatefulWidget {
 
 class _SideMenuState extends State<SideMenu> {
 
-  int selectedIndex = 0;
+  late int selectedIndex;
 String userRole='USER';
 
   @override
   void initState() {
     super.initState();
+
+    selectedIndex = widget.selectedIndex;
+
+    _loadUserRole();
   }
 
   Future<void> _loadUserRole() async {

@@ -1,5 +1,6 @@
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
+import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -445,7 +446,7 @@ class _AddLeadState extends State<AddLead> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const Leads()),
+              MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
             );
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -497,7 +498,7 @@ class _AddLeadState extends State<AddLead> {
 
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const Leads()),
+                  MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
                 );
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
