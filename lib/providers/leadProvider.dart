@@ -45,6 +45,7 @@ class LeadProvider extends ChangeNotifier {
 
   String? selectedAgentId;
   String? selectedAgentName;
+  String userRole = "";
 
 
   final nameController = TextEditingController();
@@ -93,9 +94,12 @@ class LeadProvider extends ChangeNotifier {
 
     agentId = prefs.getString('agentId') ?? "";
     agentName = prefs.getString('name') ?? "Unknown";
+    userRole =
+        (prefs.getString('role') ?? "AGENT").toUpperCase().trim();
 
     print("Agent ID: $agentId");
     print("Agent Name: $agentName");
+    print("User Role : $userRole");
   }
 
   Future<void> loadAgents() async {
@@ -184,27 +188,69 @@ class LeadProvider extends ChangeNotifier {
   }
 
 
+  // void listenLeads() {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   leadSubscription?.cancel();
+  //
+  //   leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+  //     leads = snapshot.docs.map((doc) {
+  //       final data = doc.data();
+  //
+  //       String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
+  //
+  //       if (assignedAgentId
+  //           .toString()
+  //           .isEmpty) {
+  //         doc.reference.update({
+  //           "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+  //           "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
+  //           "ADDED_BY_ID": agentId,
+  //         });
+  //       }
+  //
+  //       return LeadModel.fromMap(
+  //         doc.id,
+  //         {
+  //           ...data,
+  //           "ASSIGNED_AGENT_NAME":
+  //           agentMap.containsKey(assignedAgentId)
+  //               ? agentMap[assignedAgentId]
+  //               : data["ASSIGNED_AGENT_NAME"] ?? "Unassigned",
+  //         },
+  //       );
+  //     }).toList();
+  //
+  //     applyFilters();
+  //
+  //     isLoading = false;
+  //     notifyListeners();
+  //   });
+  // }
+
+
   void listenLeads() {
     isLoading = true;
     notifyListeners();
 
     leadSubscription?.cancel();
 
-    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+    Query query = fbd.collection('LEADS');
+
+    /// IF AGENT → ONLY THEIR LEADS
+    if (userRole.trim().toUpperCase() != "ADMIN") {
+      query = query.where(
+        "ASSIGNED_AGENT_ID",
+        isEqualTo: agentId,
+      );
+    }
+
+    leadSubscription = query.snapshots().listen((snapshot) {
       leads = snapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
         String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
-
-        if (assignedAgentId
-            .toString()
-            .isEmpty) {
-          doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
-            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
-            "ADDED_BY_ID": agentId,
-          });
-        }
 
         return LeadModel.fromMap(
           doc.id,
@@ -225,16 +271,23 @@ class LeadProvider extends ChangeNotifier {
     });
   }
 
-
   Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
 
     try {
-      final snapshot = await fbd.collection('LEADS').get();
+      Query query = fbd.collection('LEADS');
 
+      if (userRole != "ADMIN") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
+
+      final snapshot = await query.get();
       leads = snapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
 
         if (data["ASSIGNED_AGENT_ID"] == null ||
