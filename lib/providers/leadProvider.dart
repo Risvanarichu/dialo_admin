@@ -618,6 +618,7 @@ class LeadProvider extends ChangeNotifier {
     required String remarks,
     required String email,
     DateTime? followUpDate,
+    DateTime? lastContactedDate,
   }) async {
     try {
       isButtonLoading = true;
@@ -635,6 +636,7 @@ class LeadProvider extends ChangeNotifier {
         "REMARKS": remarks,
         "EMAIL": email,
         "FOLLOW_UP_DATE": followUpDate,
+        "LAST_CONTACTED_DATE":DateTime.now(),
         "CREATED_AT": FieldValue.serverTimestamp(),
       });
 
@@ -648,7 +650,8 @@ class LeadProvider extends ChangeNotifier {
         "PRIORITY": priority,
         "LAST_REMARK": remarks,
         "FOLLOW_UP_DATE": followUpDate,
-        "LAST_CONTACTED_DATE": DateTime.now(),
+        "LAST_CONTACTED_DATE":DateTime.now(),
+        "LAST_CONTACTED_DATE":lastContactedDate ?? DateTime.now(),
       });
 
       remarkController.clear();
