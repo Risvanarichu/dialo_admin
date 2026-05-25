@@ -425,7 +425,7 @@ Widget statusChip(String status) {
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
-      status,
+      text,
       style: const TextStyle(
         color: Colors.blue,
         fontWeight: FontWeight.w600,

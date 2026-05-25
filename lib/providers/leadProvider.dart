@@ -463,7 +463,7 @@ class LeadProvider extends ChangeNotifier {
     emailController.text = user["EMAIL"] ?? "";
     sourceController.text = user["SOURCE"] ?? "";
     leadStatusValue = user["LEAD_STATUS"] ?? "";
-    callStatusValue = user["CALLSTATUS"] ?? "";
+    callStatusValue = user["CALL_STATUS"] ?? "";
     leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
     notesValue = user["NOTES"] ?? "";
 
@@ -499,7 +499,7 @@ class LeadProvider extends ChangeNotifier {
 
             // ✅ ADD THESE
             "LEAD_STATUS": leadStatus,
-            "CALLSTATUS": callStatus,
+            "CALL_STATUS": callStatus,
             "LEAD_CATEGORY": leadCategory,
             "NOTES": notes,
             "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
@@ -619,30 +619,47 @@ class LeadProvider extends ChangeNotifier {
     required String email,
     DateTime? followUpDate,
   }) async {
-    isButtonLoading = true;
-    notifyListeners();
+    try {
+      isButtonLoading = true;
+      notifyListeners();
 
-    await FirebaseFirestore.instance
-        .collection("LEADS")
-        .doc(leadId)
-        .collection("FOLLOW_UPS")
-        .add({
-      "CALL_STATUS": callStatus,
-      "LEAD_STATUS": leadStatus,
-      "LEAD_CATEGORY": leadCategory,
-      "PRIORITY": priority,
-      "REMARKS": remarks,
-      "EMAIL": email,
-      "FOLLOW_UP_DATE": followUpDate,
-      "CREATED_AT": FieldValue.serverTimestamp(),
-    });
+      await FirebaseFirestore.instance
+          .collection("LEADS")
+          .doc(leadId)
+          .collection("FOLLOW_UPS")
+          .add({
+        "CALL_STATUS": callStatus,
+        "LEAD_STATUS": leadStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "PRIORITY": priority,
+        "REMARKS": remarks,
+        "EMAIL": email,
+        "FOLLOW_UP_DATE": followUpDate,
+        "CREATED_AT": FieldValue.serverTimestamp(),
+      });
 
-    remarkController.clear();
-    emailController.clear();
-    dateController.clear();
+      await FirebaseFirestore.instance
+          .collection("LEADS")
+          .doc(leadId)
+          .update({
+        "CALL_STATUS": callStatus,
+        "LEAD_STATUS": leadStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "PRIORITY": priority,
+        "LAST_REMARK": remarks,
+        "FOLLOW_UP_DATE": followUpDate,
+        "LAST_CONTACTED_DATE": DateTime.now(),
+      });
 
-    isButtonLoading = false;
-    notifyListeners();
+      remarkController.clear();
+      emailController.clear();
+      dateController.clear();
+    }catch(e){
+      debugPrint("FollowUp Error:$e");
+    }finally{
+      isButtonLoading = false;
+      notifyListeners();
+    }
   }
 
   void clearFields() {}

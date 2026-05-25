@@ -88,10 +88,12 @@ class LeadModel {
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       assignedAgentName: map["ASSIGNED_AGENT_NAME"] ?? "",
       followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
-     callStatus: map['']?.toString().toUpperCase() ?? '',
-      lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
-          ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
-          : added_date,
+        callStatus:
+        map['CALL_STATUS']?.toString().toUpperCase() ?? '',
+
+        lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
+            ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
+            : added_date,
       notes: map['NOTES'].toString()?? ""
 
     );

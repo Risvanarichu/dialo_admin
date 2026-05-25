@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/agentProvider.dart';
+import 'leads/leads_list.dart';
 
 
 class FollowUpPage extends StatefulWidget {
@@ -282,7 +283,7 @@ Widget tableHeader(dynamic lead) {
     tableCell("LAST CONTACTED DATE", isHeader: true),
     tableCell("PRIORITY", isHeader: true),
     tableCell("AGENT", isHeader: true),
-    tableCell("ACTIONS", isHeader: true),
+    tableCell("CALL STATUS", isHeader: true),
   ],)
   );
 }
@@ -324,46 +325,56 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
           tableCell(priority,color: getPrioritycolor(),),
           tableCell(agentName),
 
-          Expanded(child: Wrap(
-            spacing: 5,
-            children: [
-              GestureDetector(
-                onTap: (){
-                  context.read<LeadProvider>().completedLead(lead.id);
-                },
-                child: actionButton("Complete", Colors.green),
+          // Expanded(child: Wrap(
+          //   spacing: 5,
+          //   children: [
+          //     GestureDetector(
+          //       onTap: (){
+          //         context.read<LeadProvider>().completedLead(lead.id);
+          //       },
+          //       child: actionButton("Complete", Colors.green),
+          //     ),
+          //
+          //     GestureDetector(
+          //       onTap: () async {
+          //         DateTime? pickedDate = await showDatePicker(
+          //           context: context,
+          //           initialDate: DateTime.now(),
+          //           firstDate: DateTime(2020),
+          //           lastDate: DateTime(2030),
+          //         );
+          //
+          //         if (pickedDate != null) {
+          //           TimeOfDay? pickedTime = await showTimePicker(
+          //             context: context,
+          //             initialTime: TimeOfDay.now(),
+          //           );
+          //
+          //           String formattedTime = pickedTime != null
+          //               ? pickedTime.format(context)
+          //               : DateFormat('hh:mm a').format(pickedDate);
+          //
+          //           context.read<LeadProvider>().rescheduleLead(
+          //             lead.id,
+          //             pickedDate,
+          //             formattedTime,
+          //           );
+          //         }
+          //       },
+          //       child: actionButton("Reschedule", Colors.blue),
+          //     )
+          //   ],
+          // ),
+          // )
+          Expanded(
+            child: Center(
+              child: statusChip(
+                lead.callStatus.isEmpty
+                    ? "NO STATUS"
+                    : lead.callStatus,
               ),
-
-              GestureDetector(
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
-                  );
-
-                  if (pickedDate != null) {
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-
-                    String formattedTime = pickedTime != null
-                        ? pickedTime.format(context)
-                        : DateFormat('hh:mm a').format(pickedDate);
-
-                    context.read<LeadProvider>().rescheduleLead(
-                      lead.id,
-                      pickedDate,
-                      formattedTime,
-                    );
-                  }
-                },
-                child: actionButton("Reschedule", Colors.blue),
-              )
-            ],
-          ))
+            ),
+          ),
         ],
       ),),
       const Divider(height: 1,),
