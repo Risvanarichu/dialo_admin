@@ -69,37 +69,44 @@ class _LoginPageState extends State<LoginPage>{
 
 
           Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(25),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                child: Container(
-                  width: 800,
-                  height: 390,
-                  padding: EdgeInsets.all(30),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double screenWidth = MediaQuery.of(context).size.width;
+                final bool isNarrow = screenWidth < 750;
 
-                      Expanded(
-                        child: SingleChildScrollView(
+                return SingleChildScrollView(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                      child: Container(
+                        width: isNarrow ? 400 : 800,
+                        height: 390,
+                        padding: const EdgeInsets.all(30),
+                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            if (!isNarrow)
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            Expanded(
+                              child: SingleChildScrollView(
                           child: Form(
                               key:_formKey,
                               child: Column(
@@ -356,8 +363,11 @@ class _LoginPageState extends State<LoginPage>{
                   ),
                 ),
               ),
-            ),
-          ),
+                  )
+            );
+          },
+        ),
+      ),
         ],
       ),
     );

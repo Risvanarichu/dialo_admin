@@ -40,20 +40,20 @@ class UsersPage extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child:  Consumer<Agentprovider>(
-                        builder: (context,provider,child) {
-                          return TextField(
-                            controller: provider.searchController,
-                            onChanged: (value){
-                              provider.searchUser(value);
-                            },
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              hintText: "Search",
-                              prefixIcon: Icon(Icons.search),
-                              border: InputBorder.none,
-                            ),
-                          );
-                        }
+                          builder: (context,provider,child) {
+                            return TextField(
+                              controller: provider.searchController,
+                              onChanged: (value){
+                                provider.searchUser(value);
+                              },
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                hintText: "Search",
+                                prefixIcon: Icon(Icons.search),
+                                border: InputBorder.none,
+                              ),
+                            );
+                          }
                       ),
                     ),
 
@@ -127,56 +127,56 @@ class UsersPage extends StatelessWidget {
                 /// TABLE CONTAINER
                 Expanded(
                   child: Consumer<Agentprovider>(
-                     builder: (context,provider,child) {
-                       // if(provider.isLoading){
-                       //   return const Center(
-                       //     child: CircularProgressIndicator(),
-                       //   );
-                       // }
+                      builder: (context,provider,child) {
+                        // if(provider.isLoading){
+                        //   return const Center(
+                        //     child: CircularProgressIndicator(),
+                        //   );
+                        // }
 
-                       if(provider.isPageLoading){
-                         return const Center(child: CircularProgressIndicator(color: AppColors.themeColor,));
-                       }
-                       if(provider.filteredUserList.isEmpty)  {
-                         return const Center(child: Text("No Users Found"),);
-                       }
-                       return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
-                          children: [
+                        if(provider.isPageLoading){
+                          return const Center(child: CircularProgressIndicator(color: AppColors.themeColor,));
+                        }
+                        if(provider.filteredUserList.isEmpty)  {
+                          return const Center(child: Text("No Users Found"),);
+                        }
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            children: [
 
-                            /// HEADER
-                            Container(
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12)),
+                              /// HEADER
+                              Container(
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    TableHeader("NAME", flex: 2),
+                                    TableHeader("ROLE", flex: 2),
+                                    TableHeader("EMAIL", flex: 3),
+                                    TableHeader("STATUS", flex: 2),
+                                    TableHeader("ACTIONS", flex: 2),
+                                  ],
+                                ),
                               ),
-                              child: const Row(
-                                children: [
-                                  TableHeader("NAME", flex: 2),
-                                  TableHeader("ROLE", flex: 2),
-                                  TableHeader("EMAIL", flex: 3),
-                                  TableHeader("STATUS", flex: 2),
-                                  TableHeader("ACTIONS", flex: 2),
-                                ],
-                              ),
-                            ),
 
-                            /// ROWS
-                            Expanded(child: ListView(
-                              children: provider.filteredUserList.map((user){
-                                return buildRow(
-                                  user["NAME"]?? "",
-                                  user["ROLE"]?? "",
-                                  user["EMAIL"]?? "",
-                                  user["STATUS"]?? true,
-                                  imageUrl:user["IMAGE"]??"",
+                              /// ROWS
+                              Expanded(child: ListView(
+                                children: provider.filteredUserList.map((user){
+                                  return buildRow(
+                                    user["NAME"]?? "",
+                                    user["ROLE"]?? "",
+                                    user["EMAIL"]?? "",
+                                    user["STATUS"]?? true,
+                                    imageUrl:user["IMAGE"]??"",
                                     onEdit: () async {
                                       final provider = context.read<Agentprovider>();
 
@@ -194,44 +194,44 @@ class UsersPage extends StatelessWidget {
                                       provider.setPageLoading(false);
                                     },
                                     onDelete:(){
-                                    showDialog(context: context,
-                                        builder: (_)=> AlertDialog(
-                                          backgroundColor: Colors.white,
-                                          title: const Text("Delete User?"),
-                                          content: const Text("Are you sure?"),
-                                          actions: [
-                                            ElevatedButton(
-                                              style:ElevatedButton.styleFrom(
-                                            backgroundColor:AppColors.themeColor
-                                        ),
-                                              onPressed: ()=> Navigator.pop(context),
-                                                child: const Text("Cancel",
-                                                style: TextStyle(color: AppColors.whitetext),),
-                                            ),
-                                            ElevatedButton(
+                                      showDialog(context: context,
+                                          builder: (_)=> AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            title: const Text("Delete User?"),
+                                            content: const Text("Are you sure?"),
+                                            actions: [
+                                              ElevatedButton(
                                                 style:ElevatedButton.styleFrom(
                                                     backgroundColor:AppColors.themeColor
                                                 ),
-                                                onPressed: ()async{
-                                              await provider.deleteUser(user["ID"]);
-                                              Navigator.pop(context);
-                                            },
+                                                onPressed: ()=> Navigator.pop(context),
+                                                child: const Text("Cancel",
+                                                  style: TextStyle(color: AppColors.whitetext),),
+                                              ),
+                                              ElevatedButton(
+                                                  style:ElevatedButton.styleFrom(
+                                                      backgroundColor:AppColors.themeColor
+                                                  ),
+                                                  onPressed: ()async{
+                                                    await provider.deleteUser(user["ID"]);
+                                                    Navigator.pop(context);
+                                                  },
 
-                                                child:const Text("Delete",
-                                                style: TextStyle(color: AppColors.whitetext),) )
-                                          ],
-                                        )
-                                    );
+                                                  child:const Text("Delete",
+                                                    style: TextStyle(color: AppColors.whitetext),) )
+                                            ],
+                                          )
+                                      );
 
-                                  },
-                                );
-                              }).toList(),
-                            ))
-                          ],
-                        ),
-                                     );
-                     }
-                    ),
+                                    },
+                                  );
+                                }).toList(),
+                              ))
+                            ],
+                          ),
+                        );
+                      }
+                  ),
                 ),
               ],
             ),
@@ -239,10 +239,10 @@ class UsersPage extends StatelessWidget {
           Consumer<Agentprovider>(
               builder: (context,provider,child){
                 if(!provider.isLoading) return const SizedBox();
-                  return fullScreenLoader();
+                return fullScreenLoader();
 
               }
-              )
+          )
         ],
       ),
     );
@@ -284,12 +284,12 @@ class TableHeader extends StatelessWidget {
 /// ROW
 Widget buildRow(
     String name,
-String role,
-String email,
-bool isActive,{
+    String role,
+    String email,
+    bool isActive,{
       VoidCallback? onDelete,
       VoidCallback? onEdit, required imageUrl,
-}) {
+    }) {
   return Container(
     height: 60,
     decoration: BoxDecoration(
@@ -313,17 +313,17 @@ bool isActive,{
                   radius: 16,
                   backgroundColor: AppColors.themeColor,
                   backgroundImage:( imageUrl != null && imageUrl.toString().isNotEmpty)
-                  ? NetworkImage(imageUrl)
-                  :null,
+                      ? NetworkImage(imageUrl)
+                      :null,
                   child: (imageUrl == null || imageUrl.toString().isEmpty)
-                  ?const Icon(Icons.person,size: 16,color: Colors.white,)
-                  :null,
+                      ?const Icon(Icons.person,size: 16,color: Colors.white,)
+                      :null,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: Text(name,
+                  child: Text(name,
                     overflow: TextOverflow.ellipsis,
-                    ),
+                  ),
                 ),
               ],
             ),
@@ -379,15 +379,15 @@ bool isActive,{
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-               GestureDetector(
-                 onTap: onEdit,
-                 child: const Icon(Icons.edit,color: Colors.blue,),
-               ),
+                GestureDetector(
+                  onTap: onEdit,
+                  child: const Icon(Icons.edit,color: Colors.blue,),
+                ),
                 const SizedBox(width: 10),
-               GestureDetector(
-                 onTap: onDelete,
-                 child: const Icon(Icons.delete,color: Colors.red,),
-               )
+                GestureDetector(
+                  onTap: onDelete,
+                  child: const Icon(Icons.delete,color: Colors.red,),
+                )
               ],
             ),
           ),
@@ -396,7 +396,7 @@ bool isActive,{
     ),
   );
 }
-Widget fullScreenLoader(){
+Widget fullScreenLoader() {
   return Container(
     color: Colors.black.withOpacity(0.2),
     child: const Center(

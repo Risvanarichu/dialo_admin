@@ -12,6 +12,7 @@ class Loginprovider extends ChangeNotifier{
   bool isChecked = false;
   bool isPasswordHidden = true;
   String userRole = 'USER';
+  String name ='';
 
   void setLoading(bool value) {
     isLoading = value;
@@ -92,6 +93,7 @@ class Loginprovider extends ChangeNotifier{
     final prefs = await SharedPreferences.getInstance();
 
       userRole = prefs.getString('role') ?? 'USER';
+      name = prefs.getString('name')?? '';
 
     print("user role is $userRole");
     notifyListeners();
@@ -185,6 +187,7 @@ class Loginprovider extends ChangeNotifier{
       emailController.text = prefs.getString('email') ??'';
 
     }
+    name = prefs.getString('name')?? '';
     notifyListeners ();
   }
 

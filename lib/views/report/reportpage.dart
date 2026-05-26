@@ -1,7 +1,11 @@
+import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/providers/reportProvider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:dialo_admin/providers/loginprovider.dart';
+
+import '../../providers/settings_provider.dart';
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});
@@ -10,48 +14,85 @@ class ReportsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isWide = screenWidth > 900;
+    final loginProvider = context.watch<Loginprovider>();
+
+    bool isAgent =
+        loginProvider.userRole.toUpperCase() == "AGENT";
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
       body: provider.isLoading 
           ? const Center(child: CircularProgressIndicator()) 
           : Padding(
         padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
+        child: isAgent
+            ? Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "LEADS REPORT",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Divider(),
+
+            const DateFilterSection(),
+
+            const SizedBox(height: 20),
+
+            /// FULL SCREEN LEAD REPORT
+            const Expanded(
+              child: LeadsReportCard(),
+            ),
+          ],
+        )
+            : SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 "REPORTS",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
-              SizedBox(height: 20),
-              Divider(),
+              const SizedBox(height: 20),
+              const Divider(),
 
-              DateFilterSection(),
+              const DateFilterSection(),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-              Row(
-                children: [
-                  Expanded(child: AgentPerformanceCard()),
-                  const SizedBox(width: 20),
-                  Expanded(child: LeadFunnelCard()),
-                ],
-              ),
-
-              SizedBox(height: 20),
-
-              Row(
-                children: [
-                  Expanded(child: AgentTableCard()),
-                  SizedBox(width: 20),
-
-                  Expanded(child: LeadsReportCard()),
-                ],
-              ),
-
-
+              if (isWide) ...[
+                const Row(
+                  children: [
+                    Expanded(child: AgentPerformanceCard()),
+                    SizedBox(width: 20),
+                    Expanded(child: LeadFunnelCard()),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Row(
+                  children: [
+                    Expanded(child: AgentTableCard()),
+                    SizedBox(width: 20),
+                    Expanded(child: LeadsReportCard()),
+                  ],
+                ),
+              ] else ...[
+                const AgentPerformanceCard(),
+                const SizedBox(height: 20),
+                const LeadFunnelCard(),
+                const SizedBox(height: 20),
+                const AgentTableCard(),
+                const SizedBox(height: 20),
+                const LeadsReportCard(),
+              ],
             ],
           ),
         ),
@@ -69,30 +110,56 @@ class DateFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _dateField(context, "From Date", true),
-        const SizedBox(width: 20),
-        _dateField(context, "To Date", false),
-        const SizedBox(width: 20),
-        Padding(
-          padding: const EdgeInsets.only(top: 25),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff2f6fed),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+    return LayoutBuilder(
+      builder: (context, filterConstraints) {
+        final bool isWide = filterConstraints.maxWidth > 600;
+
+        final fromDateField = _dateField(context, "From Date", true);
+        final toDateField = _dateField(context, "To Date", false);
+        final applyButton = Padding(
+          padding: EdgeInsets.only(top: isWide ? 25 : 10),
+          child: SizedBox(
+            width: isWide ? null : double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff2f6fed),
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () async {
+                final provider = context.read<ReportProvider>();
+                await provider.fetchReports();
+              },
+              child: const Text("Apply", style: TextStyle(color: Colors.white)),
             ),
-            onPressed: () async {
-              final provider = context.read<ReportProvider>();
-              await provider.fetchReports();
-            },
-            child: const Text("Apply",style: TextStyle(color: Colors.white),),
           ),
-        )
-      ],
+        );
+
+        if (isWide) {
+          return Row(
+            children: [
+              fromDateField,
+              const SizedBox(width: 20),
+              toDateField,
+              const SizedBox(width: 20),
+              applyButton,
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [fromDateField]),
+            const SizedBox(height: 15),
+            Row(children: [toDateField]),
+            const SizedBox(height: 15),
+            applyButton,
+          ],
+        );
+      },
     );
   }
 
@@ -306,7 +373,22 @@ class LeadFunnelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
-    final funnel = provider.funnelData;
+    final loginProvider = context.watch<Loginprovider>();
+
+    Map<String, dynamic> funnel = provider.funnelData;
+
+    if (loginProvider.userRole.toUpperCase() == "AGENT") {
+      final agentLeads = provider.leadsReport.where((e) =>
+      e["agent"].toString().toLowerCase().trim() ==
+          loginProvider.name.toLowerCase().trim());
+
+      funnel = {
+        "total": agentLeads.length,
+        "pending": agentLeads.where((e) => e["status"] == "Pending").length,
+        "contacted": agentLeads.where((e) => e["status"] == "Contacted").length,
+        "converted": agentLeads.where((e) => e["status"] == "Converted").length,
+      };
+    }
     double maxValue = (funnel['total'] ?? 1).toDouble();
     return _card(
       child: Column(
@@ -446,6 +528,8 @@ class LeadsReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final loginProvider = context.watch<Loginprovider>();
 
     return _card(
       child: Column(
@@ -461,21 +545,35 @@ class LeadsReportCard extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _dropdown(
-                value: provider.selectedAgent,
-                items: provider.availableAgents,
-                onChanged: provider.updateAgent,
-              ),
+
+              /// SHOW AGENT FILTER ONLY FOR ADMIN
+              if (loginProvider.userRole.toUpperCase() != "AGENT")
+                _dropdown(
+                  value: provider.selectedAgent,
+                  items: provider.availableAgents,
+                  onChanged: provider.updateAgent,
+                ),
+
+
               _dropdown(
                 value: provider.selectedStatus,
-                items: ["All Status", "New", "Converted"],
+                items: [
+                  "All Status",
+                  ...settingsProvider.leadStatus,
+                ],
                 onChanged: provider.updateStatusFilter,
               ),
-              // _dropdown(
-              //   value: provider.selectedSource,
-              //   items: ["All Sources"],
-              //   onChanged: provider.updateSource,
-              // ),
+
+
+              _dropdown(
+                value: provider.selectedSource,
+                items: [
+                  "All Sources",
+                  ...settingsProvider.leadSource,
+                ],
+                onChanged: provider.updateSource,
+              ),
+
               SizedBox(
                 width: 200,
                 child: TextField(
@@ -495,31 +593,42 @@ class LeadsReportCard extends StatelessWidget {
           Expanded(
             child: provider.leadsReport.isEmpty
                 ? const Center(child: Text("No Data Available"))
-                : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                child: DataTable(
-                  columnSpacing: 80,
-                  columns: const [
-                    // DataColumn(label: Text("Lead ID")),
-                    DataColumn(label: Text("Lead Name")),
-                    DataColumn(label: Text("Phone")),
-                    DataColumn(label: Text("Source")),
-                    DataColumn(label: Text("Agent")),
-                    DataColumn(label: Text("Status")),
-                  ],
-                  rows: provider.leadsReport.map((e) {
-                    return DataRow(cells: [
-                      // DataCell(Text(e["id"])),
-                      DataCell(Text(e["name"])),
-                      DataCell(Text(e["phone"])),
-                      DataCell(Text(e["source"])),
-                      DataCell(Text(e["agent"])),
-                      DataCell(Text(e["status"])),
-                    ]);
-                  }).toList(),
-                ),
-              ),
+                : Builder(
+              builder: (context) {
+                final loginProvider = context.watch<Loginprovider>();
+
+                final filteredLeads =
+                loginProvider.userRole.toUpperCase() == "AGENT"
+                    ? provider.leadsReport.where((e) =>
+                e["agent"].toString().toLowerCase() ==
+                    loginProvider.name.toLowerCase())
+                    : provider.leadsReport;
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      columnSpacing: 80,
+                      columns: const [
+                        DataColumn(label: Text("Lead Name")),
+                        DataColumn(label: Text("Phone")),
+                        DataColumn(label: Text("Source")),
+                        DataColumn(label: Text("Agent")),
+                        DataColumn(label: Text("Status")),
+                      ],
+                      rows: filteredLeads.map((e) {
+                        return DataRow(cells: [
+                          DataCell(Text(e["name"])),
+                          DataCell(Text(e["phone"])),
+                          DataCell(Text(e["source"])),
+                          DataCell(Text(e["agent"])),
+                          DataCell(Text(e["status"])),
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                );
+              },
             ),
           )
         ],

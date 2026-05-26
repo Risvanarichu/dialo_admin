@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class ReportProvider extends ChangeNotifier {
   FirebaseFirestore fbd = FirebaseFirestore.instance;
 
@@ -9,7 +9,8 @@ class ReportProvider extends ChangeNotifier {
 
   DateTime? fromDate;
   DateTime? toDate;
-
+String userRole = "";
+String agentId = "";
   Map<String, String> agentMap = {};
 
   bool isLoading = false;
@@ -17,6 +18,16 @@ class ReportProvider extends ChangeNotifier {
   void setLoading(bool value) {
     isLoading = value;
     notifyListeners();
+  }
+
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    userRole = prefs.getString("role") ?? "";
+    agentId = prefs.getString("agentId") ?? "";
+
+    print("REPORT ROLE: $userRole");
+    print("REPORT AGENT ID: $agentId");
   }
 
   Future<void> loadAgents() async {
@@ -30,6 +41,7 @@ class ReportProvider extends ChangeNotifier {
 
   Future<void> fetchReports() async {
     setLoading(true);
+    await loadUserData();
     await loadAgents(); // ✅ MUST
 
     await Future.wait([
@@ -120,6 +132,14 @@ class ReportProvider extends ChangeNotifier {
     try {
       setLoading(true);
       Query query = fbd.collection("LEADS");
+
+      /// AGENT -> ONLY OWN LEADS
+      if (userRole.toUpperCase() == "AGENT") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
 
       /// ✅ DATE FILTER
       if (fromDate != null && toDate != null) {
