@@ -41,13 +41,13 @@ class _FollowUpPageState extends State<FollowUpPage> {
   }
 
   int dueTodayCount(List<LeadModel>leads){
-   final now = DateTime.now();
-   return leads.where((lead){
-     return lead.followupDate.year == now.year &&
-     lead.followupDate.month == now.month &&
-     lead.followupDate.day == now.day &&
-     lead.followupstatus != "COMPLETED";
-   }).length;
+    final now = DateTime.now();
+    return leads.where((lead){
+      return lead.followupDate.year == now.year &&
+          lead.followupDate.month == now.month &&
+          lead.followupDate.day == now.day &&
+          lead.followupstatus != "COMPLETED";
+    }).length;
   }
   int thisWeekCount(List<LeadModel> leads) {
     final now = DateTime.now();
@@ -130,8 +130,8 @@ class _FollowUpPageState extends State<FollowUpPage> {
 
       ///  FIXED SCROLL ISSUE
       body:provider.isLoading
-        ?const Center(child: CircularProgressIndicator())
-        :SingleChildScrollView(
+          ?const Center(child: CircularProgressIndicator())
+          :SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -217,11 +217,11 @@ class _FollowUpPageState extends State<FollowUpPage> {
                     ),
                     child: TextField(
                       cursorColor: Colors.black,
-                        decoration: const InputDecoration(
-                          hintText: "search",
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10,vertical: 13),
-                        ),
+                      decoration: const InputDecoration(
+                        hintText: "search",
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10,vertical: 13),
+                      ),
                       onChanged: (value) {
                         setState(() {
                           searchQuery = value;
@@ -294,17 +294,17 @@ Widget dashboardCard(String title, String value) {
 /// ================= HEADER =================
 Widget tableHeader(dynamic lead) {
   return Container(
-    padding: const EdgeInsets.symmetric(vertical: 12),
-    color: Colors.grey.shade300,
-    child:Row(
-  children: const [
-    tableCell("LEAD NAME", isHeader: true),
-    tableCell("FOLLOW UP DATE", isHeader: true),
-    tableCell("LAST CONTACTED DATE", isHeader: true),
-    tableCell("PRIORITY", isHeader: true),
-    tableCell("AGENT", isHeader: true),
-    tableCell("CALL STATUS", isHeader: true),
-  ],)
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: Colors.grey.shade300,
+      child:Row(
+        children: const [
+          tableCell("LEAD NAME", isHeader: true),
+          tableCell("FOLLOW UP DATE", isHeader: true),
+          tableCell("LAST CONTACTED DATE", isHeader: true),
+          tableCell("PRIORITY", isHeader: true),
+          tableCell("AGENT", isHeader: true),
+          tableCell("CALL STATUS", isHeader: true),
+        ],)
   );
 }
 
@@ -341,70 +341,70 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
     child: Column(
       children: [
         Padding(padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            tableCell(lead.name),
+          child: Row(
+            children: [
+              tableCell(lead.name),
 
-            tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
-           tableCell(
-          DateFormat('dd MMM yyyy, hh:mm a')
-        .format(lead.lastContactedDate),
-    ),
-            tableCell(priority,color: getPrioritycolor(),),
-            tableCell(agentName),
+              tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
+              tableCell(
+                DateFormat('dd MMM yyyy, hh:mm a')
+                    .format(lead.lastContactedDate),
+              ),
+              tableCell(priority,color: getPrioritycolor(),),
+              tableCell(agentName),
 
-            // Expanded(child: Wrap(
-            //   spacing: 5,
-            //   children: [
-            //     GestureDetector(
-            //       onTap: (){
-            //         context.read<LeadProvider>().completedLead(lead.id);
-            //       },
-            //       child: actionButton("Complete", Colors.green),
-            //     ),
-            //
-            //     GestureDetector(
-            //       onTap: () async {
-            //         DateTime? pickedDate = await showDatePicker(
-            //           context: context,
-            //           initialDate: DateTime.now(),
-            //           firstDate: DateTime(2020),
-            //           lastDate: DateTime(2030),
-            //         );
-            //
-            //         if (pickedDate != null) {
-            //           TimeOfDay? pickedTime = await showTimePicker(
-            //             context: context,
-            //             initialTime: TimeOfDay.now(),
-            //           );
-            //
-            //           String formattedTime = pickedTime != null
-            //               ? pickedTime.format(context)
-            //               : DateFormat('hh:mm a').format(pickedDate);
-            //
-            //           context.read<LeadProvider>().rescheduleLead(
-            //             lead.id,
-            //             pickedDate,
-            //             formattedTime,
-            //           );
-            //         }
-            //       },
-            //       child: actionButton("Reschedule", Colors.blue),
-            //     )
-            //   ],
-            // ),
-            // )
-            Expanded(
-              child: Center(
-                child: statusChip(
-                  lead.callStatus.isEmpty
-                      ? "NO STATUS"
-                      : lead.callStatus,
+              // Expanded(child: Wrap(
+              //   spacing: 5,
+              //   children: [
+              //     GestureDetector(
+              //       onTap: (){
+              //         context.read<LeadProvider>().completedLead(lead.id);
+              //       },
+              //       child: actionButton("Complete", Colors.green),
+              //     ),
+              //
+              //     GestureDetector(
+              //       onTap: () async {
+              //         DateTime? pickedDate = await showDatePicker(
+              //           context: context,
+              //           initialDate: DateTime.now(),
+              //           firstDate: DateTime(2020),
+              //           lastDate: DateTime(2030),
+              //         );
+              //
+              //         if (pickedDate != null) {
+              //           TimeOfDay? pickedTime = await showTimePicker(
+              //             context: context,
+              //             initialTime: TimeOfDay.now(),
+              //           );
+              //
+              //           String formattedTime = pickedTime != null
+              //               ? pickedTime.format(context)
+              //               : DateFormat('hh:mm a').format(pickedDate);
+              //
+              //           context.read<LeadProvider>().rescheduleLead(
+              //             lead.id,
+              //             pickedDate,
+              //             formattedTime,
+              //           );
+              //         }
+              //       },
+              //       child: actionButton("Reschedule", Colors.blue),
+              //     )
+              //   ],
+              // ),
+              // )
+              Expanded(
+                child: Center(
+                  child: statusChip(
+                    lead.callStatus.isEmpty
+                        ? "NO STATUS"
+                        : lead.callStatus,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),),
+            ],
+          ),),
         const Divider(height: 1,),
       ],
     ),

@@ -782,97 +782,118 @@ class CallDistribution extends StatelessWidget {
               (sum, item) => sum + (item["value"] as double),
         );
 
-        return Container(
-          height: 300,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isNarrow = constraints.maxWidth < 450;
+
+            final Widget legendWidget = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Call Distribution",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Today's Calls: ${provider.todaysCalls}",
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 20),
+                ...callData.map((data) {
+                  final percent = total == 0
+                      ? "0"
+                      : (((data["value"] as double) / total) * 100).toStringAsFixed(0);
+
+                  return LegendItem(
+                    color: data["color"] as Color,
+                    text: "${data["label"]} - $percent%",
+                  );
+                }).toList(),
+              ],
+            );
+
+            final Widget chartWidget = Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 150,
+                  width: 150,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 0,
+                      centerSpaceRadius: 50,
+                      sections: total == 0
+                          ? [
+                        PieChartSectionData(
+                          value: 100,
+                          color: Colors.grey.shade300,
+                          showTitle: false,
+                        ),
+                      ]
+                          : callData.map((data) {
+                        return PieChartSectionData(
+                          value: data["value"] as double,
+                          color: data["color"] as Color,
+                          showTitle: false,
+                          radius: 45,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      "Call Distribution",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    Text(
+                      total == 0 ? "No Calls" : "Today's Calls:",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 4),
                     Text(
-                      "Today's Calls: ${provider.todaysCalls}",
-                      style: const TextStyle(color: Colors.grey),
+                      "${provider.todaysCalls}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    ...callData.map((data) {
-                      final percent = total == 0
-                          ? "0"
-                          : (((data["value"] as double) / total) * 100).toStringAsFixed(0);
-
-                      return LegendItem(
-                        color: data["color"] as Color,
-                        text: "${data["label"]} - $percent%",
-                      );
-                    }).toList(),
                   ],
                 ),
+              ],
+            );
+
+            return Container(
+              height: isNarrow ? null : 300,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.black12),
+                borderRadius: BorderRadius.circular(12),
               ),
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    PieChart(
-                      PieChartData(
-                        sectionsSpace: 0,
-                        centerSpaceRadius: 50,
-                        sections: total == 0
-                            ? [
-                          PieChartSectionData(
-                            value: 100,
-                            color: Colors.grey.shade300,
-                            showTitle: false,
-                          ),
-                        ]
-                            : callData.map((data) {
-                          return PieChartSectionData(
-                            value: data["value"] as double,
-                            color: data["color"] as Color,
-                            showTitle: false,
-                            radius: 45,
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    Column(
+              child: isNarrow
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          total == 0 ? "No Calls" : "Today's Calls:",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "${provider.todaysCalls}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        legendWidget,
+                        const SizedBox(height: 20),
+                        Center(child: chartWidget),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: legendWidget),
+                        Expanded(child: chartWidget),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

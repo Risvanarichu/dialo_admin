@@ -71,11 +71,11 @@ class _LeadSettingsScreenState extends State<LeadSettingsScreen> {
                 IconButton(onPressed: (){
                   Navigator.pop(context);
                 },
-                    icon:const Icon(Icons.arrow_back),),
+                  icon:const Icon(Icons.arrow_back),),
                 Text(
-                    "LEAD SETTINGS",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                  "LEAD SETTINGS",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
 

@@ -65,150 +65,152 @@ class _CallsState extends State<Calls> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () async {
-                        final picked = await showDateRangePicker(
-                          context: context,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2100),
-                        );
+              child: LayoutBuilder(
+                builder: (context, filterConstraints) {
+                  final bool isWide = filterConstraints.maxWidth > 700;
 
-                        if (picked != null) {
-                          context.read<LeadProvider>().setDateRange(
-                            picked.start,
-                            picked.end,
-                          );
-                        }
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: "Date Range",
-                            hintText: "Select date range",
-                            suffixIcon: const Icon(Icons.calendar_today),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                  final dateRangeWidget = GestureDetector(
+                    onTap: () async {
+                      final picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2100),
+                      );
+
+                      if (picked != null) {
+                        context.read<LeadProvider>().setDateRange(
+                          picked.start,
+                          picked.end,
+                        );
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: "Date Range",
+                          hintText: "Select date range",
+                          suffixIcon: const Icon(Icons.calendar_today),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  // Expanded(child: TextFormField(
-                  //   decoration: InputDecoration(
-                  //     labelText: "Date Range",
-                  //     hintText: "dd-mm-yyyy",
-                  //     suffixIcon: const Icon(Icons.calendar_today),
-                  //   border: OutlineInputBorder(
-                  //     borderRadius: BorderRadius.circular(8),
-                  //   ),
-                  //   ),
-                  // ),
-                  // ),
-                  const SizedBox(width: 15,),
-                  Expanded(
-                    child: Consumer<SettingsProvider>(
-                      builder: (context, provider, child) {
+                  );
 
-                        return DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: "Call Status",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                  final statusWidget = Consumer<SettingsProvider>(
+                    builder: (context, provider, child) {
+                      return DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Call Status",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-
-                          items: [
-                            const DropdownMenuItem(
-                              value: "all",
-                              child: Text("All Status"),
-                            ),
-
-                            ...provider.callStatus.map((status) {
-                              return DropdownMenuItem<String>(
-                                value: status,
-                                child: Text(status),
-                              );
-                            }).toList(),
-                          ],
-
-                          onChanged: (value) {
-                            print(value);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 15,),
-                  Expanded(
-
-                    child: Consumer<Agentprovider>(
-                      builder: (context, provider, child) {
-                        print(provider?.userList);
-                        return DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            labelText: "Agent",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                        ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: "all",
+                            child: Text("All Status"),
                           ),
+                          ...provider.callStatus.map((status) {
+                            return DropdownMenuItem<String>(
+                              value: status,
+                              child: Text(status),
+                            );
+                          }).toList(),
+                        ],
+                        onChanged: (value) {
+                          print(value);
+                        },
+                      );
+                    },
+                  );
 
-                          items: [
-                            const DropdownMenuItem(
-                              value: "all",
-                              child: Text("All Agent"),
-                            ),
+                  final agentWidget = Consumer<Agentprovider>(
+                    builder: (context, provider, child) {
+                      print(provider?.userList);
+                      return DropdownButtonFormField(
+                        decoration: InputDecoration(
+                          labelText: "Agent",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: "all",
+                            child: Text("All Agent"),
+                          ),
+                          ...?provider?.userList.map((user) {
+                            return DropdownMenuItem(
+                              value: user["ID"],
+                              child: Text(user["NAME"] ?? ""),
+                            );
+                          }).toList(),
+                        ],
+                        onChanged: (value) {
+                          context.read<LeadProvider>().setAgentFilter(value.toString());
+                        },
+                      );
+                    },
+                  );
 
-                            ...?provider?.userList.map((user) {
-                              return DropdownMenuItem(
-                                value: user["ID"],
-                                child: Text(user["NAME"] ?? ""),
-                              );
-                            }).toList(),
-                          ],
+                  if (isWide) {
+                    return Row(
+                      children: [
+                        Expanded(child: dateRangeWidget),
+                        const SizedBox(width: 15),
+                        Expanded(child: statusWidget),
+                        const SizedBox(width: 15),
+                        Expanded(child: agentWidget),
+                      ],
+                    );
+                  }
 
-                          onChanged: (value) {
-                            context.read<LeadProvider>().setAgentFilter(value.toString());
-                          },
-                        );
-                      },
-                    ),
-                  )
-                ],
+                  return Column(
+                    children: [
+                      dateRangeWidget,
+                      const SizedBox(height: 15),
+                      statusWidget,
+                      const SizedBox(height: 15),
+                      agentWidget,
+                    ],
+                  );
+                },
               ),
             ),
             const SizedBox(height: 20,),
             Expanded(
                 child: Container(
-                  height: 500,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10,vertical: 12
-                        ),
-                        color: Colors.grey.shade100,
-                        child: Row(
-                          children: const[
-                            Expanded(child: Center(child: Text("Caller Name"))),
-                            Expanded(child: Center(child: Text("Phone Number"))),
-                            Expanded(child: Center(child: Text("Call Type"))),
-                            Expanded(child: Center(child: Text("Status"))),
-                            Expanded(child: Center(child: Text("Time"))),
-                            Expanded(child: Center(child: Text("Date"))),
-                            Expanded(child: Center(child: Text("Assigned Agent"))),
-                            // Expanded(child: Center(child: Text("Actions"))),
-                          ],
-                        ),
-                      ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 950,
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10,vertical: 12
+                            ),
+                            color: Colors.grey.shade100,
+                            child: Row(
+                              children: const[
+                                Expanded(child: Center(child: Text("Caller Name"))),
+                                Expanded(child: Center(child: Text("Phone Number"))),
+                                Expanded(child: Center(child: Text("Call Type"))),
+                                Expanded(child: Center(child: Text("Status"))),
+                                Expanded(child: Center(child: Text("Time"))),
+                                Expanded(child: Center(child: Text("Date"))),
+                                Expanded(child: Center(child: Text("Assigned Agent"))),
+                                // Expanded(child: Center(child: Text("Actions"))),
+                              ],
+                            ),
+                          ),
 //                     Expanded(
 //                         child:Consumer<LeadProvider>(
 //   builder: (context, value, child) {
@@ -236,7 +238,9 @@ class _CallsState extends State<Calls> {
 //   },
 // ))
 
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
                 ))
 
