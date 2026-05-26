@@ -144,11 +144,15 @@ class _AddLeadState extends State<AddLead> {
             _callStatusDropdown(),
           ),
           const SizedBox(height: 16),
-          _rowFields(
-            isMobile,
-            userRole == "ADMIN" ? _agentDropdown() : const SizedBox(),
+          if (userRole == "ADMIN") ...[
+            _rowFields(
+              isMobile,
+              _agentDropdown(),
+              _leadCategoryDropdown(),
+            ),
+          ] else ...[
             _leadCategoryDropdown(),
-          ),
+          ],
         ],
       ),
     );
@@ -447,7 +451,7 @@ class _AddLeadState extends State<AddLead> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
+              MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 1,)),
             );
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -579,7 +583,7 @@ class _AddLeadState extends State<AddLead> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const SideMenu(selectedIndex: 2),
+                    builder: (_) => const SideMenu(selectedIndex: 1),
                   ),
                 );
 

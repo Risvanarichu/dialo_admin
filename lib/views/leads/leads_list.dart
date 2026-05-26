@@ -154,26 +154,85 @@ class Leads extends StatelessWidget {
                                   },
                                 );
                               }
+                              Widget agentDropdown() {
+                                return Consumer2<LeadProvider, Agentprovider>(
+                                  builder: (context, leadProvider, agentProvider, child) {
 
+                                    final agentItems = [
+                                      "all",
+                                      ...agentProvider.userList.map((e) => e["ID"].toString()).toSet(),
+                                    ];
+
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child: DropdownButton<String>(
+                                        value: agentItems.contains(leadProvider.selectedAgentFilter)
+                                            ? leadProvider.selectedAgentFilter
+                                            : "all",
+                                        isExpanded: true,
+                                        underline: const SizedBox(),
+                                        items: [
+                                          const DropdownMenuItem<String>(
+                                            value: "all",
+                                            child: Text("All Agents"),
+                                          ),
+
+                                          const DropdownMenuItem<String>(
+                                            value: "unassigned",
+                                            child: Text("Unassigned"),
+                                          ),
+
+                                          ...agentProvider.userList.map<DropdownMenuItem<String>>((agent) {
+                                            return DropdownMenuItem<String>(
+                                              value: agent["ID"].toString(),
+                                              child: Text(agent["NAME"] ?? ""),
+                                            );
+                                          }).toList(),
+                                        ],
+                                        onChanged: (value) {
+                                          if (value != null) {
+                                            leadProvider.setAgentFilter(value);
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
                               return isWide
                                   ? Row(
-                                      children: [
-                                        Expanded(flex: 2, child: searchField()),
-                                        const SizedBox(width: 10),
-                                        Expanded(child: statusDropdown()),
-                                        const SizedBox(width: 10),
-                                        Expanded(child: sourceDropdown()),
-                                      ],
-                                    )
+                                children: [
+                                  Expanded(flex: 2, child: searchField()),
+                                  const SizedBox(width: 10),
+                                  Expanded(child: statusDropdown()),
+                                  const SizedBox(width: 10),
+                                  Expanded(child: sourceDropdown()),
+                                  const SizedBox(width: 10),
+                                  if (provider.userRole == "ADMIN")
+                                    Expanded(child: agentDropdown()),
+                                ],
+                              )
                                   : Column(
-                                      children: [
-                                        searchField(),
-                                        const SizedBox(height: 10),
-                                        statusDropdown(),
-                                        const SizedBox(height: 10),
-                                        sourceDropdown(),
-                                      ],
-                                    );
+                                children: [
+                                  searchField(),
+                                  const SizedBox(height: 10),
+
+                                  statusDropdown(),
+                                  const SizedBox(height: 10),
+
+                                  sourceDropdown(),
+
+                                  if (provider.userRole == "ADMIN") ...[
+                                    const SizedBox(height: 10),
+                                    agentDropdown(),
+                                  ],
+                                ],
+                              );
                             },
                           ),
                           const SizedBox(height: 20),
@@ -270,7 +329,17 @@ Widget tableHead(String text) {
 
 Widget tableRowDynamic(LeadModel lead, BuildContext context) {
   final mainProvider = context.read<Agentprovider>();
-  final agentName = mainProvider.getAgentName(lead.assignedAgentId);
+
+  final assignedId = lead.assignedAgentId.toString().trim();
+
+  final agentExists = mainProvider.userList.any(
+        (e) => e["ID"].toString() == assignedId,
+  );
+
+  final agentName =
+  (!agentExists || assignedId.isEmpty)
+      ? "Unassigned"
+      : mainProvider.getAgentName(assignedId);
 
   return InkWell(
     onTap: (){
