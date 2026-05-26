@@ -37,18 +37,17 @@ class Leads extends StatelessWidget {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ),
                 Expanded(
-                  child:SingleChildScrollView(
+                  child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final bool isWide = constraints.maxWidth > 700;
 
-                              /// 🔍 SEARCH (takes more space)
-                              Expanded(
-                                flex: 2,
-                                child: TextField(
+                              Widget searchField() {
+                                return TextField(
                                   onChanged: (value) {
                                     context.read<LeadProvider>().searchLeads(value);
                                   },
@@ -60,7 +59,7 @@ class Leads extends StatelessWidget {
                                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: Colors.grey),
+                                      borderSide: const BorderSide(color: Colors.grey),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderSide: const BorderSide(
@@ -74,55 +73,15 @@ class Leads extends StatelessWidget {
                                         color: Colors.grey,
                                         width: 1,
                                       ),
-                                      borderRadius: BorderRadius.circular(10)
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }
 
-                              const SizedBox(width: 10),
-
-                              /// 🎯 STATUS FILTER
-                              // Expanded(
-                              //   child: Consumer2<LeadProvider,SettingsProvider>(
-                              //     builder: (context, leadprov.setprov, child) {
-                              //       final statusItems=[
-                              //         "All Status",
-                              //         ...SettingsProvider.leadStatus.toSet().toList(),
-                              //       ];
-                              //       return Container(
-                              //         padding: const EdgeInsets.symmetric(horizontal: 10),
-                              //         decoration: BoxDecoration(
-                              //           color: Colors.grey.shade100,
-                              //           borderRadius: BorderRadius.circular(10),
-                              //           border: Border.all(color: Colors.grey)
-                              //         ),
-                              //         child: DropdownButton(
-                              //           value: statusItems.contains(leadprov.selectedStatus)
-                              //   ?leadprov.selectedStatus:"All Status",
-                              //               isExpanded:true,
-                              //               underline:const SizedBox(),
-                              //               items:statusItems.map((e){
-                              //                 return DropdownMenuItem<String>(
-                              //                 value: e,
-                              //   child: Text(e),
-                              //
-                              //           );
-                              //   ).toList(),
-                              //           onChanged: (value) {
-                              //             if(value!=null){
-                              //   provider.updateStatus(value);
-                              //   }
-                              //           },
-                              //         ),
-                              //       );
-                              //     },
-                              //   ),
-                              // ),
-                              Expanded(
-                                child: Consumer2<LeadProvider, SettingsProvider>(
+                              Widget statusDropdown() {
+                                return Consumer2<LeadProvider, SettingsProvider>(
                                   builder: (context, leadProvider, settingsProvider, child) {
-
                                     final statusItems = [
                                       "All Status",
                                       ...settingsProvider.leadStatus.toSet().toList(),
@@ -135,22 +94,18 @@ class Leads extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(color: Colors.grey),
                                       ),
-
                                       child: DropdownButton<String>(
                                         value: statusItems.contains(leadProvider.selectedStatus)
                                             ? leadProvider.selectedStatus
                                             : "All Status",
-
                                         isExpanded: true,
                                         underline: const SizedBox(),
-
                                         items: statusItems.map((e) {
                                           return DropdownMenuItem<String>(
                                             value: e,
                                             child: Text(e),
                                           );
                                         }).toList(),
-
                                         onChanged: (value) {
                                           if (value != null) {
                                             leadProvider.updateStatus(value);
@@ -159,78 +114,110 @@ class Leads extends StatelessWidget {
                                       ),
                                     );
                                   },
-                                ),
-                              ),
+                                );
+                              }
 
-                              const SizedBox(width: 10),
+                              Widget sourceDropdown() {
+                                return Consumer2<LeadProvider, SettingsProvider>(
+                                  builder: (context, leadProvider, settingsProvider, child) {
+                                    final sourceItems = [
+                                      "All Sources",
+                                      ...settingsProvider.leadSource.toSet().toList(),
+                                    ];
 
-                              /// 📊 SOURCE FILTER
-                              Expanded(
-                                child: Consumer<LeadProvider>(
-                                  builder: (context, provider, child) {
                                     return Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.shade100,
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: Colors.grey)
+                                        border: Border.all(color: Colors.grey),
                                       ),
-                                      child: DropdownButton(
-                                        value: provider.selectedSources,
+                                      child: DropdownButton<String>(
+                                        value: sourceItems.contains(leadProvider.selectedSources)
+                                            ? leadProvider.selectedSources
+                                            : "All Sources",
                                         isExpanded: true,
                                         underline: const SizedBox(),
-                                        items: ["All Sources", "FACEBOOK", "WEBSITE", "CALL"]
-                                            .map((e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e),
-                                        ))
-                                            .toList(),
+                                        items: sourceItems.map((e) {
+                                          return DropdownMenuItem<String>(
+                                            value: e,
+                                            child: Text(e),
+                                          );
+                                        }).toList(),
                                         onChanged: (value) {
-                                          provider.updateSource(value!);
+                                          if (value != null) {
+                                            leadProvider.updateSource(value);
+                                          }
                                         },
                                       ),
                                     );
                                   },
-                                ),
-                              ),
-                            ],
+                                );
+                              }
+
+                              return isWide
+                                  ? Row(
+                                      children: [
+                                        Expanded(flex: 2, child: searchField()),
+                                        const SizedBox(width: 10),
+                                        Expanded(child: statusDropdown()),
+                                        const SizedBox(width: 10),
+                                        Expanded(child: sourceDropdown()),
+                                      ],
+                                    )
+                                  : Column(
+                                      children: [
+                                        searchField(),
+                                        const SizedBox(height: 10),
+                                        statusDropdown(),
+                                        const SizedBox(height: 10),
+                                        sourceDropdown(),
+                                      ],
+                                    );
+                            },
                           ),
                           const SizedBox(height: 20),
-
-
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              color: Colors.grey.shade200
-                            ),
-                            child: Row(
-                              children:  [
-                                tableHead("Name"),
-                                tableHead("Phone"),
-                                tableHead("Email"),
-                                tableHead("Status"),
-                                tableHead("Source"),
-                                tableHead("Assigned Agent"),
-                              ],
-                            ),
-                          ),
-
-
-                          provider.allLeads.isEmpty
-                              ? Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Center(
-                              child: Text(
-                                "No results for '${provider.searchQuery}'",
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: 900,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      color: Colors.grey.shade200,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        tableHead("Name"),
+                                        tableHead("Phone"),
+                                        tableHead("Email"),
+                                        tableHead("Status"),
+                                        tableHead("Source"),
+                                        tableHead("Assigned Agent"),
+                                      ],
+                                    ),
+                                  ),
+                                  provider.allLeads.isEmpty
+                                      ? Padding(
+                                          padding: const EdgeInsets.all(20),
+                                          child: Center(
+                                            child: Text(
+                                              "No results for '${provider.searchQuery}'",
+                                              style: const TextStyle(fontSize: 16, color: Colors.grey),
+                                            ),
+                                          ),
+                                        )
+                                      : Column(
+                                          children: provider.allLeads
+                                              .map((e) => tableRowDynamic(e, context))
+                                              .toList(),
+                                        ),
+                                ],
                               ),
                             ),
-                          )
-                              : Column(
-                            children: provider.allLeads
-                                .map((e) => tableRowDynamic(e,context))
-                                .toList(),
                           ),
                         ],
                       ),
@@ -239,7 +226,7 @@ class Leads extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -438,7 +425,7 @@ Widget statusChip(String status) {
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
-      status,
+      text,
       style: const TextStyle(
         color: Colors.blue,
         fontWeight: FontWeight.w600,

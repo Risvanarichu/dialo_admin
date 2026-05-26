@@ -36,7 +36,7 @@ class _CallsState extends State<Calls> {
     //  // initialTime: TimeOfDay.now(),
     // );
 
-   // if (pickedTime == null) return;
+    // if (pickedTime == null) return;
     setState(() {
       selectedDateTime=pickedDate;
       dateTimeCtrl.text=
@@ -48,167 +48,167 @@ class _CallsState extends State<Calls> {
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
       body: Padding(padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("CALLS",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-          ),
-          const SizedBox(height: 20,),
-          Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("CALLS",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      final picked = await showDateRangePicker(
-                        context: context,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2100),
-                      );
-
-                      if (picked != null) {
-                        context.read<LeadProvider>().setDateRange(
-                          picked.start,
-                          picked.end,
+            const SizedBox(height: 20,),
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final picked = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2100),
                         );
-                      }
-                    },
-                    child: AbsorbPointer(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: "Date Range",
-                          hintText: "Select date range",
-                          suffixIcon: const Icon(Icons.calendar_today),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+
+                        if (picked != null) {
+                          context.read<LeadProvider>().setDateRange(
+                            picked.start,
+                            picked.end,
+                          );
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: "Date Range",
+                            hintText: "Select date range",
+                            suffixIcon: const Icon(Icons.calendar_today),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // Expanded(child: TextFormField(
-                //   decoration: InputDecoration(
-                //     labelText: "Date Range",
-                //     hintText: "dd-mm-yyyy",
-                //     suffixIcon: const Icon(Icons.calendar_today),
-                //   border: OutlineInputBorder(
-                //     borderRadius: BorderRadius.circular(8),
-                //   ),
-                //   ),
-                // ),
-                // ),
-                const SizedBox(width: 15,),
-                Expanded(
-                  child: Consumer<SettingsProvider>(
-                    builder: (context, provider, child) {
+                  // Expanded(child: TextFormField(
+                  //   decoration: InputDecoration(
+                  //     labelText: "Date Range",
+                  //     hintText: "dd-mm-yyyy",
+                  //     suffixIcon: const Icon(Icons.calendar_today),
+                  //   border: OutlineInputBorder(
+                  //     borderRadius: BorderRadius.circular(8),
+                  //   ),
+                  //   ),
+                  // ),
+                  // ),
+                  const SizedBox(width: 15,),
+                  Expanded(
+                    child: Consumer<SettingsProvider>(
+                      builder: (context, provider, child) {
 
-                      return DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: "Call Status",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-
-                        items: [
-                          const DropdownMenuItem(
-                            value: "all",
-                            child: Text("All Status"),
+                        return DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: "Call Status",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
 
-                          ...provider.callStatus.map((status) {
-                            return DropdownMenuItem<String>(
-                              value: status,
-                              child: Text(status),
-                            );
-                          }).toList(),
-                        ],
+                          items: [
+                            const DropdownMenuItem(
+                              value: "all",
+                              child: Text("All Status"),
+                            ),
 
-                        onChanged: (value) {
-                          print(value);
-                        },
-                      );
-                    },
+                            ...provider.callStatus.map((status) {
+                              return DropdownMenuItem<String>(
+                                value: status,
+                                child: Text(status),
+                              );
+                            }).toList(),
+                          ],
+
+                          onChanged: (value) {
+                            print(value);
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 15,),
-              Expanded(
+                  const SizedBox(width: 15,),
+                  Expanded(
 
-  child: Consumer<Agentprovider>(
-    builder: (context, provider, child) {
-      print(provider?.userList);
-      return DropdownButtonFormField(
-        decoration: InputDecoration(
-          labelText: "Agent",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
+                    child: Consumer<Agentprovider>(
+                      builder: (context, provider, child) {
+                        print(provider?.userList);
+                        return DropdownButtonFormField(
+                          decoration: InputDecoration(
+                            labelText: "Agent",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
 
-        items: [
-          const DropdownMenuItem(
-            value: "all",
-            child: Text("All Agent"),
-          ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: "all",
+                              child: Text("All Agent"),
+                            ),
 
-          ...?provider?.userList.map((user) {
-            return DropdownMenuItem(
-              value: user["ID"],
-              child: Text(user["NAME"] ?? ""),
-            );
-          }).toList(),
-        ],
+                            ...?provider?.userList.map((user) {
+                              return DropdownMenuItem(
+                                value: user["ID"],
+                                child: Text(user["NAME"] ?? ""),
+                              );
+                            }).toList(),
+                          ],
 
-        onChanged: (value) {
-          context.read<LeadProvider>().setAgentFilter(value.toString());
-        },
-      );
-    },
-  ),
-)
-              ],
+                          onChanged: (value) {
+                            context.read<LeadProvider>().setAgentFilter(value.toString());
+                          },
+                        );
+                      },
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20,),
-          Expanded(
-              child: Container(
-                height: 500,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,vertical: 12
+            const SizedBox(height: 20,),
+            Expanded(
+                child: Container(
+                  height: 500,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10,vertical: 12
+                        ),
+                        color: Colors.grey.shade100,
+                        child: Row(
+                          children: const[
+                            Expanded(child: Center(child: Text("Caller Name"))),
+                            Expanded(child: Center(child: Text("Phone Number"))),
+                            Expanded(child: Center(child: Text("Call Type"))),
+                            Expanded(child: Center(child: Text("Status"))),
+                            Expanded(child: Center(child: Text("Time"))),
+                            Expanded(child: Center(child: Text("Date"))),
+                            Expanded(child: Center(child: Text("Assigned Agent"))),
+                            // Expanded(child: Center(child: Text("Actions"))),
+                          ],
+                        ),
                       ),
-                      color: Colors.grey.shade100,
-                     child: Row(
-  children: const[
-    Expanded(child: Center(child: Text("Caller Name"))),
-    Expanded(child: Center(child: Text("Phone Number"))),
-    Expanded(child: Center(child: Text("Call Type"))),
-    Expanded(child: Center(child: Text("Status"))),
-    Expanded(child: Center(child: Text("Time"))),
-    Expanded(child: Center(child: Text("Date"))),
-    Expanded(child: Center(child: Text("Assigned Agent"))),
-    // Expanded(child: Center(child: Text("Actions"))),
-  ],
-),
-                    ),
 //                     Expanded(
 //                         child:Consumer<LeadProvider>(
 //   builder: (context, value, child) {
@@ -236,12 +236,12 @@ class _CallsState extends State<Calls> {
 //   },
 // ))
 
-                  ],
-                ),
-              ))
+                    ],
+                  ),
+                ))
 
-        ],
-      ),),
+          ],
+        ),),
     );
   }
 }
@@ -254,7 +254,7 @@ class CallList extends StatelessWidget {
   final String duration;
   final String date;
   final String agent;
- // final String actions;
+  // final String actions;
 
   const CallList ({
     required this.name,
@@ -264,7 +264,7 @@ class CallList extends StatelessWidget {
     required this.duration,
     required this.date,
     required this.agent,
-  //  required this.actions,
+    //  required this.actions,
   });
   @override
   Widget build(BuildContext context){
@@ -282,7 +282,7 @@ class CallList extends StatelessWidget {
             width: 100,
 
             padding: const EdgeInsets.symmetric(
-              horizontal: 10,vertical: 5),
+                horizontal: 10,vertical: 5),
             decoration: BoxDecoration(
               color: status == "Answered"
                   ?Colors.green.shade100
@@ -291,18 +291,18 @@ class CallList extends StatelessWidget {
             ),
             child: Text(status,
               textAlign: TextAlign.center,
-            style: TextStyle(
-              color: status == "Answered"
-                  ?Colors.green
-                  :Colors.red,
-              fontWeight: FontWeight.w600,
+              style: TextStyle(
+                color: status == "Answered"
+                    ?Colors.green
+                    :Colors.red,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),),
           ),
           Expanded(child: Center(child: Text(duration))),
-Expanded(child: Center(child: Text(date))),
-Expanded(child: Center(child: Text(agent))),
+          Expanded(child: Center(child: Text(date))),
+          Expanded(child: Center(child: Text(agent))),
 
 // Expanded(
 //   child: Row(

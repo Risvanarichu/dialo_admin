@@ -301,7 +301,12 @@ class SettingsProvider extends ChangeNotifier {
   void addLeadStatus(String value) {
     value = value.trim();
     if (value.isEmpty) return;
-    if (leadStatus.contains(value)) return;
+    // if (leadStatus.contains(value)) return;
+    if (leadStatus.any(
+          (e) => e.toLowerCase() == value.toLowerCase(),
+    )) {
+      return;
+    }
 
     leadStatus.add(value);
     notifyListeners();
@@ -449,13 +454,8 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteleadSource(int index) async {
+  void deleteleadSource(int index) {
     leadSource.removeAt(index);
-
-    await db.collection("LEAD_SETTINGS").doc("lead_source").set({
-      "leadSourceList": leadSource,
-    }, SetOptions(merge: true));
-
     notifyListeners();
   }
 

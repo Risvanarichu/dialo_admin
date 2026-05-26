@@ -1,10 +1,12 @@
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
+import 'package:dialo_admin/views/leads/lead_details.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/agentProvider.dart';
+import 'leads/leads_list.dart';
 
 
 class FollowUpPage extends StatefulWidget {
@@ -68,7 +70,26 @@ class _FollowUpPageState extends State<FollowUpPage> {
     final provider = context.watch<LeadProvider>();
     List<LeadModel> sortedLeads = List.from(provider.leads);
 
-    sortedLeads.sort((a, b) => b.priorityRank.compareTo(a.priorityRank));
+    sortedLeads.sort((a, b) {
+      int getPriorityValue(String priority) {
+        switch (priority.toUpperCase()) {
+          case "HIGH":
+            return 3;
+
+          case "MEDIUM":
+            return 2;
+
+          case "LOW":
+            return 1;
+
+          default:
+            return 0;
+        }
+      }
+
+      return getPriorityValue(b.priority)
+          .compareTo(getPriorityValue(a.priority));
+    });
     List<LeadModel> filteredLeads = sortedLeads.where((lead) {
       final now = DateTime.now();
 
@@ -282,7 +303,7 @@ Widget tableHeader(dynamic lead) {
     tableCell("LAST CONTACTED DATE", isHeader: true),
     tableCell("PRIORITY", isHeader: true),
     tableCell("AGENT", isHeader: true),
-    tableCell("ACTIONS", isHeader: true),
+    tableCell("CALL STATUS", isHeader: true),
   ],)
   );
 }
@@ -292,7 +313,7 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
   final mainProvider = context.read<Agentprovider>();
   final agentName = mainProvider.getAgentName(lead.assignedAgentId);
 
-  final priority = lead.autoPriority;
+  final priority = lead.priority;
   Color color(){
     if(priority == "High") return Colors.red;
     if(priority == "Medium") return Colors.orange;
@@ -309,65 +330,84 @@ Widget tableRowDynamic(BuildContext context,LeadModel lead){
         return Colors.green;
     }
   }
-  return Column(
-    children: [
-      Padding(padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          tableCell(lead.name),
 
-          tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
-         tableCell(
-        DateFormat('dd MMM yyyy, hh:mm a')
-      .format(lead.lastContactedDate),
-),
-          tableCell(priority,color: getPrioritycolor(),),
-          tableCell(agentName),
 
-          Expanded(child: Wrap(
-            spacing: 5,
-            children: [
-              GestureDetector(
-                onTap: (){
-                  context.read<LeadProvider>().completedLead(lead.id);
-                },
-                child: actionButton("Complete", Colors.green),
+  return InkWell(
+    onTap: (){
+      Navigator.push(context, MaterialPageRoute(builder: (_)=> LeadDetails(lead: lead),
+      ),
+      );
+    },
+    child: Column(
+      children: [
+        Padding(padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            tableCell(lead.name),
+
+            tableCell(DateFormat('dd MMM yyyy').format(lead.followupDate)),
+           tableCell(
+          DateFormat('dd MMM yyyy, hh:mm a')
+        .format(lead.lastContactedDate),
+    ),
+            tableCell(priority,color: getPrioritycolor(),),
+            tableCell(agentName),
+
+            // Expanded(child: Wrap(
+            //   spacing: 5,
+            //   children: [
+            //     GestureDetector(
+            //       onTap: (){
+            //         context.read<LeadProvider>().completedLead(lead.id);
+            //       },
+            //       child: actionButton("Complete", Colors.green),
+            //     ),
+            //
+            //     GestureDetector(
+            //       onTap: () async {
+            //         DateTime? pickedDate = await showDatePicker(
+            //           context: context,
+            //           initialDate: DateTime.now(),
+            //           firstDate: DateTime(2020),
+            //           lastDate: DateTime(2030),
+            //         );
+            //
+            //         if (pickedDate != null) {
+            //           TimeOfDay? pickedTime = await showTimePicker(
+            //             context: context,
+            //             initialTime: TimeOfDay.now(),
+            //           );
+            //
+            //           String formattedTime = pickedTime != null
+            //               ? pickedTime.format(context)
+            //               : DateFormat('hh:mm a').format(pickedDate);
+            //
+            //           context.read<LeadProvider>().rescheduleLead(
+            //             lead.id,
+            //             pickedDate,
+            //             formattedTime,
+            //           );
+            //         }
+            //       },
+            //       child: actionButton("Reschedule", Colors.blue),
+            //     )
+            //   ],
+            // ),
+            // )
+            Expanded(
+              child: Center(
+                child: statusChip(
+                  lead.callStatus.isEmpty
+                      ? "NO STATUS"
+                      : lead.callStatus,
+                ),
               ),
-
-              GestureDetector(
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
-                  );
-
-                  if (pickedDate != null) {
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-
-                    String formattedTime = pickedTime != null
-                        ? pickedTime.format(context)
-                        : DateFormat('hh:mm a').format(pickedDate);
-
-                    context.read<LeadProvider>().rescheduleLead(
-                      lead.id,
-                      pickedDate,
-                      formattedTime,
-                    );
-                  }
-                },
-                child: actionButton("Reschedule", Colors.blue),
-              )
-            ],
-          ))
-        ],
-      ),),
-      const Divider(height: 1,),
-    ],
+            ),
+          ],
+        ),),
+        const Divider(height: 1,),
+      ],
+    ),
   );
 }
 

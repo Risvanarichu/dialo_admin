@@ -45,6 +45,7 @@ class LeadProvider extends ChangeNotifier {
 
   String? selectedAgentId;
   String? selectedAgentName;
+  String userRole = "";
 
 
   final nameController = TextEditingController();
@@ -93,9 +94,12 @@ class LeadProvider extends ChangeNotifier {
 
     agentId = prefs.getString('agentId') ?? "";
     agentName = prefs.getString('name') ?? "Unknown";
+    userRole =
+        (prefs.getString('role') ?? "AGENT").toUpperCase().trim();
 
     print("Agent ID: $agentId");
     print("Agent Name: $agentName");
+    print("User Role : $userRole");
   }
 
   Future<void> loadAgents() async {
@@ -184,27 +188,69 @@ class LeadProvider extends ChangeNotifier {
   }
 
 
+  // void listenLeads() {
+  //   isLoading = true;
+  //   notifyListeners();
+  //
+  //   leadSubscription?.cancel();
+  //
+  //   leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+  //     leads = snapshot.docs.map((doc) {
+  //       final data = doc.data();
+  //
+  //       String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
+  //
+  //       if (assignedAgentId
+  //           .toString()
+  //           .isEmpty) {
+  //         doc.reference.update({
+  //           "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+  //           "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
+  //           "ADDED_BY_ID": agentId,
+  //         });
+  //       }
+  //
+  //       return LeadModel.fromMap(
+  //         doc.id,
+  //         {
+  //           ...data,
+  //           "ASSIGNED_AGENT_NAME":
+  //           agentMap.containsKey(assignedAgentId)
+  //               ? agentMap[assignedAgentId]
+  //               : data["ASSIGNED_AGENT_NAME"] ?? "Unassigned",
+  //         },
+  //       );
+  //     }).toList();
+  //
+  //     applyFilters();
+  //
+  //     isLoading = false;
+  //     notifyListeners();
+  //   });
+  // }
+
+
   void listenLeads() {
     isLoading = true;
     notifyListeners();
 
     leadSubscription?.cancel();
 
-    leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
+    Query query = fbd.collection('LEADS');
+
+    /// IF AGENT → ONLY THEIR LEADS
+    if (userRole.trim().toUpperCase() != "ADMIN") {
+      query = query.where(
+        "ASSIGNED_AGENT_ID",
+        isEqualTo: agentId,
+      );
+    }
+
+    leadSubscription = query.snapshots().listen((snapshot) {
       leads = snapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
         String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
-
-        if (assignedAgentId
-            .toString()
-            .isEmpty) {
-          doc.reference.update({
-            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
-            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
-            "ADDED_BY_ID": agentId,
-          });
-        }
 
         return LeadModel.fromMap(
           doc.id,
@@ -225,16 +271,23 @@ class LeadProvider extends ChangeNotifier {
     });
   }
 
-
   Future<void> fetchLeads() async {
     isLoading = true;
     notifyListeners();
 
     try {
-      final snapshot = await fbd.collection('LEADS').get();
+      Query query = fbd.collection('LEADS');
 
+      if (userRole != "ADMIN") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
+
+      final snapshot = await query.get();
       leads = snapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
 
         if (data["ASSIGNED_AGENT_ID"] == null ||
@@ -463,7 +516,7 @@ class LeadProvider extends ChangeNotifier {
     emailController.text = user["EMAIL"] ?? "";
     sourceController.text = user["SOURCE"] ?? "";
     leadStatusValue = user["LEAD_STATUS"] ?? "";
-    callStatusValue = user["CALLSTATUS"] ?? "";
+    callStatusValue = user["CALL_STATUS"] ?? "";
     leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
     notesValue = user["NOTES"] ?? "";
 
@@ -499,7 +552,7 @@ class LeadProvider extends ChangeNotifier {
 
             // ✅ ADD THESE
             "LEAD_STATUS": leadStatus,
-            "CALLSTATUS": callStatus,
+            "CALL_STATUS": callStatus,
             "LEAD_CATEGORY": leadCategory,
             "NOTES": notes,
             "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
@@ -618,31 +671,51 @@ class LeadProvider extends ChangeNotifier {
     required String remarks,
     required String email,
     DateTime? followUpDate,
+    DateTime? lastContactedDate,
   }) async {
-    isButtonLoading = true;
-    notifyListeners();
+    try {
+      isButtonLoading = true;
+      notifyListeners();
 
-    await FirebaseFirestore.instance
-        .collection("LEADS")
-        .doc(leadId)
-        .collection("FOLLOW_UPS")
-        .add({
-      "CALL_STATUS": callStatus,
-      "LEAD_STATUS": leadStatus,
-      "LEAD_CATEGORY": leadCategory,
-      "PRIORITY": priority,
-      "REMARKS": remarks,
-      "EMAIL": email,
-      "FOLLOW_UP_DATE": followUpDate,
-      "CREATED_AT": FieldValue.serverTimestamp(),
-    });
+      await FirebaseFirestore.instance
+          .collection("LEADS")
+          .doc(leadId)
+          .collection("FOLLOW_UPS")
+          .add({
+        "CALL_STATUS": callStatus,
+        "LEAD_STATUS": leadStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "PRIORITY": priority,
+        "REMARKS": remarks,
+        "EMAIL": email,
+        "FOLLOW_UP_DATE": followUpDate,
+        "LAST_CONTACTED_DATE":DateTime.now(),
+        "CREATED_AT": FieldValue.serverTimestamp(),
+      });
 
-    remarkController.clear();
-    emailController.clear();
-    dateController.clear();
+      await FirebaseFirestore.instance
+          .collection("LEADS")
+          .doc(leadId)
+          .update({
+        "CALL_STATUS": callStatus,
+        "LEAD_STATUS": leadStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "PRIORITY": priority,
+        "LAST_REMARK": remarks,
+        "FOLLOW_UP_DATE": followUpDate,
+        "LAST_CONTACTED_DATE":DateTime.now(),
+        "LAST_CONTACTED_DATE":lastContactedDate ?? DateTime.now(),
+      });
 
-    isButtonLoading = false;
-    notifyListeners();
+      remarkController.clear();
+      emailController.clear();
+      dateController.clear();
+    }catch(e){
+      debugPrint("FollowUp Error:$e");
+    }finally{
+      isButtonLoading = false;
+      notifyListeners();
+    }
   }
 
   void clearFields() {}

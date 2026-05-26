@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/providers/loginprovider.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
@@ -217,20 +218,59 @@ class _LoginPageState extends State<LoginPage>{
                                                 if(_formKey.currentState!.validate()){
                                                  bool success = await provider.login();
 
+                                                 // if (success){
+                                                 //   final prefs = await SharedPreferences.getInstance();
+                                                 //   await provider.loadUserRole();
+                                                 //
+                                                 //   if(provider.isChecked){
+                                                 //     await prefs.setString('email', provider.emailController.text);
+                                                 //     await prefs.setString('remember', 'true');
+                                                 //   } else {
+                                                 //     await prefs.remove('email');
+                                                 //     await prefs.remove('remember');
+                                                 //   }
+                                                 //
+                                                 //
+                                                 //   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  if (success){
+
                                                    final prefs = await SharedPreferences.getInstance();
+
                                                    await provider.loadUserRole();
 
+                                                   /// IMPORTANT
+                                                   final leadProvider =
+                                                   Provider.of<LeadProvider>(
+                                                     context,
+                                                     listen: false,
+                                                   );
+
+                                                   await leadProvider.loadAgentData();
+
+                                                   leadProvider.listenLeads();
+
                                                    if(provider.isChecked){
-                                                     await prefs.setString('email', provider.emailController.text);
-                                                     await prefs.setString('remember', 'true');
+                                                     await prefs.setString(
+                                                       'email',
+                                                       provider.emailController.text,
+                                                     );
+
+                                                     await prefs.setString(
+                                                       'remember',
+                                                       'true',
+                                                     );
                                                    } else {
                                                      await prefs.remove('email');
                                                      await prefs.remove('remember');
                                                    }
 
+                                                   Navigator.pushReplacement(
+                                                     context,
+                                                     MaterialPageRoute(
+                                                       builder: (_) => SideMenu(),
+                                                     ),
+                                                   );
 
-                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
                                                  } else {
                                                    showDialog(
                                                        context: context,

@@ -938,9 +938,9 @@ class AgentPerformance extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 15),
-              if (provider.isLoading)
-
-              if (provider.agentLoading)
+              // if (provider.isLoading)
+              //
+              // if (provider.agentLoading)
 
               if (provider.isLoading)
                 const Expanded(

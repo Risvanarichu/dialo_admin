@@ -325,7 +325,7 @@ class _AddFollowUpDialogState extends State<AddFollowUpDialog> {
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-
+  DateTime lastCalledDate = DateTime.now();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController remarkController = TextEditingController();
@@ -346,6 +346,13 @@ class _AddFollowUpDialogState extends State<AddFollowUpDialog> {
     dateController.dispose();
     remarkController.dispose();
     super.dispose();
+  }
+
+  String formatLastCalledDate() {
+    return "${lastCalledDate.day.toString().padLeft(2, '0')}-"
+        "${lastCalledDate.month.toString().padLeft(2, '0')}-"
+        "${lastCalledDate.year} "
+        "${TimeOfDay.fromDateTime(lastCalledDate).format(context)}";
   }
 
   @override
@@ -381,6 +388,68 @@ class _AddFollowUpDialogState extends State<AddFollowUpDialog> {
                     if (value == null || value.isEmpty) return "Required";
                     return null;
                   },
+                ),
+
+                const SizedBox(height: 12),
+
+                _label("Last Called Date"),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time, color: Colors.blue),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: Text(
+                          formatLastCalledDate(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+
+                      TextButton(
+                        onPressed: () async {
+                          final pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: lastCalledDate,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                          );
+
+                          if (pickedDate == null) return;
+
+                          final pickedTime = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(lastCalledDate),
+                          );
+
+                          if (pickedTime == null) return;
+
+                          setState(() {
+                            lastCalledDate = DateTime(
+                              pickedDate.year,
+                              pickedDate.month,
+                              pickedDate.day,
+                              pickedTime.hour,
+                              pickedTime.minute,
+                            );
+                          });
+                        },
+                        child: const Text("Change"),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 12),
@@ -457,6 +526,7 @@ class _AddFollowUpDialogState extends State<AddFollowUpDialog> {
                             priority: priority!,
                             remarks: remarkController.text.trim(),
                             email: emailController.text.trim(),
+                            lastContactedDate: lastCalledDate,
                             followUpDate: selectedDate,
                           );
 
@@ -583,6 +653,16 @@ Widget _followUpTimelineCard(
   final timeText = date == null
       ? "-"
       : _formatTime(date);
+
+  final lastCalled = data["LAST_CONTACTED_DATE"] is Timestamp
+      ? (data["LAST_CONTACTED_DATE"] as Timestamp).toDate()
+      : null;
+
+   final lastCalledText = lastCalled == null
+      ? "-"
+      : "${lastCalled.day.toString().padLeft(2, '0')}-"
+      "${lastCalled.month.toString().padLeft(2, '0')}-"
+      "${lastCalled.year} ${_formatTime(lastCalled)}";
 
   return IntrinsicHeight(
     child: Row(

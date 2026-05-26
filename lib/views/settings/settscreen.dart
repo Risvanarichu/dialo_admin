@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'callsettingsscreen.dart';
 import '../leads/leadsettingsscreen.dart';
+import '../../widget/sidemenu.dart';
 
 
 class SettingsPage extends StatelessWidget{
@@ -52,54 +53,59 @@ class SettingsPage extends StatelessWidget{
                   SizedBox(height: 40),
 
                   Expanded(
+                    child: SingleChildScrollView(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final bool isWide = constraints.maxWidth > 700;
+                          return GridView.count(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisCount: isWide ? 2 : 1,
+                            crossAxisSpacing: isWide ? 40 : 0,
+                            mainAxisSpacing: 25,
+                            childAspectRatio: isWide ? 3.5 : 2.5,
+                            children: [
+                              SettingsCard(
+                                title: 'Call Settings',
+                                subtitle: "Configure Call Recording, Routing\nand Business Hours ",
+                                onTap: (){
+                                  Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) => SideMenu(
+                                      selectedIndex: 7,
+                                      child: CallSettingsScreen(),
+                                    )),
+                                  );
+                                },
+                              ),
 
 
-                    child: SizedBox(
-                      width: 850,
-                      child:  GridView.count(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 150,
-                        mainAxisSpacing: 35,
-                        childAspectRatio: 3.5,
-                        children: [
-                          SettingsCard(
-                            title: 'Call Settings',
-                            subtitle: "Configure Call Recording, Routing\nand Business Hours ",
-                            onTap: (){
-                              Navigator.push(context,
-                                MaterialPageRoute(builder: (context) => CallSettingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
+                              SettingsCard(
+                                title: "User Management",
+                                subtitle: "Manage User Roles, Permission And\nAccess Controls",
+                                onTap: (){},
+                              ),
 
-
-                          SettingsCard(
-                            title: "User Management",
-                            subtitle: "Manage User Roles, Permission And\nAccess Controls",
-                            onTap: (){},
-                          ),
-
-                          SettingsCard(
-                            title: "Lead Settings",
-                            subtitle: "Configure Lead Sources Status\nand Assignment Rules",
-                            onTap: (){
-                              Navigator.push(context,
-                                MaterialPageRoute(builder: (context) => LeadSettingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          SettingsCard(
-                            title: "Notification Settings",
-                            subtitle: "Set up Email, SMS And In-App Notification",
-                            onTap: (){},
-                          ),
-                        ],
+                              SettingsCard(
+                                title: "Lead Settings",
+                                subtitle: "Configure Lead Sources Status\nand Assignment Rules",
+                                onTap: (){
+                                  Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) => SideMenu(
+                                      selectedIndex: 7,
+                                      child: LeadSettingsScreen(),
+                                    )),
+                                  );
+                                },
+                              ),
+                              SettingsCard(
+                                title: "Notification Settings",
+                                subtitle: "Set up Email, SMS And In-App Notification",
+                                onTap: (){},
+                              ),
+                            ],
+                          );
+                        },
                       ),
-
-
-
                     ),
                   ),
 

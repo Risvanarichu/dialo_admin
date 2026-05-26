@@ -1,5 +1,6 @@
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
+import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -21,11 +22,12 @@ class _AddLeadState extends State<AddLead> {
   final leadStatusCtrl = TextEditingController();
   final callStatusCtrl = TextEditingController();
   final notesCtrl = TextEditingController();
+  bool isSaving = false;
+  String userRole = "";
 
   String selectedLeadCategory = "";
   String? selectedAgentId;
   String? selectedAgentName;
-  String userRole = "";
 
   @override
   void initState() {
@@ -445,21 +447,88 @@ class _AddLeadState extends State<AddLead> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const Leads()),
+              MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
             );
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           child: const Text("Cancel", style: TextStyle(color: Colors.white)),
         ),
         const SizedBox(width: 16),
+        // ElevatedButton(
+        //   onPressed: () async {
+        //     if (_formKey.currentState!.validate()) {
+        //       final leadProvider = context.read<LeadProvider>();
+        //       final settingsProvider = context.read<SettingsProvider>();
+        //
+        //       try {
+        //         if (leadProvider.isEdit) {
+        //           await leadProvider.updateUser(
+        //             leadStatus: leadStatusCtrl.text,
+        //             callStatus: callStatusCtrl.text,
+        //             leadCategory: selectedLeadCategory,
+        //             notes: notesCtrl.text,
+        //             agentId: selectedAgentId,
+        //             agentName: selectedAgentName,
+        //           );
+        //
+        //           ScaffoldMessenger.of(context).showSnackBar(
+        //             const SnackBar(content: Text("Lead Updated Successfully")),
+        //           );
+        //         } else {
+        //           await leadProvider.addLead(
+        //             name: leadProvider.nameController.text.trim(),
+        //             phone: leadProvider.phoneController.text.trim(),
+        //             email: leadProvider.emailController.text.trim(),
+        //             source: leadProvider.sourceController.text.trim(),
+        //             leadStatus: leadStatusCtrl.text.trim(),
+        //             notes: notesCtrl.text.trim(),
+        //             callStatus: callStatusCtrl.text.trim(),
+        //             leadCategory: selectedLeadCategory,
+        //             additionalDetails: settingsProvider.additionalDetails,
+        //             assignedAgentId: selectedAgentId,
+        //             assignedAgentName: selectedAgentName,
+        //           );
+        //
+        //           ScaffoldMessenger.of(context).showSnackBar(
+        //             const SnackBar(content: Text("Lead Added Successfully")),
+        //           );
+        //         }
+        //
+        //         leadProvider.clearFields();
+        //         settingsProvider.additionalDetails.clear();
+        //
+        //         Navigator.pushReplacement(
+        //           context,
+        //           MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
+        //         );
+        //       } catch (e) {
+        //         ScaffoldMessenger.of(context).showSnackBar(
+        //           SnackBar(content: Text("Failed to save lead: $e")),
+        //         );
+        //       }
+        //     }
+        //   },
+        //   style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+        //   child: const Text("Save", style: TextStyle(color: Colors.white)),
+        // ),
+
         ElevatedButton(
-          onPressed: () async {
+          onPressed: isSaving
+              ? null
+              : () async {
             if (_formKey.currentState!.validate()) {
+
+              setState(() {
+                isSaving = true;
+              });
+
               final leadProvider = context.read<LeadProvider>();
               final settingsProvider = context.read<SettingsProvider>();
 
               try {
+
                 if (leadProvider.isEdit) {
+
                   await leadProvider.updateUser(
                     leadStatus: leadStatusCtrl.text,
                     callStatus: callStatusCtrl.text,
@@ -469,10 +538,16 @@ class _AddLeadState extends State<AddLead> {
                     agentName: selectedAgentName,
                   );
 
+                  if (!mounted) return;
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lead Updated Successfully")),
+                    const SnackBar(
+                      content: Text("Lead Updated Successfully"),
+                    ),
                   );
+
                 } else {
+
                   await leadProvider.addLead(
                     name: leadProvider.nameController.text.trim(),
                     phone: leadProvider.phoneController.text.trim(),
@@ -487,27 +562,65 @@ class _AddLeadState extends State<AddLead> {
                     assignedAgentName: selectedAgentName,
                   );
 
+                  if (!mounted) return;
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lead Added Successfully")),
+                    const SnackBar(
+                      content: Text("Lead Added Successfully"),
+                    ),
                   );
                 }
 
                 leadProvider.clearFields();
                 settingsProvider.additionalDetails.clear();
 
+                if (!mounted) return;
+
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const Leads()),
+                  MaterialPageRoute(
+                    builder: (_) => const SideMenu(selectedIndex: 2),
+                  ),
                 );
+
               } catch (e) {
+
+                if (!mounted) return;
+
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to save lead: $e")),
+                  SnackBar(
+                    content: Text("Failed to save lead: $e"),
+                  ),
                 );
+
+              } finally {
+
+                if (mounted) {
+                  setState(() {
+                    isSaving = false;
+                  });
+                }
               }
             }
           },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          child: const Text("Save", style: TextStyle(color: Colors.white)),
+
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+          ),
+
+          child: isSaving
+              ? const SizedBox(
+            height: 18,
+            width: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
+              : const Text(
+            "Save",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
