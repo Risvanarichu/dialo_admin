@@ -608,7 +608,7 @@ class LeadsReportCard extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: SingleChildScrollView(
                     child: DataTable(
-                      columnSpacing: 80,
+                      columnSpacing: 40,
                       columns: const [
                         DataColumn(label: Text("Lead Name")),
                         DataColumn(label: Text("Phone")),
@@ -622,7 +622,12 @@ class LeadsReportCard extends StatelessWidget {
                           DataCell(Text(e["phone"])),
                           DataCell(Text(e["source"])),
                           DataCell(Text(e["agent"])),
-                          DataCell(Text(e["status"])),
+                          /// ✅ CHANGED
+                          DataCell(
+                            Text(
+                              e["status"]?.toString() ?? "No Status",
+                            ),
+                          ),
                         ]);
                       }).toList(),
                     ),
@@ -669,40 +674,40 @@ class LeadsReportCard extends StatelessWidget {
 /// FILTERS
 ////////////////////////////////////////////////////////////
 
-class LeadsFilterSection extends StatelessWidget {
-  const LeadsFilterSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        SizedBox(
-          width: 160,
-          child: _dropdown(["All Agents", "RISWANA", "SHIBIN", "FINIYA"]),
-        ),
-        SizedBox(
-          width: 160,
-          child: _dropdown(["All Status", "New", "Contacted", "Converted"]),
-        ),
-        SizedBox(
-          width: 160,
-          child: _dropdown(["All Sources", "Website", "Facebook", "Referral"]),
-        ),
-        SizedBox(
-          width: 200,
-          child: TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: "Search leads...",
-              contentPadding: EdgeInsets.symmetric(horizontal: 10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+// class LeadsFilterSection extends StatelessWidget {
+//   const LeadsFilterSection({super.key});
+//
+//   // @override
+//   // Widget build(BuildContext context) {
+//     // return Wrap(
+//     //   spacing: 10,
+//     //   runSpacing: 10,
+//     //   children: [
+//     //     SizedBox(
+//     //       width: 160,
+//     //       child: _dropdown(["All Agents", "RISWANA", "SHIBIN", "FINIYA"]),
+//     //     ),
+//     //     SizedBox(
+//     //       width: 160,
+//     //       child: _dropdown(["All Status", "New", "Contacted", "Converted"]),
+//     //     ),
+//     //     SizedBox(
+//     //       width: 160,
+//     //       child: _dropdown(["All Sources", "Website", "Facebook", "Referral"]),
+//     //     ),
+//     //     SizedBox(
+//     //       width: 200,
+//     //       child: TextField(
+//     //         decoration: InputDecoration(
+//     //           border: OutlineInputBorder(),
+//     //           hintText: "Search leads...",
+//     //           contentPadding: EdgeInsets.symmetric(horizontal: 10),
+//     //         ),
+//     //       ),
+//     //     ),
+//     //   ],
+//     // );
+//   }
 
   Widget _dropdown(List<String> items) {
     return Container(
@@ -723,7 +728,7 @@ class LeadsFilterSection extends StatelessWidget {
       ),
     );
   }
-}
+
 
 ////////////////////////////////////////////////////////////
 /// CARD UI

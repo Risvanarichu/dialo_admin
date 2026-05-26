@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReportProvider()..fetchReports()),
       ],
       child: MaterialApp(
-        home:SettingsPage(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );
