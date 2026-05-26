@@ -11,6 +11,7 @@ import 'package:dialo_admin/views/leads/addlead.dart';
 import 'package:dialo_admin/views/leads/leads_list.dart';
 import 'package:dialo_admin/views/leads/leadsettingsscreen.dart';
 import 'package:dialo_admin/views/report/reportpage.dart';
+import 'package:dialo_admin/views/settings/notification.dart';
 import 'package:dialo_admin/views/settings/settscreen.dart';
 import 'package:dialo_admin/widget/sidemenu.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReportProvider()..fetchReports()),
       ],
       child: MaterialApp(
-        home:LoginPage(),
+        home:NotificationScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );
