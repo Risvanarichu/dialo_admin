@@ -597,12 +597,76 @@ class LeadsReportCard extends StatelessWidget {
               builder: (context) {
                 final loginProvider = context.watch<Loginprovider>();
 
-                final filteredLeads =
-                loginProvider.userRole.toUpperCase() == "AGENT"
-                    ? provider.leadsReport.where((e) =>
-                e["agent"].toString().toLowerCase() ==
-                    loginProvider.name.toLowerCase())
-                    : provider.leadsReport;
+                /// ✅ CHANGED : ALL FILTERS + SEARCH WORKING
+                final filteredLeads = provider.leadsReport.where((e) {
+
+                  /// AGENT LOGIN FILTER
+                  if (loginProvider.userRole.toUpperCase() == "AGENT") {
+                    if (e["agent"]
+                        .toString()
+                        .toLowerCase()
+                        .trim() !=
+                        loginProvider.name
+                            .toLowerCase()
+                            .trim()) {
+                      return false;
+                    }
+                  }
+
+                  /// AGENT DROPDOWN FILTER
+                  if (provider.selectedAgent != "All Agents") {
+                    if (e["agent"] != provider.selectedAgent) {
+                      return false;
+                    }
+                  }
+
+                  /// STATUS FILTER
+                  if (provider.selectedStatus != "All Status") {
+                    if (e["status"]
+                        .toString()
+                        .toLowerCase()
+                        .trim() !=
+                        provider.selectedStatus
+                            .toLowerCase()
+                            .trim()) {
+                      return false;
+                    }
+                  }
+
+                  /// SOURCE FILTER
+                  if (provider.selectedSource != "All Sources") {
+                    if (e["source"] != provider.selectedSource) {
+                      return false;
+                    }
+                  }
+
+                  /// ✅ SEARCH FILTER
+                  if (provider.searchQuery.isNotEmpty) {
+
+                    final query =
+                    provider.searchQuery
+                        .toLowerCase()
+                        .trim();
+
+                    final name =
+                    e["name"]
+                        .toString()
+                        .toLowerCase();
+
+                    final phone =
+                    e["phone"]
+                        .toString()
+                        .toLowerCase();
+
+                    if (!name.contains(query) &&
+                        !phone.contains(query)) {
+                      return false;
+                    }
+                  }
+
+                  return true;
+
+                }).toList();
 
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,

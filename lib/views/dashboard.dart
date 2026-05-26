@@ -356,48 +356,84 @@ class InfoCard extends StatelessWidget {
 //   }
 // }
 //
- class DashboardBottomSection extends StatelessWidget {
- const DashboardBottomSection({super.key});
+class DashboardBottomSection extends StatelessWidget {
+  const DashboardBottomSection({super.key});
+
+  Future<bool> isAgent() async {
+    final prefs = await SharedPreferences.getInstance();
+    String role = prefs.getString("role") ?? "";
+    return role.toUpperCase() == "AGENT";
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth > 800;
+    return FutureBuilder<bool>(
+      future: isAgent(),
+      builder: (context, snapshot) {
+        final bool isAgentLogin = snapshot.data ?? false;
 
-        if (isWide) {
-          return const Column(
-            children: [
-              Row(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 3, child: CallAnalytics()),
-                  SizedBox(width: 20),
-                  Expanded(flex: 2, child: AgentPerformance()),
-                ],
-              ),
-              SizedBox(height: 20),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 2, child: CallDistribution()),
-                  SizedBox(width: 20),
-                  Expanded(flex: 3, child: RecentCalls()),
-                ],
-              ),
-            ],
-          );
-        }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isWide = constraints.maxWidth > 800;
 
-        return const Column(
-          children: [
-            CallAnalytics(),
-            SizedBox(height: 20),
-            AgentPerformance(),
-            SizedBox(height: 20),
-            CallDistribution(),
-            SizedBox(height: 20),
-            RecentCalls(),
-          ],
+            /// ================= AGENT LOGIN =================
+            if (isAgentLogin) {
+              return const Column(
+                children: [
+                  /// Full width chart
+                  CallAnalytics(),
+
+                  SizedBox(height: 20),
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: CallDistribution()),
+                      SizedBox(width: 20),
+                      Expanded(flex: 3, child: RecentCalls()),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            /// ================= ADMIN LOGIN =================
+            if (isWide) {
+              return const Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: CallAnalytics()),
+                      SizedBox(width: 20),
+                      Expanded(flex: 2, child: AgentPerformance()),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: CallDistribution()),
+                      SizedBox(width: 20),
+                      Expanded(flex: 3, child: RecentCalls()),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            return const Column(
+              children: [
+                CallAnalytics(),
+                SizedBox(height: 20),
+                AgentPerformance(),
+                SizedBox(height: 20),
+                CallDistribution(),
+                SizedBox(height: 20),
+                RecentCalls(),
+              ],
+            );
+          },
         );
       },
     );

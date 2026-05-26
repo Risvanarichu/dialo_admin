@@ -377,22 +377,26 @@ String agentId = "";
   /// FILTER METHODS
   void updateAgent(String val) {
     selectedAgent = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void updateStatusFilter(String val) {
     selectedStatus = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void updateSource(String val) {
     selectedSource = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void searchLeads(String val) {
     searchQuery = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 }
 
