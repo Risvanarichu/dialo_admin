@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/agentProvider.dart';
+import '../../services/notification_service.dart';
 import 'leads_list.dart';
 
 class AddLead extends StatefulWidget {
@@ -19,9 +20,6 @@ class AddLead extends StatefulWidget {
 class _AddLeadState extends State<AddLead> {
   final _formKey = GlobalKey<FormState>();
 
-  final leadStatusCtrl = TextEditingController();
-  final callStatusCtrl = TextEditingController();
-  final notesCtrl = TextEditingController();
   bool isSaving = false;
   String userRole = "";
 
@@ -40,12 +38,9 @@ class _AddLeadState extends State<AddLead> {
       await settingsProvider.fetchAllSettings();
 
       if (leadProvider.isEdit) {
-        leadStatusCtrl.text = leadProvider.leadStatusValue;
-        callStatusCtrl.text = leadProvider.callStatusValue;
-        notesCtrl.text = leadProvider.notesValue;
-
         selectedAgentId = leadProvider.selectedAgentId;
         selectedAgentName = leadProvider.selectedAgentName;
+        selectedLeadCategory = leadProvider.leadCategoryValue ?? "";
       }
 
       final prefs = await SharedPreferences.getInstance();
@@ -59,42 +54,41 @@ class _AddLeadState extends State<AddLead> {
   }
 
   @override
-  void dispose() {
-    leadStatusCtrl.dispose();
-    callStatusCtrl.dispose();
-    notesCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 900;
 
-    return Scaffold(
-      backgroundColor: const Color(0xfff4f6fb),
-      body: Column(
-        children: [
-          _topBar(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _formCard(isMobile),
-                    const SizedBox(height: 24),
-                    additionalDetailsFields(),
-                    const SizedBox(height: 24),
-                    _notesSection(),
-                    const SizedBox(height: 24),
-                    _actionButtons(),
-                  ],
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          context.read<LeadProvider>().clearFields();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xfff4f6fb),
+        body: Column(
+          children: [
+            _topBar(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _formCard(isMobile),
+                      const SizedBox(height: 24),
+                      additionalDetailsFields(),
+                      const SizedBox(height: 24),
+                      _notesSection(),
+                      const SizedBox(height: 24),
+                      _actionButtons(),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -194,10 +188,11 @@ class _AddLeadState extends State<AddLead> {
 
   Widget _leadStatusDropdown() {
     final provider = context.watch<SettingsProvider>();
+    final leadProvider = context.watch<LeadProvider>();
 
     final validValue =
-    provider.leadStatus.contains(leadStatusCtrl.text)
-        ? leadStatusCtrl.text
+    provider.leadStatus.contains(leadProvider.leadStatusController.text)
+        ? leadProvider.leadStatusController.text
         : null;
 
     return Column(
@@ -216,7 +211,7 @@ class _AddLeadState extends State<AddLead> {
           }).toList(),
           onChanged: (value) {
             setState(() {
-              leadStatusCtrl.text = value ?? "";
+              leadProvider.leadStatusController.text = value ?? "";
             });
           },
           validator: (value) {
@@ -233,10 +228,11 @@ class _AddLeadState extends State<AddLead> {
 
   Widget _callStatusDropdown() {
     final provider = context.watch<SettingsProvider>();
+    final leadProvider = context.watch<LeadProvider>();
 
     final validValue =
-    provider.callStatus.contains(callStatusCtrl.text)
-        ? callStatusCtrl.text
+    provider.callStatus.contains(leadProvider.callStatusController.text)
+        ? leadProvider.callStatusController.text
         : null;
 
     return Column(
@@ -255,7 +251,7 @@ class _AddLeadState extends State<AddLead> {
           }).toList(),
           onChanged: (value) {
             setState(() {
-              callStatusCtrl.text = value ?? "";
+              leadProvider.callStatusController.text = value ?? "";
             });
           },
           validator: (value) {
@@ -425,13 +421,14 @@ class _AddLeadState extends State<AddLead> {
   }
 
   Widget _notesSection() {
+    final leadProvider = context.watch<LeadProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("NOTES"),
         const SizedBox(height: 6),
         TextFormField(
-          controller: notesCtrl,
+          controller: leadProvider.notesController,
           maxLines: 4,
           decoration: _dropdownDecoration(),
         ),
@@ -445,6 +442,7 @@ class _AddLeadState extends State<AddLead> {
       children: [
         ElevatedButton(
           onPressed: () {
+            context.read<LeadProvider>().clearFields();
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
@@ -454,68 +452,11 @@ class _AddLeadState extends State<AddLead> {
           child: const Text("Cancel", style: TextStyle(color: Colors.white)),
         ),
         const SizedBox(width: 16),
-        // ElevatedButton(
-        //   onPressed: () async {
-        //     if (_formKey.currentState!.validate()) {
-        //       final leadProvider = context.read<LeadProvider>();
-        //       final settingsProvider = context.read<SettingsProvider>();
-        //
-        //       try {
-        //         if (leadProvider.isEdit) {
-        //           await leadProvider.updateUser(
-        //             leadStatus: leadStatusCtrl.text,
-        //             callStatus: callStatusCtrl.text,
-        //             leadCategory: selectedLeadCategory,
-        //             notes: notesCtrl.text,
-        //             agentId: selectedAgentId,
-        //             agentName: selectedAgentName,
-        //           );
-        //
-        //           ScaffoldMessenger.of(context).showSnackBar(
-        //             const SnackBar(content: Text("Lead Updated Successfully")),
-        //           );
-        //         } else {
-        //           await leadProvider.addLead(
-        //             name: leadProvider.nameController.text.trim(),
-        //             phone: leadProvider.phoneController.text.trim(),
-        //             email: leadProvider.emailController.text.trim(),
-        //             source: leadProvider.sourceController.text.trim(),
-        //             leadStatus: leadStatusCtrl.text.trim(),
-        //             notes: notesCtrl.text.trim(),
-        //             callStatus: callStatusCtrl.text.trim(),
-        //             leadCategory: selectedLeadCategory,
-        //             additionalDetails: settingsProvider.additionalDetails,
-        //             assignedAgentId: selectedAgentId,
-        //             assignedAgentName: selectedAgentName,
-        //           );
-        //
-        //           ScaffoldMessenger.of(context).showSnackBar(
-        //             const SnackBar(content: Text("Lead Added Successfully")),
-        //           );
-        //         }
-        //
-        //         leadProvider.clearFields();
-        //         settingsProvider.additionalDetails.clear();
-        //
-        //         Navigator.pushReplacement(
-        //           context,
-        //           MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 2,)),
-        //         );
-        //       } catch (e) {
-        //         ScaffoldMessenger.of(context).showSnackBar(
-        //           SnackBar(content: Text("Failed to save lead: $e")),
-        //         );
-        //       }
-        //     }
-        //   },
-        //   style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-        //   child: const Text("Save", style: TextStyle(color: Colors.white)),
-        // ),
-
         ElevatedButton(
           onPressed: isSaving
               ? null
               : () async {
+
             if (_formKey.currentState!.validate()) {
 
               setState(() {
@@ -527,16 +468,37 @@ class _AddLeadState extends State<AddLead> {
 
               try {
 
+                /// =========================
+                /// UPDATE LEAD
+                /// =========================
                 if (leadProvider.isEdit) {
 
                   await leadProvider.updateUser(
-                    leadStatus: leadStatusCtrl.text,
-                    callStatus: callStatusCtrl.text,
+                    leadStatus: leadProvider.leadStatusController.text.trim(),
+                    callStatus: leadProvider.callStatusController.text.trim(),
                     leadCategory: selectedLeadCategory,
-                    notes: notesCtrl.text,
+                    notes: leadProvider.notesController.text.trim(),
                     agentId: selectedAgentId,
                     agentName: selectedAgentName,
                   );
+
+                  /// SAFE NOTIFICATION
+                  try {
+
+                    await NotificationService.triggerNotification(
+                      title: "Lead Updated",
+                      body:
+                      "${leadProvider.nameController.text} updated successfully",
+                      leadName:
+                      leadProvider.nameController.text.trim(),
+                      agentId: selectedAgentId ?? "",
+                    );
+
+                  } catch (e) {
+
+                    debugPrint("Notification Error : $e");
+
+                  }
 
                   if (!mounted) return;
 
@@ -546,21 +508,45 @@ class _AddLeadState extends State<AddLead> {
                     ),
                   );
 
-                } else {
+                }
+
+                /// =========================
+                /// ADD LEAD
+                /// =========================
+                else {
 
                   await leadProvider.addLead(
                     name: leadProvider.nameController.text.trim(),
                     phone: leadProvider.phoneController.text.trim(),
                     email: leadProvider.emailController.text.trim(),
                     source: leadProvider.sourceController.text.trim(),
-                    leadStatus: leadStatusCtrl.text.trim(),
-                    notes: notesCtrl.text.trim(),
-                    callStatus: callStatusCtrl.text.trim(),
+                    leadStatus: leadProvider.leadStatusController.text.trim(),
+                    notes: leadProvider.notesController.text.trim(),
+                    callStatus: leadProvider.callStatusController.text.trim(),
                     leadCategory: selectedLeadCategory,
-                    additionalDetails: settingsProvider.additionalDetails,
+                    additionalDetails:
+                    settingsProvider.additionalDetails,
                     assignedAgentId: selectedAgentId,
                     assignedAgentName: selectedAgentName,
                   );
+
+                  /// SAFE NOTIFICATION
+                  try {
+
+                    await NotificationService.triggerNotification(
+                      title: "New Lead Added",
+                      body:
+                      "${leadProvider.nameController.text} added successfully",
+                      leadName:
+                      leadProvider.nameController.text.trim(),
+                      agentId: selectedAgentId ?? "",
+                    );
+
+                  } catch (e) {
+
+                    debugPrint("Notification Error : $e");
+
+                  }
 
                   if (!mounted) return;
 
@@ -571,7 +557,11 @@ class _AddLeadState extends State<AddLead> {
                   );
                 }
 
+                /// =========================
+                /// CLEAR FIELDS
+                /// =========================
                 leadProvider.clearFields();
+
                 settingsProvider.additionalDetails.clear();
 
                 if (!mounted) return;
@@ -579,26 +569,33 @@ class _AddLeadState extends State<AddLead> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const SideMenu(selectedIndex: 2),
+                    builder: (_) =>
+                    const SideMenu(selectedIndex: 2),
                   ),
                 );
 
               } catch (e) {
 
+                debugPrint("SAVE ERROR : $e");
+
                 if (!mounted) return;
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("Failed to save lead: $e"),
+                    content: Text(
+                      "Failed to save lead : $e",
+                    ),
                   ),
                 );
 
               } finally {
 
                 if (mounted) {
+
                   setState(() {
                     isSaving = false;
                   });
+
                 }
               }
             }
@@ -619,9 +616,11 @@ class _AddLeadState extends State<AddLead> {
           )
               : const Text(
             "Save",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+            ),
           ),
-        ),
+        )
       ],
     );
   }

@@ -54,6 +54,9 @@ class LeadProvider extends ChangeNotifier {
   final sourceController = TextEditingController();
   final remarkController = TextEditingController();
   final dateController = TextEditingController();
+  final leadStatusController = TextEditingController();
+  final callStatusController = TextEditingController();
+  final notesController = TextEditingController();
 
   var leadCategoryValue;
 
@@ -520,6 +523,10 @@ class LeadProvider extends ChangeNotifier {
     leadCategoryValue = user["LEAD_CATEGORY"] ?? "";
     notesValue = user["NOTES"] ?? "";
 
+    leadStatusController.text = leadStatusValue;
+    callStatusController.text = callStatusValue;
+    notesController.text = notesValue;
+
     selectedAgentId = user["AGENT_ID"];
     selectedAgentName = user["AGENT_NAME"];
 
@@ -718,5 +725,28 @@ class LeadProvider extends ChangeNotifier {
     }
   }
 
-  void clearFields() {}
+  void clearFields() {
+    nameController.clear();
+    phoneController.clear();
+    emailController.clear();
+    sourceController.clear();
+    remarkController.clear();
+    dateController.clear();
+    leadStatusController.clear();
+    callStatusController.clear();
+    notesController.clear();
+
+    leadStatusValue = "";
+    callStatusValue = "";
+    leadCategoryValue = null;
+    notesValue = "";
+
+    selectedAgentId = null;
+    selectedAgentName = null;
+
+    editingId = null;
+    isEdit = false;
+
+    notifyListeners();
+  }
 }

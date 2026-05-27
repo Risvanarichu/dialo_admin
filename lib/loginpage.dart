@@ -8,65 +8,129 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
-
-
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-class _LoginPageState extends State<LoginPage>{
 
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
+  // FocusNode to move focus from email → password on Enter
+  final FocusNode _passwordFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(()async{
-      final provider = Provider.of<Loginprovider>(context,listen: false);
+    Future.microtask(() async {
+      final provider = Provider.of<Loginprovider>(context, listen: false);
       bool loggedIn = await provider.isLoggedIn();
-      if(loggedIn){
-      final prefs = await SharedPreferences.getInstance();
-      String? agentId = prefs.getString('agentId');
-      String? role = prefs.getString('role');
-      if(agentId != null && agentId.isNotEmpty){
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => SideMenu()),
-        );
-      }else{
-      Provider.of<Loginprovider>(context, listen: false).loadUserData();
+      if (loggedIn) {
+        final prefs = await SharedPreferences.getInstance();
+        String? agentId = prefs.getString('agentId');
+        if (agentId != null && agentId.isNotEmpty) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => SideMenu()),
+          );
+        } else {
+          Provider.of<Loginprovider>(context, listen: false).loadUserData();
+        }
       }
-    }
     });
   }
 
-  Widget build(BuildContext context){
+  @override
+  void dispose() {
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
+  // ─── Shared login handler (used by button AND Enter key) ───────────────────
+  Future<void> _handleLogin(BuildContext context, Loginprovider provider) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    bool success = await provider.login();
+
+    if (!mounted) return;
+
+    if (success) {
+      final prefs = await SharedPreferences.getInstance();
+      await provider.loadUserRole();
+
+      final leadProvider =
+      Provider.of<LeadProvider>(context, listen: false);
+      await leadProvider.loadAgentData();
+      leadProvider.listenLeads();
+
+      if (provider.isChecked) {
+        await prefs.setString('email', provider.emailController.text);
+        await prefs.setString('remember', 'true');
+      } else {
+        await prefs.remove('email');
+        await prefs.remove('remember');
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => SideMenu()),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.error, color: Colors.red),
+              SizedBox(width: 10),
+              Text("Login Failed"),
+            ],
+          ),
+          content: Text("This user was not found. Please check your credentials."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
     final provider = context.watch<Loginprovider>();
+
     return Scaffold(
       body: Stack(
         children: [
+          // Background image
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-
-                  image: AssetImage(
-                    'assets/shibi.png',
-                  ),
+                  image: AssetImage('assets/shibi.png'),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
           ),
+
+          // Dark overlay
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(0.2),
             ),
           ),
-
 
           Center(
             child: LayoutBuilder(
@@ -83,14 +147,17 @@ class _LoginPageState extends State<LoginPage>{
                         width: isNarrow ? 400 : 800,
                         height: 390,
                         padding: const EdgeInsets.all(30),
-                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(25),
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border: Border.all(
+                              color: Colors.white.withOpacity(0.2)),
                         ),
                         child: Row(
                           children: [
+                            // Left decorative panel (wide screen only)
                             if (!isNarrow)
                               Expanded(
                                 child: Column(
@@ -101,279 +168,236 @@ class _LoginPageState extends State<LoginPage>{
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
+
+                            // Form panel
                             Expanded(
                               child: SingleChildScrollView(
-                          child: Form(
-                              key:_formKey,
-                              child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _inputField(
-                                      label: "Email/Username",
-                                      hint: "Enter your Email",
-                                      icon: Icons.email_outlined,
-                                      controller: provider.emailController,
-                                      validator: (value) {
-                                        if (value == null ||
-                                            value.isEmpty) {
-                                          return "Email is required";
-                                        }
-                                        final emailRegex = RegExp(
-                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                        );
-                                        if (!emailRegex.hasMatch(
-                                            value)) {
-                                          return "Enter a your email address";
-                                        }
-                                        return null;
-                                      },
-                                      labelSize: 18,
-                                      labelWeight: FontWeight.bold,
-                                    ),
-                                    SizedBox(height: 25,),
-
-                                    _inputField(
-                                      label: "Password",
-                                      hint: "Enter your Password",
-                                      icon: Icons.lock_outline_rounded,
-                                      isPassword:provider.isPasswordHidden,
-                                      controller: provider.passwordController,
-                                      validator: (value){
-                                        if(value == null|| value.isEmpty){
-                                          return "Password is required";
-                                        }
-                                        if(value.length<6){
-                                          return"Password must be at least 6 characters";
-                                        }
-                                        if(!RegExp(r'[A-Z]').hasMatch(value)){
-                                          return "Must Contain at least 1 uppercase letter";
-                                        }
-                                        if(!RegExp(r'[a-z]').hasMatch(value)){
-                                          return 'Must contain at least 1 lowercase  letter';
-                                        }
-                                        if(!RegExp(r'[!@#$%^&*(),.?":{}\|<>]').hasMatch(value)){
-                                          return "Must contain at least 1 special character";
-                                        }
-                                        if(!RegExp(r'[0-9]').hasMatch(value)){
-                                          return 'Password must contain at least one number';
-                                        }
-                                        return null;
-                                      },
-                                      labelSize: 18,
-                                      labelWeight: FontWeight.bold,
-                                      suffixIcon: GestureDetector(
-                                        onTap: provider.togglePassword,
-                                        child: Icon(
-                                         provider.isPasswordHidden
-                                              ?Icons.visibility_off
-                                              :Icons.visibility,
-                                          color: Colors.indigo[900],
-                                        ),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // ── Email field ──────────────────────
+                                      _inputField(
+                                        label: "Email/Username",
+                                        hint: "Enter your Email",
+                                        icon: Icons.email_outlined,
+                                        controller: provider.emailController,
+                                        // Move focus to password on Enter
+                                        textInputAction: TextInputAction.next,
+                                        onFieldSubmitted: (_) {
+                                          FocusScope.of(context)
+                                              .requestFocus(_passwordFocusNode);
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return "Email is required";
+                                          }
+                                          final emailRegex = RegExp(
+                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                          );
+                                          if (!emailRegex.hasMatch(value)) {
+                                            return "Enter a valid email address";
+                                          }
+                                          return null;
+                                        },
+                                        labelSize: 18,
+                                        labelWeight: FontWeight.bold,
                                       ),
-                                    ),
-                                    SizedBox(height: 8,),
 
-                                    Row(
-                                      children: [
+                                      SizedBox(height: 25),
 
-                                        SizedBox(width: 8,),
-                                        Text(
-                                          "Remember me",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w800
-                                          ),
-                                        ),
-                                        SizedBox(width: 8,),
-                                        GestureDetector(
-                                          onTap: provider.toggleRemember,
+                                      // ── Password field ───────────────────
+                                      _inputField(
+                                        label: "Password",
+                                        hint: "Enter your Password",
+                                        icon: Icons.lock_outline_rounded,
+                                        isPassword: provider.isPasswordHidden,
+                                        controller: provider.passwordController,
+                                        focusNode: _passwordFocusNode,
+                                        // Trigger login on Enter key
+                                        textInputAction: TextInputAction.done,
+                                        onFieldSubmitted: (_) =>
+                                            _handleLogin(context, provider),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return "Password is required";
+                                          }
+                                          if (value.length < 6) {
+                                            return "Password must be at least 6 characters";
+                                          }
+                                          if (!RegExp(r'[A-Z]')
+                                              .hasMatch(value)) {
+                                            return "Must contain at least 1 uppercase letter";
+                                          }
+                                          if (!RegExp(r'[a-z]')
+                                              .hasMatch(value)) {
+                                            return "Must contain at least 1 lowercase letter";
+                                          }
+                                          if (!RegExp(
+                                              r'[!@#$%^&*(),.?":{}\|<>]')
+                                              .hasMatch(value)) {
+                                            return "Must contain at least 1 special character";
+                                          }
+                                          if (!RegExp(r'[0-9]')
+                                              .hasMatch(value)) {
+                                            return "Password must contain at least one number";
+                                          }
+                                          return null;
+                                        },
+                                        labelSize: 18,
+                                        labelWeight: FontWeight.bold,
+                                        suffixIcon: GestureDetector(
+                                          onTap: provider.togglePassword,
                                           child: Icon(
-                                            provider.isChecked
-                                                ? Icons.check_box
-                                                : Icons.check_box_outline_blank_outlined,
+                                            provider.isPasswordHidden
+                                                ? Icons.visibility_off
+                                                : Icons.visibility,
                                             color: Colors.indigo[900],
                                           ),
                                         ),
+                                      ),
 
+                                      SizedBox(height: 8),
 
-                                      ],
-                                    ),
+                                      // ── Remember me ──────────────────────
+                                      Row(
+                                        children: [
+                                          SizedBox(width: 8),
+                                          Text(
+                                            "Remember me",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          GestureDetector(
+                                            onTap: provider.toggleRemember,
+                                            child: Icon(
+                                              provider.isChecked
+                                                  ? Icons.check_box
+                                                  : Icons
+                                                  .check_box_outline_blank_outlined,
+                                              color: Colors.indigo[900],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
 
-                                    SizedBox(height: 28,),
+                                      SizedBox(height: 28),
 
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
+                                      // ── Buttons ───────────────────────────
+                                      Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        children: [
+                                          // Log In button
+                                          SizedBox(
                                             width: 140,
                                             height: 40,
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue[900],
-                                                padding: EdgeInsets.symmetric(vertical: 14),
+                                                backgroundColor:
+                                                Colors.blue[900],
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 14),
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderRadius:
+                                                  BorderRadius.circular(10),
                                                 ),
-                                                side: BorderSide(color: Colors.white),
+                                                side: BorderSide(
+                                                    color: Colors.white),
                                               ),
-                                              onPressed: () async {
-                                                if(_formKey.currentState!.validate()){
-                                                 bool success = await provider.login();
-
-                                                 // if (success){
-                                                 //   final prefs = await SharedPreferences.getInstance();
-                                                 //   await provider.loadUserRole();
-                                                 //
-                                                 //   if(provider.isChecked){
-                                                 //     await prefs.setString('email', provider.emailController.text);
-                                                 //     await prefs.setString('remember', 'true');
-                                                 //   } else {
-                                                 //     await prefs.remove('email');
-                                                 //     await prefs.remove('remember');
-                                                 //   }
-                                                 //
-                                                 //
-                                                 //   Navigator.push(context, MaterialPageRoute(builder: (_) => SideMenu(),));
-                                                 if (success){
-
-                                                   final prefs = await SharedPreferences.getInstance();
-
-                                                   await provider.loadUserRole();
-
-                                                   /// IMPORTANT
-                                                   final leadProvider =
-                                                   Provider.of<LeadProvider>(
-                                                     context,
-                                                     listen: false,
-                                                   );
-
-                                                   await leadProvider.loadAgentData();
-
-                                                   leadProvider.listenLeads();
-
-                                                   if(provider.isChecked){
-                                                     await prefs.setString(
-                                                       'email',
-                                                       provider.emailController.text,
-                                                     );
-
-                                                     await prefs.setString(
-                                                       'remember',
-                                                       'true',
-                                                     );
-                                                   } else {
-                                                     await prefs.remove('email');
-                                                     await prefs.remove('remember');
-                                                   }
-
-                                                   Navigator.pushReplacement(
-                                                     context,
-                                                     MaterialPageRoute(
-                                                       builder: (_) => SideMenu(),
-                                                     ),
-                                                   );
-
-                                                 } else {
-                                                   showDialog(
-                                                       context: context,
-                                                       builder: (context) => AlertDialog(
-                                                         shape: RoundedRectangleBorder(
-                                                           borderRadius: BorderRadius.circular(15),
-                                                         ),
-                                                         title: Row(
-                                                           children: [
-                                                             Icon(Icons.error, color: Colors.red,),
-                                                         SizedBox(width: 10,),
-                                                         Text("Login Failed"),
-                                                         ],
-                                                         ),
-                                                         content: Text("This user not found"),
-                                                         actions: [
-                                                           TextButton(
-                                                             onPressed: (){
-                                                               Navigator.of(context).pop();
-                                                             },
-                                                             child: Text("OK"),
-                                                           ),
-                                                         ],
-                                                       )
-                                                   );
-                                                 }
-
-                                                }
-                                              },
-                                              child: Text(
+                                              onPressed: provider.isLoading
+                                                  ? null
+                                                  : () => _handleLogin(
+                                                  context, provider),
+                                              child: provider.isLoading
+                                                  ? SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                                  : Text(
                                                 "Log In",
                                                 style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                    color: Colors.white
+                                                  fontWeight:
+                                                  FontWeight.bold,
+                                                  fontSize: 15,
+                                                  color: Colors.white,
                                                 ),
                                               ),
-                                            )
-                                        ),
-                                        SizedBox(width: 17,),
+                                            ),
+                                          ),
 
-                                        SizedBox(
-                                          height: 40,
-                                          child: ElevatedButton.icon(
-                                              onPressed: () async {
-                                                final user = await provider.signInWithGoogle();
+                                          SizedBox(width: 17),
 
-
-
+                                          // Google Sign-In button
+                                          SizedBox(
+                                            height: 40,
+                                            child: ElevatedButton.icon(
+                                              onPressed: provider.isLoading
+                                                  ? null
+                                                  : () async {
+                                                await provider
+                                                    .signInWithGoogle();
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue[900],
+                                                backgroundColor:
+                                                Colors.blue[900],
                                                 padding: EdgeInsets.all(10),
-                                                shape:  RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(5)
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(5),
                                                 ),
-                                                side: BorderSide(color: Colors.white),
+                                                side: BorderSide(
+                                                    color: Colors.white),
                                               ),
                                               icon: Image.asset(
                                                 "assets/google.png",
                                                 height: 20,
                                               ),
-
-                                              label:   Text(
+                                              label: Text(
                                                 "Login with Google",
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 16,
                                                 ),
-                                              )
+                                              ),
+                                            ),
                                           ),
-                                        ),
-
-                                      ],
-                                    ),
-                                  ]
-                              )
-                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-
+                    ),
                   ),
-                ),
-              ),
-                  )
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
-
   }
 
+  // ─── Reusable input field widget ────────────────────────────────────────────
   Widget _inputField({
     required String label,
     required String hint,
@@ -383,29 +407,34 @@ class _LoginPageState extends State<LoginPage>{
     FontWeight labelWeight = FontWeight.bold,
     Widget? suffixIcon,
     TextEditingController? controller,
-    String? Function(String?)?  validator,
-
+    FocusNode? focusNode,
+    TextInputAction? textInputAction,
+    void Function(String)? onFieldSubmitted,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: labelSize,
-              fontWeight: FontWeight.bold,
-            )),
-        SizedBox(height: 5,),
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: labelSize,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 5),
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
           obscureText: isPassword,
           validator: validator,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted,
           decoration: InputDecoration(
             prefixIcon: Icon(
               icon,
               color: Colors.indigo[900],
-
             ),
             suffixIcon: suffixIcon,
             hintText: hint,
@@ -416,9 +445,8 @@ class _LoginPageState extends State<LoginPage>{
               borderSide: BorderSide.none,
             ),
           ),
-        )
+        ),
       ],
-
     );
   }
 }

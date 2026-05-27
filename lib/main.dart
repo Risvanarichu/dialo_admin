@@ -3,8 +3,10 @@ import 'package:dialo_admin/providers/agentProvider.dart';
 import 'package:dialo_admin/providers/dashboardProvider.dart';
 import 'package:dialo_admin/providers/leadProvider.dart';
 import 'package:dialo_admin/providers/loginprovider.dart';
+import 'package:dialo_admin/providers/notificationProvider.dart';
 import 'package:dialo_admin/providers/reportProvider.dart';
 import 'package:dialo_admin/providers/settings_provider.dart';
+import 'package:dialo_admin/services/notification_service.dart';
 import 'package:dialo_admin/views/agents/web_users.dart';
 import 'package:dialo_admin/views/dashboard.dart';
 import 'package:dialo_admin/views/leads/addlead.dart';
@@ -40,9 +42,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LeadProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => ReportProvider()..fetchReports()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
-        home:NotificationScreen(),
+        home:LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );

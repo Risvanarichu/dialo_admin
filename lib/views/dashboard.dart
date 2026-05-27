@@ -1,4 +1,5 @@
 import 'package:dialo_admin/providers/agentProvider.dart';
+import 'package:dialo_admin/views/settings/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/dashboardProvider.dart';
+import '../providers/notificationProvider.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -106,7 +108,59 @@ class TopBar extends StatelessWidget {
               //   ),
               // ),
               const SizedBox(width: 20),
-              const Icon(Icons.notifications_none),
+              Consumer<NotificationProvider>(
+                builder: (context, provider, child) {
+
+                  return Stack(
+                    children: [
+
+                      IconButton(
+
+                        onPressed: () {
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationPage(),
+                            ),
+                          );
+
+                        },
+
+                        icon: const Icon(Icons.notifications_none),
+                      ),
+
+                      if (provider.unreadCount > 0)
+
+                        Positioned(
+
+                          right: 6,
+                          top: 6,
+
+                          child: Container(
+
+                            padding: const EdgeInsets.all(4),
+
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+
+                            child: Text(
+
+                              provider.unreadCount.toString(),
+
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
               const SizedBox(width: 20),
               FutureBuilder<Map<String, String>>(
                 future: _getUserData(),

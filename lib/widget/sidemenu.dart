@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/leadProvider.dart';
 import '../providers/loginprovider.dart';
 import '../views/agents/addUser.dart';
 import '../views/agents/web_users.dart';
@@ -148,6 +149,9 @@ class _SideMenuState extends State<SideMenu> {
       title: Text(title),
       selected: selectedIndex == index,
       onTap: () {
+        if (index == 3) {
+          context.read<LeadProvider>().clearFields();
+        }
         setState(() {
           selectedIndex = index;
         });
