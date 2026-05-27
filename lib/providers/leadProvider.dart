@@ -173,65 +173,38 @@ class LeadProvider extends ChangeNotifier {
         "LEAD_CATEGORY": leadCategory.trim(),
         "FOLLOW_UP_STATUS": "pending",
         "NOTES": notes.trim(),
+        "LAST_REMARK": notes.trim(), // Set last remark to notes
         "ADDITIONAL_LEAD_DETAILS": additionalDetails,
         "ADDED_TIME": FieldValue.serverTimestamp(),
         "ADDED_BY_ID": agentId,
         "ASSIGNED_AGENT_ID": assignedAgentId ?? agentId,
         "ASSIGNED_AGENT_NAME": assignedAgentName ?? agentName,
-        "FOLLOW_UP_DATE": now.add(Duration(days: 3)),
+        "FOLLOW_UP_DATE": now.add(const Duration(days: 3)),
         "FOLLOW_UP_TIME": "",
         "PLACE": "",
         "PRIORITY": "High",
         "LAST_CONTACTED_DATE": now,
       });
+
+      // Create initial follow-up entry from notes if provided
+      if (notes.trim().isNotEmpty) {
+        await docRef.collection("FOLLOW_UPS").add({
+          "CALL_STATUS": callStatus.trim(),
+          "LEAD_STATUS": leadStatus.trim(),
+          "LEAD_CATEGORY": leadCategory.trim(),
+          "PRIORITY": "High",
+          "REMARKS": notes.trim(),
+          "EMAIL": email.trim(),
+          "FOLLOW_UP_DATE": now.add(const Duration(days: 3)),
+          "LAST_CONTACTED_DATE": now,
+          "CREATED_AT": FieldValue.serverTimestamp(),
+        });
+      }
     } catch (e) {
       debugPrint("Error adding lead: $e");
       rethrow;
     }
   }
-
-
-  // void listenLeads() {
-  //   isLoading = true;
-  //   notifyListeners();
-  //
-  //   leadSubscription?.cancel();
-  //
-  //   leadSubscription = fbd.collection('LEADS').snapshots().listen((snapshot) {
-  //     leads = snapshot.docs.map((doc) {
-  //       final data = doc.data();
-  //
-  //       String assignedAgentId = data["ASSIGNED_AGENT_ID"] ?? "";
-  //
-  //       if (assignedAgentId
-  //           .toString()
-  //           .isEmpty) {
-  //         doc.reference.update({
-  //           "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
-  //           "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
-  //           "ADDED_BY_ID": agentId,
-  //         });
-  //       }
-  //
-  //       return LeadModel.fromMap(
-  //         doc.id,
-  //         {
-  //           ...data,
-  //           "ASSIGNED_AGENT_NAME":
-  //           agentMap.containsKey(assignedAgentId)
-  //               ? agentMap[assignedAgentId]
-  //               : data["ASSIGNED_AGENT_NAME"] ?? "Unassigned",
-  //         },
-  //       );
-  //     }).toList();
-  //
-  //     applyFilters();
-  //
-  //     isLoading = false;
-  //     notifyListeners();
-  //   });
-  // }
-
 
   void listenLeads() {
     isLoading = true;
@@ -554,28 +527,31 @@ class LeadProvider extends ChangeNotifier {
     required String notes,
     String? agentId,
     String? agentName,
+    Map<String, dynamic>? additionalDetails,
   }) async {
     try {
       setLoading(true);
 
       if (editingId == null) return;
 
+      final Map<String, dynamic> updateData = {
+        "NAME": nameController.text.trim(),
+        "PHONE": phoneController.text.trim(),
+        "EMAIL": emailController.text.trim(),
+        "SOURCE": sourceController.text.trim(),
+        "LEAD_STATUS": leadStatus,
+        "CALL_STATUS": callStatus,
+        "LEAD_CATEGORY": leadCategory,
+        "NOTES": notes,
+        "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
+        "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
+      };
 
-      await fbd.collection('LEADS').doc(editingId).update(
-          {
-            "NAME": nameController.text.trim(),
-            "PHONE": phoneController.text.trim(),
-            "EMAIL": emailController.text.trim(),
-            "SOURCE": sourceController.text.trim(),
+      if (additionalDetails != null) {
+        updateData["ADDITIONAL_LEAD_DETAILS"] = additionalDetails;
+      }
 
-            // ✅ ADD THESE
-            "LEAD_STATUS": leadStatus,
-            "CALL_STATUS": callStatus,
-            "LEAD_CATEGORY": leadCategory,
-            "NOTES": notes,
-            "ASSIGNED_AGENT_ID": agentId ?? this.agentId,
-            "ASSIGNED_AGENT_NAME": agentName ?? this.agentName,
-          });
+      await fbd.collection('LEADS').doc(editingId).update(updateData);
 
       await fetchLeads();
       clearFields();

@@ -114,6 +114,11 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearAdditionalDetails() {
+    additionalDetails.clear();
+    notifyListeners();
+  }
+
   Future<void> saveAdditionalDetails() async {
     final cleanList = additionalFieldsList
         .where((e) => e["title"].toString().trim().isNotEmpty)

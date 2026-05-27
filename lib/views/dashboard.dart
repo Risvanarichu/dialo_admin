@@ -20,10 +20,18 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    Future.microtask(() async {
       context.read<DashboardProvider>().fetchDashboardCounts();
-     context.read<DashboardProvider>().fetchDashBoardAgentPerformance();
-    context.read<DashboardProvider>().fetchRecentCalls();
+      context.read<DashboardProvider>().fetchDashBoardAgentPerformance();
+      context.read<DashboardProvider>().fetchRecentCalls();
+
+      final prefs = await SharedPreferences.getInstance();
+      final agentId = prefs.getString('agentId') ?? "";
+      final role = prefs.getString('role') ?? "AGENT";
+
+      if (mounted) {
+        context.read<NotificationProvider>().listenToNotifications(agentId, role);
+      }
     });
   }
 
@@ -108,52 +116,54 @@ class TopBar extends StatelessWidget {
               //   ),
               // ),
               const SizedBox(width: 20),
-              Consumer<NotificationProvider>(
-                builder: (context, provider, child) {
-
+              Consumer2<NotificationProvider, DashboardProvider>(
+                builder: (context, notifProv, dashProv, child) {
+                  int totalHints = notifProv.unreadCount + dashProv.overdue;
+                  
                   return Stack(
+                    alignment: Alignment.center,
                     children: [
-
                       IconButton(
-
                         onPressed: () {
-
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const NotificationPage(),
                             ),
                           );
-
                         },
-
-                        icon: const Icon(Icons.notifications_none),
+                        icon: Icon(
+                          totalHints > 0
+                              ? Icons.notifications
+                              : Icons.notifications_none,
+                          color: Colors.black87,
+                        ),
                       ),
-
-                      if (provider.unreadCount > 0)
-
+                      if (totalHints > 0)
                         Positioned(
-
-                          right: 6,
-                          top: 6,
-
+                          right: 8,
+                          top: 8,
                           child: Container(
-
-                            padding: const EdgeInsets.all(4),
-
-                            decoration: const BoxDecoration(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
                               color: Colors.red,
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white, width: 1.5),
                             ),
-
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
                             child: Text(
-
-                              provider.unreadCount.toString(),
-
+                              totalHints > 99
+                                  ? '99+'
+                                  : totalHints.toString(),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
                               ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),

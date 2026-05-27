@@ -77,67 +77,74 @@ bool isLoading = false;
         );
       }
 
-      final leadSnapshot = await query.get();
+      query.snapshots().listen((leadSnapshot) {
+        totalLeads = leadSnapshot.docs.length;
 
-      totalLeads = leadSnapshot.docs.length;
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
 
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
+        todaysCalls = 0;
+        upcoming = 0;
+        overdue = 0;
 
-      todaysCalls = 0;
-      upcoming = 0;
-      overdue = 0;
+        answered = 0;
+        missed = 0;
+        voicemail = 0;
+        other = 0;
 
-      answered = 0;
-      missed = 0;
-      voicemail = 0;
-      other = 0;
+        for (var doc in leadSnapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
 
-      for (var doc in leadSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+          DateTime? followUpDate;
+          final followValue = data["FOLLOW_UP_DATE"];
 
-        DateTime? followUpDate;
-        final followValue = data["FOLLOW_UP_DATE"];
+          if (followValue is Timestamp) {
+            followUpDate = followValue.toDate();
+          } else if (followValue is String && followValue.isNotEmpty) {
+            followUpDate = DateTime.tryParse(followValue);
+          }
 
-        if (followValue is Timestamp) {
-          followUpDate = followValue.toDate();
-        } else if (followValue is String && followValue.isNotEmpty) {
-          followUpDate = DateTime.tryParse(followValue);
-        }
+          if (followUpDate != null) {
+            final followDateOnly = DateTime(
+              followUpDate.year,
+              followUpDate.month,
+              followUpDate.day,
+            );
 
-        if (followUpDate != null) {
-          final followDateOnly = DateTime(
-            followUpDate.year,
-            followUpDate.month,
-            followUpDate.day,
-          );
+            if (followDateOnly == today) {
+              todaysCalls++;
+            } else if (followDateOnly.isAfter(today)) {
+              upcoming++;
+            } else {
+              // Only count as overdue if status is pending
+              final status = (data["FOLLOW_UP_STATUS"] ?? "").toString().toUpperCase();
+              if (status == "PENDING") {
+                overdue++;
+              }
+            }
+          }
 
-          if (followDateOnly == today) {
-            todaysCalls++;
-          } else if (followDateOnly.isAfter(today)) {
-            upcoming++;
-          } else {
-            overdue++;
+          final String callStatus = (data["FOLLOW_UP_STATUS"] ?? data["STATUS"] ?? "")
+              .toString()
+              .trim()
+              .toLowerCase();
+
+          if (callStatus == "answered" || callStatus == "completed") {
+            answered++;
+          } else if (callStatus == "missed") {
+            missed++;
+          } else if (callStatus == "voicemail") {
+            voicemail++;
+          } else if (callStatus.isNotEmpty) {
+            other++;
           }
         }
 
-        final String callStatus = (data["FOLLOW_UP_STATUS"] ?? data["STATUS"] ?? "")
-            .toString()
-            .trim()
-            .toLowerCase();
-
-        if (callStatus == "answered" || callStatus == "completed") {
-          answered++;
-        } else if (callStatus == "missed") {
-          missed++;
-        } else if (callStatus == "voicemail") {
-          voicemail++;
-        } else if (callStatus.isNotEmpty) {
-          other++;
-        }
-      }
-
-      await fetchGraphData();
+        fetchGraphData();
+        fetchRecentCalls();
+        isLoading = false;
+        notifyListeners();
+      });
     } catch (e) {
       debugPrint("Error fetching dashboard: $e");
     }

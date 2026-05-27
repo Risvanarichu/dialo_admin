@@ -22,6 +22,7 @@ class _AddLeadState extends State<AddLead> {
 
   bool isSaving = false;
   String userRole = "";
+  String currentAgentId = "";
 
   String selectedLeadCategory = "";
   String? selectedAgentId;
@@ -48,6 +49,7 @@ class _AddLeadState extends State<AddLead> {
       if (mounted) {
         setState(() {
           userRole = (prefs.getString("role") ?? "").toUpperCase();
+          currentAgentId = prefs.getString("agentId") ?? "";
         });
       }
     });
@@ -61,6 +63,7 @@ class _AddLeadState extends State<AddLead> {
       onPopInvoked: (didPop) {
         if (didPop) {
           context.read<LeadProvider>().clearFields();
+          context.read<SettingsProvider>().clearAdditionalDetails();
         }
       },
       child: Scaffold(
@@ -156,10 +159,14 @@ class _AddLeadState extends State<AddLead> {
     final settingsProvider = context.watch<SettingsProvider>();
     final leadProvider = context.watch<LeadProvider>();
 
-    final sourceValue =
-    settingsProvider.leadSource.contains(leadProvider.sourceController.text)
-        ? leadProvider.sourceController.text
-        : null;
+    final sourceValue = settingsProvider.leadSource.firstWhere(
+      (source) =>
+          source.toLowerCase() ==
+          leadProvider.sourceController.text.toLowerCase(),
+      orElse: () => "",
+    );
+
+    final validValue = sourceValue.isNotEmpty ? sourceValue : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +174,7 @@ class _AddLeadState extends State<AddLead> {
         const Text("SOURCES*"),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: sourceValue,
+          value: validValue,
           hint: const Text("Select Source"),
           items: settingsProvider.leadSource.map((source) {
             return DropdownMenuItem<String>(
@@ -194,10 +201,14 @@ class _AddLeadState extends State<AddLead> {
     final provider = context.watch<SettingsProvider>();
     final leadProvider = context.watch<LeadProvider>();
 
-    final validValue =
-    provider.leadStatus.contains(leadProvider.leadStatusController.text)
-        ? leadProvider.leadStatusController.text
-        : null;
+    final statusValue = provider.leadStatus.firstWhere(
+      (status) =>
+          status.toLowerCase() ==
+          leadProvider.leadStatusController.text.toLowerCase(),
+      orElse: () => "",
+    );
+
+    final validValue = statusValue.isNotEmpty ? statusValue : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,10 +245,14 @@ class _AddLeadState extends State<AddLead> {
     final provider = context.watch<SettingsProvider>();
     final leadProvider = context.watch<LeadProvider>();
 
-    final validValue =
-    provider.callStatus.contains(leadProvider.callStatusController.text)
-        ? leadProvider.callStatusController.text
-        : null;
+    final statusValue = provider.callStatus.firstWhere(
+      (status) =>
+          status.toLowerCase() ==
+          leadProvider.callStatusController.text.toLowerCase(),
+      orElse: () => "",
+    );
+
+    final validValue = statusValue.isNotEmpty ? statusValue : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,10 +288,13 @@ class _AddLeadState extends State<AddLead> {
   Widget _leadCategoryDropdown() {
     final provider = context.watch<SettingsProvider>();
 
-    final validValue =
-    provider.leadCategory.contains(selectedLeadCategory)
-        ? selectedLeadCategory
-        : null;
+    final categoryValue = provider.leadCategory.firstWhere(
+      (category) =>
+          category.toLowerCase() == selectedLeadCategory.toLowerCase(),
+      orElse: () => "",
+    );
+
+    final validValue = categoryValue.isNotEmpty ? categoryValue : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,10 +399,15 @@ class _AddLeadState extends State<AddLead> {
 
                 if (subList.isNotEmpty) {
                   final selectedValue =
-                  settingsProvider.additionalDetails[title];
+                      settingsProvider.additionalDetails[title]?.toString() ??
+                          "";
 
-                  final validValue =
-                  subList.contains(selectedValue) ? selectedValue : null;
+                  final detailValue = subList.firstWhere(
+                    (sub) => sub.toLowerCase() == selectedValue.toLowerCase(),
+                    orElse: () => "",
+                  );
+
+                  final validValue = detailValue.isNotEmpty ? detailValue : null;
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 15),
@@ -447,9 +470,13 @@ class _AddLeadState extends State<AddLead> {
         ElevatedButton(
           onPressed: () {
             context.read<LeadProvider>().clearFields();
+            context.read<SettingsProvider>().clearAdditionalDetails();
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const SideMenu(selectedIndex: 1,)),
+              MaterialPageRoute(
+                  builder: (_) => const SideMenu(
+                        selectedIndex: 1,
+                      )),
             );
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -484,6 +511,7 @@ class _AddLeadState extends State<AddLead> {
                     notes: leadProvider.notesController.text.trim(),
                     agentId: selectedAgentId,
                     agentName: selectedAgentName,
+                    additionalDetails: settingsProvider.additionalDetails,
                   );
 
                   /// SAFE NOTIFICATION
@@ -518,7 +546,6 @@ class _AddLeadState extends State<AddLead> {
                 /// ADD LEAD
                 /// =========================
                 else {
-
                   await leadProvider.addLead(
                     name: leadProvider.nameController.text.trim(),
                     phone: leadProvider.phoneController.text.trim(),
@@ -528,28 +555,33 @@ class _AddLeadState extends State<AddLead> {
                     notes: leadProvider.notesController.text.trim(),
                     callStatus: leadProvider.callStatusController.text.trim(),
                     leadCategory: selectedLeadCategory,
-                    additionalDetails:
-                    settingsProvider.additionalDetails,
+                    additionalDetails: settingsProvider.additionalDetails,
                     assignedAgentId: selectedAgentId,
                     assignedAgentName: selectedAgentName,
                   );
 
                   /// SAFE NOTIFICATION
                   try {
+                    String title = "New Lead Added";
+                    String body =
+                        "${leadProvider.nameController.text} added successfully";
+
+                    // If assigned to someone else
+                    if (selectedAgentId != null &&
+                        selectedAgentId != currentAgentId) {
+                      title = "New Lead Assigned";
+                      body =
+                          "A new lead has been assigned to you: ${leadProvider.nameController.text}";
+                    }
 
                     await NotificationService.triggerNotification(
-                      title: "New Lead Added",
-                      body:
-                      "${leadProvider.nameController.text} added successfully",
-                      leadName:
-                      leadProvider.nameController.text.trim(),
-                      agentId: selectedAgentId ?? "",
+                      title: title,
+                      body: body,
+                      leadName: leadProvider.nameController.text.trim(),
+                      agentId: selectedAgentId ?? currentAgentId,
                     );
-
                   } catch (e) {
-
                     debugPrint("Notification Error : $e");
-
                   }
 
                   if (!mounted) return;
@@ -566,7 +598,7 @@ class _AddLeadState extends State<AddLead> {
                 /// =========================
                 leadProvider.clearFields();
 
-                settingsProvider.additionalDetails.clear();
+                settingsProvider.clearAdditionalDetails();
 
                 if (!mounted) return;
 

@@ -21,6 +21,7 @@ class LeadModel {
   DateTime lastContactedDate;
   String assignedAgentName;
   String notes;
+  Map<String, dynamic> additionalDetails;
 
 
   LeadModel({
@@ -41,6 +42,7 @@ class LeadModel {
    required this.lastContactedDate,
    required this.assignedAgentName,
     required this.notes,
+    required this.additionalDetails,
   });
 
   factory LeadModel.fromMap(String id, Map<String, dynamic> map) {
@@ -73,29 +75,26 @@ class LeadModel {
     return LeadModel(
       id: id,
       name: map['NAME']?.toString().toUpperCase() ?? "",
-      phone: map['PHONE']?.toString()??"",
-      email: map['EMAIL']?.toString()??"",
-      source: map['SOURCE']?.toString()??"",
-      Leadcategory: map['LEAD_CATEGORY']?.toString()??"",
-      Leadstatus: (map['LEAD_STATUS'] ?? "")
-          .toString()
-          .toUpperCase(),
-
+      phone: map['PHONE']?.toString() ?? "",
+      email: map['EMAIL']?.toString() ?? "",
+      source: map['SOURCE']?.toString() ?? "",
+      Leadcategory: map['LEAD_CATEGORY']?.toString() ?? "",
+      Leadstatus: map['LEAD_STATUS']?.toString() ?? "",
       followupDate: followDate,
       followupTime: map['FOLLOW_UP_TIME']?.toString() ?? "",
       time: DateFormat('hh:mm a').format(added_date),
       priority: map['PRIORITY']?.toString() ?? "Medium",
       assignedAgentId: map['ASSIGNED_AGENT_ID'] ?? map['ADDED_BY_ID'],
       assignedAgentName: map["ASSIGNED_AGENT_NAME"] ?? "",
-      followupstatus: map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
-        callStatus:
-        map['CALL_STATUS']?.toString().toUpperCase() ?? '',
-
-        lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
-            ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
-            : added_date,
-      notes: map['NOTES'].toString()?? ""
-
+      followupstatus:
+          map['FOLLOW_UP_STATUS']?.toString().toUpperCase() ?? "pending",
+      callStatus: map['CALL_STATUS']?.toString() ?? '',
+      lastContactedDate: map['LAST_CONTACTED_DATE'] is Timestamp
+          ? (map['LAST_CONTACTED_DATE'] as Timestamp).toDate()
+          : added_date,
+      notes: map['NOTES'].toString() ?? "",
+      additionalDetails:
+          Map<String, dynamic>.from(map['ADDITIONAL_LEAD_DETAILS'] ?? {}),
     );
   }
 }

@@ -162,6 +162,9 @@ class LeadDetails extends StatelessWidget {
 
           IconButton(
             onPressed: () {
+              final settingsProv = context.read<SettingsProvider>();
+              settingsProv.additionalDetails = Map<String, dynamic>.from(lead.additionalDetails);
+
               context.read<LeadProvider>().editData({
                 "ID": lead.id,
                 "NAME": lead.name,
@@ -170,6 +173,7 @@ class LeadDetails extends StatelessWidget {
                 "SOURCE": lead.source,
                 "LEAD_STATUS": lead.Leadstatus,
                 "CALL_STATUS": lead.callStatus,
+                "LEAD_CATEGORY": lead.Leadcategory,
                 "NOTES": lead.notes,
                 "AGENT_ID": lead.assignedAgentId,
                 "AGENT_NAME": lead.assignedAgentName,
