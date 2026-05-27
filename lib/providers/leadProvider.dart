@@ -352,9 +352,20 @@ class LeadProvider extends ChangeNotifier {
           selectedCallStatus == "all" ||
               callStatus == selectedCallStatus;
 
+      final assignedId = lead.assignedAgentId.toString().trim();
+
+      final isUnassigned =
+          assignedId.isEmpty ||
+              assignedId == "null" ||
+              !agentMap.containsKey(assignedId);
+
       final matchesAgent =
-          selectedAgentFilter == "all" ||
-              lead.assignedAgentId == selectedAgentFilter;
+      selectedAgentFilter == "all"
+          ? true
+          : selectedAgentFilter == "unassigned"
+          ? isUnassigned
+          : assignedId == selectedAgentFilter;
+
 
       final matchesDate =
           startDate == null ||

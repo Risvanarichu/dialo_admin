@@ -9,7 +9,6 @@ import '../providers/leadProvider.dart';
 import '../providers/loginprovider.dart';
 import '../views/agents/addUser.dart';
 import '../views/agents/web_users.dart';
-import '../views/calls.dart';
 import '../views/followUpPage.dart';
 import '../views/leads/addlead.dart';
 import '../views/leads/leads_list.dart';
@@ -44,7 +43,7 @@ class _SideMenuState extends State<SideMenu> {
 
   final List<Widget> pages = [
     Dashboard(),
-    Calls(),
+    // Calls(),
     Leads(),
     AddLead(),
     FollowUpPage(),
@@ -96,15 +95,15 @@ class _SideMenuState extends State<SideMenu> {
 
                         /// MENU ITEMS
                         _menuItem(Icons.dashboard_outlined, "Dashboard", 0),
-                        _menuItem(Icons.phone_outlined, "Calls", 1),
-                        _menuItem(Icons.people_outline, "Leads", 2),
-                        _menuItem(Icons.person_add_alt_outlined, "Add Lead", 3),
-                        _menuItem(Icons.event_outlined, "Follow-Up", 4),
-                        _menuItem(Icons.bar_chart_outlined, "Reports", 5),
+                        // _menuItem(Icons.phone_outlined, "Calls", 1),
+                        _menuItem(Icons.people_outline, "Leads", 1),
+                        _menuItem(Icons.person_add_alt_outlined, "Add Lead", 2),
+                        _menuItem(Icons.event_outlined, "Follow-Up", 3),
+                        _menuItem(Icons.bar_chart_outlined, "Reports", 4),
                         if (prov.userRole == 'ADMIN')
-                          _menuItem(Icons.group_outlined, "Users", 6),
+                          _menuItem(Icons.group_outlined, "Users", 5),
                         if (prov.userRole == 'ADMIN')
-                          _menuItem(Icons.settings_outlined, "Settings", 7),
+                          _menuItem(Icons.settings_outlined, "Settings", 6),
                       ],
                     ),
                   ),

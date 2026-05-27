@@ -167,8 +167,11 @@ String agentId = "";
         /// ✅ CONVERT TO NAME
         String agentName = agentMap[agentId] ?? lead['ASSIGNED_AGENT_NAME']?.toString() ?? "Unknown";
 
-        String status = (lead['STATUS'] ?? "").toString().toLowerCase();
-
+        String status = (
+            data['STATUS'] ??
+                data['LEAD_STATUS'] ??
+                "Pending"
+        ).toString();
         data.putIfAbsent(agentName, () => {
           "total": 0,
           "converted": 0,
@@ -297,8 +300,11 @@ String agentId = "";
       List<Map<String, dynamic>> temp = [];
       Set<String> dynamicAgents = {"All Agents"};
 
+
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
+        print("LEAD DATA => $data");
+
 
         /// ✅ ADD THIS (IMPORTANT)
         String agentId = (data['ASSIGNED_AGENT_ID'] ?? data['ADDED_BY_ID'] ?? data['ADDED_BY_ID'] ?? "").toString();
@@ -309,13 +315,30 @@ String agentId = "";
         String name = (data['NAME'] ?? "").toString();
         String phone = (data['PHONE'] ?? "").toString();
         String source = (data['SOURCE'] ?? "").toString();
-        String status = (data['STATUS'] ?? "").toString();
+        String status =
+        (
+            data['STATUS'] ??
+                data['LEAD_STATUS'] ??
+                "Pending"
+        ).toString();
+
+        /// ✅ CHANGED : STATUS DEBUG
+        print("STATUS => $status");
+
 
         /// FILTERS
         if (selectedAgent != "All Agents" && agentName != selectedAgent) continue;
 
         if (selectedStatus != "All Status" &&
-            status.toLowerCase() != selectedStatus.toLowerCase()) continue;
+            status
+                .toLowerCase()
+                .trim() !=
+                selectedStatus
+                    .toLowerCase()
+                    .trim()) {
+          continue;
+        }
+
 
         if (selectedSource != "All Sources" && source != selectedSource) continue;
 
@@ -354,22 +377,26 @@ String agentId = "";
   /// FILTER METHODS
   void updateAgent(String val) {
     selectedAgent = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void updateStatusFilter(String val) {
     selectedStatus = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void updateSource(String val) {
     selectedSource = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 
   void searchLeads(String val) {
     searchQuery = val;
-    fetchLeadsReport();
+    // fetchLeadsReport();
+    notifyListeners();
   }
 }
 

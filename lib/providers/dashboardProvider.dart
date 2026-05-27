@@ -3,6 +3,7 @@ import 'package:dialo_admin/models/addUserModel.dart';
 import 'package:dialo_admin/models/leadModel.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardProvider extends ChangeNotifier {
   final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -24,16 +25,59 @@ bool isLoading = false;
   List<FlSpot> leadSpots = [];
   List<FlSpot> callSpots = [];
 
-  var agentLoading;
+  // var agentLoading;
+  Future<Map<String, String>> getLoginData() async {
+    final prefs = await SharedPreferences.getInstance();
 
+    String role =
+    (prefs.getString("role") ?? "").trim().toUpperCase();
 
+    String agentId =
+    (prefs.getString("agentId") ?? "").trim();
+
+    debugPrint("ROLE => $role");
+    debugPrint("AGENT ID => $agentId");
+
+    return {
+      "role": role,
+      "agentId": agentId,
+    };
+  }
 
   Future<void> fetchDashboardCounts() async {
-    isLoading = true;
-    notifyListeners();
+    // isLoading = true;
+    // notifyListeners();
+
+    totalLeads = 0;
+    todaysCalls = 0;
+    upcoming = 0;
+    overdue = 0;
+
+    answered = 0;
+    missed = 0;
+    voicemail = 0;
+    other = 0;
+
+    leadSpots = [];
+    callSpots = [];
+    recentCalls = [];
+    agentPerformance = [];
 
     try {
-      final leadSnapshot = await db.collection("LEADS").get();
+      final loginData = await getLoginData();
+
+      String role = loginData["role"] ?? "";
+      String agentId = loginData["agentId"] ?? "";
+      Query query = db.collection("LEADS");
+
+      if (role.toUpperCase() == "AGENT") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
+
+      final leadSnapshot = await query.get();
 
       totalLeads = leadSnapshot.docs.length;
 
@@ -50,7 +94,7 @@ bool isLoading = false;
       other = 0;
 
       for (var doc in leadSnapshot.docs) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
         DateTime? followUpDate;
         final followValue = data["FOLLOW_UP_DATE"];
@@ -104,7 +148,21 @@ bool isLoading = false;
 
   Future<void> fetchGraphData() async {
     try {
-      final snapshot = await db.collection("LEADS").get();
+      final loginData = await getLoginData();
+
+      String role = loginData["role"] ?? "";
+      String agentId = loginData["agentId"] ?? "";
+
+      Query query = db.collection("LEADS");
+
+      if (role.toUpperCase() == "AGENT") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
+
+      final snapshot = await query.get();
 
       Map<int, int> monthlyLeads = {
         for (int i = 0; i < 12; i++) i: 0,
@@ -115,7 +173,7 @@ bool isLoading = false;
       };
 
       for (var doc in snapshot.docs) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>;
 
         DateTime? createdDate;
         DateTime? followUpDate;
@@ -162,7 +220,19 @@ bool isLoading = false;
 
   Future<void> fetchDashBoardAgentPerformance() async {
     try {
-       isLoading= true;
+      final loginData = await getLoginData();
+
+      String role = loginData["role"] ?? "";
+      // String agentId = loginData["agentId"] ?? "";
+
+      /// ✅ AGENT LOGIN -> DON'T LOAD AGENT BOX
+      if (role.toUpperCase() == "AGENT") {
+        agentPerformance = [];
+        notifyListeners();
+        return;
+      }
+
+      isLoading = true;
       notifyListeners();
 
       final snapshot = await db.collection("AGENT").get();
@@ -176,6 +246,7 @@ bool isLoading = false;
           online: data["STATUS"] ?? false,
         );
       }).toList();
+
     } catch (e) {
       debugPrint("Error fetching agent performance: $e");
     }
@@ -189,8 +260,23 @@ bool isLoading = false;
       isLoading = true;
       notifyListeners();
 
-      final snapshot = await db
-          .collection("LEADS")
+      final loginData = await getLoginData();
+
+      String role = loginData["role"] ?? "";
+      String agentId = loginData["agentId"] ?? "";
+
+      Query<Map<String, dynamic>> query =
+      db.collection("LEADS");
+
+      /// ✅ If agent login -> only fetch assigned leads
+      if (role.toUpperCase() == "AGENT") {
+        query = query.where(
+          "ASSIGNED_AGENT_ID",
+          isEqualTo: agentId,
+        );
+      }
+
+      final snapshot = await query
           .orderBy("ADDED_TIME", descending: true)
           .limit(5)
           .get();
@@ -198,20 +284,24 @@ bool isLoading = false;
       recentCalls = snapshot.docs.map((doc) {
         final data = doc.data();
 
-        final String name = (data["NAME"] ?? "Unknown").toString();
+        final String name =
+        (data["NAME"] ?? "Unknown").toString();
+
         final String status =
-        (data["FOLLOW_UP_STATUS"] ?? "pending").toString();
+        (data["FOLLOW_UP_STATUS"] ?? "Pending").toString();
 
         DateTime? createdTime;
+
         final timeValue = data["ADDED_TIME"];
 
         if (timeValue is Timestamp) {
           createdTime = timeValue.toDate();
-        } else if (timeValue is String && timeValue.isNotEmpty) {
+        } else if (timeValue is String &&
+            timeValue.isNotEmpty) {
           createdTime = DateTime.tryParse(timeValue);
         }
 
-        String timeAgo = "just now";
+        String timeAgo = "Just now";
 
         if (createdTime != null) {
           final diff = DateTime.now().difference(createdTime);
@@ -229,12 +319,22 @@ bool isLoading = false;
 
         Color callColor = Colors.orange;
 
-        if (status.toLowerCase() == "pending") {
-          callColor = Colors.orange;
-        } else if (status.toLowerCase() == "completed") {
-          callColor = Colors.green;
-        } else if (status.toLowerCase() == "missed") {
-          callColor = Colors.red;
+        switch (status.toLowerCase()) {
+          case "completed":
+          case "answered":
+            callColor = Colors.green;
+            break;
+
+          case "missed":
+            callColor = Colors.red;
+            break;
+
+          case "pending":
+            callColor = Colors.orange;
+            break;
+
+          default:
+            callColor = Colors.blue;
         }
 
         return RecentCallModel(
@@ -244,11 +344,12 @@ bool isLoading = false;
           callColor: callColor,
         );
       }).toList();
+
     } catch (e) {
       debugPrint("Error fetching recent calls: $e");
     }
 
-    isLoading= false;
+    isLoading = false;
     notifyListeners();
   }
 }
